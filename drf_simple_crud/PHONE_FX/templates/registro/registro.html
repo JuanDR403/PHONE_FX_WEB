@@ -1,0 +1,81 @@
+<!-- templates/registro/registro.html -->
+
+{% block content %}
+<div class="container">
+    <h2 class="mt-4 mb-4">Registro de Usuario</h2>
+    <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+        
+        <!-- Nombres -->
+        <div class="form-group">
+            <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}
+                <div class="invalid-feedback">
+                    {{ form.first_name.errors.as_text }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Apellidos -->
+        <div class="form-group">
+            <label for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}
+                <div class="invalid-feedback">
+                    {{ form.last_name.errors.as_text }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Correo -->
+        <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+                <div class="invalid-feedback">
+                    {{ form.email.errors.as_text }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Teléfono -->
+        <div class="form-group">
+            <label for="{{ form.telefono.id_for_label }}">{{ form.telefono.label }}</label>
+            {{ form.telefono }}
+            {% if form.telefono.errors %}
+                <div class="invalid-feedback">
+                    {{ form.telefono.errors.as_text }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Contraseña -->
+        <div class="form-group">
+            <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
+            {{ form.password1 }}
+            {% if form.password1.errors %}
+                <div class="invalid-feedback">
+                    {{ form.password1.errors.as_text }}
+                </div>
+            {% endif %}
+            <small class="form-text text-muted">
+                La contraseña debe contener al menos 8 caracteres y no ser demasiado común.
+            </small>
+        </div>
+        
+        <!-- Confirmación de contraseña -->
+        <div class="form-group">
+            <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}
+                <div class="invalid-feedback">
+                    {{ form.password2.errors.as_text }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Registrarse</button>
+    </form>
+</div>
+{% endblock %}
