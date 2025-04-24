@@ -1,0 +1,150 @@
+:root {
+    --primary-color: #4a90e2;
+    --background-dark: #23183a;
+    --text-light: #ffffff;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.auth-page {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: #f5f5f5;
+    position: relative;
+    overflow: hidden; /* Para contener los pseudo-elementos */
+    padding-left: 7%;
+    justify-content: flex-start;
+    
+}
+
+/* Imagen izquierda (fondo_registro2.jpg) - ABAJO */
+.auth-page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 70%;
+    height: 100%;
+    background: url('../img/fondo_registro2.jpg') left center/cover no-repeat fixed;
+    z-index: 1;
+}
+
+/* Imagen derecha (fondo_registro.jpg) - ARRIBA */
+.auth-page::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 55%;
+    height: 100%;
+    background: url('../img/fondo_registro.jpg') right center/cover no-repeat fixed;
+    z-index: 2; /* Mayor z-index para que esté encima */
+        right: -170px; /* Corre la imagen 30px más a la derecha */
+    width: calc(65% + 30px); /* Compensa el aumento de ancho */
+    background-position: calc(100% - -300px) center; /* Ajuste fino de la posición */
+}
+
+/* Asegurar que el contenido esté por encima de ambos fondos */
+.auth-container {
+    position: relative;
+    z-index: 3;
+}
+.auth-container {
+    width: 100%;
+    max-width: 1200px;
+    
+}
+.auth-box {
+    background-color: white;
+    padding: 10px 40px; /* Más compacto */
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 380px;
+    position: relative;
+    margin: 20px 0;
+    max-height: 80vh;
+    display: flex; /* Añadido */
+    flex-direction: column; /* Añadido */
+    justify-content: center; /* Centra verticalmente */
+}
+/* Título */
+.auth-title {
+    color: #333;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 24px;
+}
+
+/* Formulario */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Espacio entre grupos de campos */
+    padding: 15px 15px; /* Espacio interno para separar del scroll */
+    max-height: calc(80vh - 50px); /* Ajuste considerando nuevos paddings */
+    overflow-y: auto;
+}
+
+.form-group {
+    margin-bottom: 1px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 500;
+    color: #555;
+    font-size: 14px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+/* Barra de scroll personalizada */
+.auth-form::-webkit-scrollbar {
+    width: 8px;
+}
+
+.form-group input:focus {
+    border-color: #4a90e2;
+    outline: none;
+}
+
+/* Botón de submit */
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+}
+
+.submit-btn:hover {
+    background-color: #3a7bc8;
+}
+
+/* Mensajes de error */
+.error-message {
+    color: #e74c3c;
+    font-size: 12px;
+    margin-top: 5px;
+}

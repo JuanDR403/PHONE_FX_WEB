@@ -1,0 +1,30 @@
+/* static/css/auth/register.css */
+.auth-container {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+}
+
+.auth-form-box {
+    background-color: var(--background-dark);
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.auth-title {
+    color: var(--text-light);
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    color: var(--text-light);
+}
+
+.auth-link {
+    color: var(--primary-color);
+    text-decoration: none;
+}

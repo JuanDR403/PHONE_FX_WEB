@@ -1,81 +1,144 @@
-<!-- templates/registro/registro.html -->
-
-{% block content %}
-<div class="container">
-    <h2 class="mt-4 mb-4">Registro de Usuario</h2>
-    <form method="post" class="needs-validation" novalidate>
-        {% csrf_token %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Usuario</title>
+    
+    <!-- CSS Base -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    
+    <!-- CSS de Componentes -->
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    
+    <!-- CSS de Layout -->
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+    
+    <!-- CSS específico de la página -->
+    <link rel="stylesheet" href="{% static 'css/auth/register.css' %}">
+    <style>
+        /* Estilos específicos para esta página */
+        .auth-box {
+            position: relative;
+            background-color: #17213c4f;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 420px; /* Un poco más ancho para contener el box interno */
+            
+        }
         
-        <!-- Nombres -->
-        <div class="form-group">
-            <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
-            {{ form.first_name }}
-            {% if form.first_name.errors %}
-                <div class="invalid-feedback">
-                    {{ form.first_name.errors.as_text }}
+        .form-container {
+            background-color: #f9f9f900;
+            border-radius: 6px;
+            padding: 60px;
+            margin-top: 40px; /* Espacio para la flecha */
+        }
+        
+        .auth-button-container {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 10;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+            margin-bottom: 5px;
+            background-color: white;
+        }
+        
+        .form-group input:focus {
+            border-color: #4a90e2;
+            outline: none;
+        }
+        
+        .submit-btn {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <!-- Contenedor principal -->
+        <div class="auth-box">
+            <!-- Botón de retroceso (fuera del form-container) -->
+            <div class="auth-button-container">
+                <div class="styled-wrapper">
+                    <button class="button auth-back-button">
+                        <div class="button-box">
+                            <span class="button-elem">
+                                <svg viewBox="0 0 24 24" class="arrow-icon">
+                                    <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path>
+                                </svg>
+                            </span>
+                            <span class="button-elem">
+                                <svg viewBox="0 0 24 24" class="arrow-icon">
+                                    <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path>
+                                </svg>
+                            </span>
+                        </div>
+                    </button>
                 </div>
-            {% endif %}
+            </div>
+            
+            <!-- Box interno para el formulario -->
+            <div class="form-container">
+                <form method="post" class="auth-form">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
+                            <div class="error-message">{{ form.first_name.errors.as_text }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                            <div class="error-message">{{ form.last_name.errors.as_text }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="error-message">{{ form.email.errors.as_text }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.telefono }}
+                        {% if form.telefono.errors %}
+                            <div class="error-message">{{ form.telefono.errors.as_text }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                            <div class="error-message">{{ form.password1.errors.as_text }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                            <div class="error-message">{{ form.password2.errors.as_text }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">Registrarse</button>
+                </form>
+            </div>
         </div>
-        
-        <!-- Apellidos -->
-        <div class="form-group">
-            <label for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
-            {{ form.last_name }}
-            {% if form.last_name.errors %}
-                <div class="invalid-feedback">
-                    {{ form.last_name.errors.as_text }}
-                </div>
-            {% endif %}
-        </div>
-        
-        <!-- Correo -->
-        <div class="form-group">
-            <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
-            {{ form.email }}
-            {% if form.email.errors %}
-                <div class="invalid-feedback">
-                    {{ form.email.errors.as_text }}
-                </div>
-            {% endif %}
-        </div>
-        
-        <!-- Teléfono -->
-        <div class="form-group">
-            <label for="{{ form.telefono.id_for_label }}">{{ form.telefono.label }}</label>
-            {{ form.telefono }}
-            {% if form.telefono.errors %}
-                <div class="invalid-feedback">
-                    {{ form.telefono.errors.as_text }}
-                </div>
-            {% endif %}
-        </div>
-        
-        <!-- Contraseña -->
-        <div class="form-group">
-            <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
-            {{ form.password1 }}
-            {% if form.password1.errors %}
-                <div class="invalid-feedback">
-                    {{ form.password1.errors.as_text }}
-                </div>
-            {% endif %}
-            <small class="form-text text-muted">
-                La contraseña debe contener al menos 8 caracteres y no ser demasiado común.
-            </small>
-        </div>
-        
-        <!-- Confirmación de contraseña -->
-        <div class="form-group">
-            <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
-            {{ form.password2 }}
-            {% if form.password2.errors %}
-                <div class="invalid-feedback">
-                    {{ form.password2.errors.as_text }}
-                </div>
-            {% endif %}
-        </div>
-        
-        <button type="submit" class="btn btn-primary">Registrarse</button>
-    </form>
-</div>
-{% endblock %}
+    </div>
+</body>
+</html>

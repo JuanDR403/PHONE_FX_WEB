@@ -20,7 +20,7 @@ class RegistroForm(UserCreationForm):
         label="Correo Electronico",
         max_length=30,
         required=True,
-        widget=forms.EmailInput(attrs={'placeholders':'Ingresa tu Correo Electrónico'})
+        widget=forms.EmailInput(attrs={'placeholder':'Ingresa tu Correo Electrónico'})
         )
     telefono = forms.CharField(
         label="Número de Telefono",
