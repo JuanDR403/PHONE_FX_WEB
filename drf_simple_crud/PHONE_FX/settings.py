@@ -20,14 +20,17 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'PHONE_FX',
     'registro',
+    'logueo.apps.LogueoConfig',
+    'inicio.apps.InicioConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'PHONE_FX',
+
     'rest_framework',
 ]
 
@@ -46,7 +49,7 @@ ROOT_URLCONF = 'PHONE_FX.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

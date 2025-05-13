@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>{{ titulo }}</h1>
+    <p class="lead">{{ mensaje }}</p>
+    
+    {% if user.is_authenticated %}
+        <div class="alert alert-success">
+            ¡Bienvenido, {{ user.first_name }}!
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            Inicia sesión para acceder a todas las funciones
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
