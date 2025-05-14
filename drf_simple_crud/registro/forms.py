@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from .models import Perfil
 
+
 class RegistroForm(UserCreationForm):
     first_name = forms.CharField(
         label="Nombre(s)",
