@@ -15,7 +15,7 @@ class PasswordResetCode(models.Model):
 
     @property
     def is_expired(self):
-        return timezone.now() > self.created_at + timedelta(minutes=1)
+        return timezone.now() > self.created_at + timedelta(minutes=8)
 
     class Meta:
         verbose_name = "Código de recuperación"
