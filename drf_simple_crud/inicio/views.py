@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required  # Opcional
 def home(request):
     context = {
         'titulo': 'Página de Inicio',
-        'mensaje': 'Bienvenido a PhoneFX',
+        'mensaje': 'Hola, Bienvenido a PhoneFX',
         # Puedes añadir más variables de contexto aquí
     }
     return render(request, 'inicio/home.html', context)

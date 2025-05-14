@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'registro',
     'logueo.apps.LogueoConfig',
     'inicio.apps.InicioConfig',
+    'reset_password.apps.ResetPasswordConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -79,6 +80,7 @@ DATABASES = {
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
 AUTHENTICATION_BACKENDS = [
+    'logueo.backends.EmailOrUsernameModelBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
@@ -122,3 +124,19 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Redirecciones
+LOGIN_URL = 'logueo:login'
+LOGIN_REDIRECT_URL = 'inicio:home'
+LOGOUT_REDIRECT_URL = 'logueo:login'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Tiempo de expiración del código (en minutos)
+PASSWORD_RESET_TIMEOUT = 5
+PASSWORD_RESET_THROTTLE = '100/hour'
+# Añade al final del archivo:
+PASSWORD_RESET = {
+    'CODE_TIMEOUT': 8,  # Minutos
+    'EMAIL_FROM': 'no-reply@phonefx.com',
+    'MAX_ATTEMPTS': 3,
+}

@@ -8,10 +8,9 @@ def registro(request):
         form = RegistroForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request,user)
-            return redirect('inicio')  # Puedes redirigir a otra ruta si prefieres
+            # No longer logging in the user automatically
+            return redirect('logueo:login')  # Redirige a la página de login
     else:
         form = RegistroForm()
-    
+
     return render(request, 'registro/registro.html', {'form': form})
-        

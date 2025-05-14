@@ -18,4 +18,4 @@ class Perfil(models.Model):
 @receiver(post_save, sender=User)
 def crear_perfil_usuario(sender, instance, created, **kwargs):
     if created:
-        Perfil.objects.create(User=instance)
+        Perfil.objects.create(user=instance)
