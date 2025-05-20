@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'PHONE_FX',
     'registro',
     'logueo.apps.LogueoConfig',
+    'usuarios',
     'inicio.apps.InicioConfig',
     'reset_password.apps.ResetPasswordConfig',
     'django.contrib.admin',
@@ -140,3 +141,5 @@ PASSWORD_RESET = {
     'EMAIL_FROM': 'no-reply@phonefx.com',
     'MAX_ATTEMPTS': 3,
 }
+
+
