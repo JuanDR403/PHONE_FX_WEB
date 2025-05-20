@@ -1,5 +1,10 @@
 
 
+<!-- templates/inicio/home.html -->
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
 {% block content %}
 <div class="container mt-5">
     <h1>{{ titulo }}</h1>
@@ -8,9 +13,6 @@
     {% if user.is_authenticated %}
         <div class="alert alert-success">
             ¡Bienvenido, {{ user.first_name }}!
-        </div>
-        <div class="mt-3">
-            <a href="{% url 'logueo:logout' %}" class="btn btn-danger">Cerrar Sesión</a>
         </div>
     {% else %}
         <div class="alert alert-info">

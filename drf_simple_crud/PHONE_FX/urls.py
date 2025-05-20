@@ -10,5 +10,6 @@ urlpatterns = [
     path('home/', include('inicio.urls')),
     path('login/', include('logueo.urls')),
     path('password-reset/', include('reset_password.urls')),
+    path('usuarios/', include('usuarios.urls')),
     path('', RedirectView.as_view(url='/login/'), name='root-redirect'),
 ]
