@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 
-{% block title %}Editar Perfil{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
@@ -11,58 +11,34 @@
                     <h3 class="mb-0">{{ title }}</h3>
                 </div>
                 <div class="card-body">
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }}">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                    
-                    <form method="post">
+                    <form method="post" id="profileForm">
                         {% csrf_token %}
-                        
+
+                        <!-- Username Field -->
                         <div class="mb-3">
-                            <label for="{{ form.username.id_for_label }}" class="form-label">Nombre de usuario</label>
+                            <label for="id_username" class="form-label">Nombre de usuario</label>
                             {{ form.username }}
-                            {% if form.username.errors %}
-                                <div class="text-danger">
-                                    {{ form.username.errors }}
-                                </div>
-                            {% endif %}
                         </div>
-                        
+
+                        <!-- First Name Field -->
                         <div class="mb-3">
-                            <label for="{{ form.first_name.id_for_label }}" class="form-label">Nombre</label>
+                            <label for="id_first_name" class="form-label">Nombre</label>
                             {{ form.first_name }}
-                            {% if form.first_name.errors %}
-                                <div class="text-danger">
-                                    {{ form.first_name.errors }}
-                                </div>
-                            {% endif %}
                         </div>
-                        
+
+                        <!-- Last Name Field -->
                         <div class="mb-3">
-                            <label for="{{ form.last_name.id_for_label }}" class="form-label">Apellido</label>
+                            <label for="id_last_name" class="form-label">Apellido</label>
                             {{ form.last_name }}
-                            {% if form.last_name.errors %}
-                                <div class="text-danger">
-                                    {{ form.last_name.errors }}
-                                </div>
-                            {% endif %}
                         </div>
-                        
+
+                        <!-- Email Field -->
                         <div class="mb-3">
-                            <label for="{{ form.email.id_for_label }}" class="form-label">Correo electrónico</label>
+                            <label for="id_email" class="form-label">Correo electrónico</label>
                             {{ form.email }}
-                            {% if form.email.errors %}
-                                <div class="text-danger">
-                                    {{ form.email.errors }}
-                                </div>
-                            {% endif %}
                         </div>
-                        
-                        <div class="d-grid gap-2">
+
+                        <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-primary">Guardar cambios</button>
                             <a href="{% url 'inicio:home' %}" class="btn btn-secondary">Cancelar</a>
                         </div>
@@ -72,4 +48,95 @@
         </div>
     </div>
 </div>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mostrar mensajes del servidor con SweetAlert
+    {% if messages %}
+        {% for message in messages %}
+            Swal.fire({
+                icon: '{{ message.tags }}',
+                title: '{{ message|escapejs }}',
+                confirmButtonText: 'Entendido',
+                {% if message.tags == 'success' %}
+                timer: 3000,
+                showConfirmButton: false,
+                {% endif %}
+            });
+        {% endfor %}
+    {% endif %}
+
+    // Validación en tiempo real con SweetAlert
+    const profileForm = document.getElementById('profileForm');
+
+    // Validar antes de enviar
+    profileForm.addEventListener('submit', function(e) {
+        const username = document.getElementById('id_username').value.trim();
+        const email = document.getElementById('id_email').value.trim();
+        const currentUsername = '{{ request.user.username }}';
+        const currentEmail = '{{ request.user.email }}';
+        let errorMessage = '';
+
+        // Validación de username
+        if(username !== currentUsername) {
+            if(username.length < 3) {
+                errorMessage += 'El nombre de usuario debe tener al menos 3 caracteres<br>';
+            }
+        }
+
+        // Validación de email
+        if(email !== currentEmail) {
+            if(!email.includes('@') || !email.includes('.')) {
+                errorMessage += 'Por favor ingresa un correo electrónico válido<br>';
+            }
+        }
+
+        if(errorMessage) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de validación',
+                html: errorMessage,
+                confirmButtonText: 'Entendido'
+            });
+            return;
+        }
+
+        // Verificación de existencia (opcional, ya que el backend también lo hace)
+        if(username !== currentUsername) {
+            fetch(`/api/check-username/?username=${username}&current_user={{ request.user.pk }}`)
+                .then(response => response.json())
+                .then(data => {
+                    if(data.exists) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Este nombre de usuario ya está en uso',
+                            confirmButtonText: 'Entendido'
+                        });
+                    }
+                });
+        }
+
+        if(email !== currentEmail) {
+            fetch(`/api/check-email/?email=${email}&current_user={{ request.user.pk }}`)
+                .then(response => response.json())
+                .then(data => {
+                    if(data.exists) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Este correo electrónico ya está registrado',
+                            confirmButtonText: 'Entendido'
+                        });
+                    }
+                });
+        }
+    });
+});
+</script>
 {% endblock %}
