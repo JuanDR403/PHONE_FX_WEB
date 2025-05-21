@@ -9,9 +9,17 @@ class Profile(models.Model):
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     profile_photo = models.ImageField(upload_to='perfiles/', blank=True, null=True)
-    
+
     def __str__(self):
         return f"{self.user.username}'s Profile"
+
+    def get_profile_photo_url(self):
+        """
+        Return the URL of the profile photo if it exists, or None if it doesn't.
+        """
+        if self.profile_photo and hasattr(self.profile_photo, 'url'):
+            return self.profile_photo.url
+        return None
 
 # Signal to create or update user profile when user is created or updated
 @receiver(post_save, sender=User)

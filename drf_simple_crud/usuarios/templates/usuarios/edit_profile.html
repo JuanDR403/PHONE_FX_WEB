@@ -10,33 +10,44 @@
         border-radius: 8px;
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         padding: 20px;
-        height: 100%;
         margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
-    .profile-photo {
-        width: 100%;
-        height: 210px;
-        object-fit: cover;
-        border-radius: 8px;
+    .profile-photo-circle {
+        width: 150px;  /* Tamaño fijo del círculo */
+        height: 150px; /* Igual que el ancho para que sea perfectamente redondo */
+        border-radius: 50%; /* Esto hace que sea un círculo */
+        overflow: hidden; /* Oculta cualquier parte de la imagen que sobresalga */
+        display: inline-block; /* Para centrarlo con text-center */
+        border: 3px solid #ddd; /* Borde opcional */
+        background-color: #f5f5f5; /* Color de fondo para el placeholder */
+        position: relative;
         margin-bottom: 15px;
+    }
+
+    .profile-photo-img {
+        width: 100%; /* Ocupa todo el ancho del contenedor */
+        height: 100%; /* Ocupa toda la altura del contenedor */
+        object-fit: cover; /* Asegura que la imagen cubra todo el espacio sin deformarse */
+        object-position: center; /* Centra la imagen */
     }
 
     .profile-photo-placeholder {
-        width: 100%;
-        height: 210px;
-        background-color: #f8f9fa;
-        border: 2px dashed #dee2e6;
-        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 15px;
+        font-size: 60px; /* Tamaño del icono */
+        color: #aaa; /* Color del icono */
+        width: 100%;
+        height: 100%;
     }
 
     .profile-photo-placeholder i {
-        font-size: 48px;
-        color: #adb5bd;
+        font-size: 60px;
+        color: #aaa;
     }
 </style>
 {% endblock %}
@@ -120,26 +131,28 @@
             </div>
         </div>
 
-        <!-- Profile Photo Column (Right) -->
-        <div class="col-md-4">
-            <div class="profile-photo-container">
-                <h5 class="text-center mb-3">Foto de Perfil</h5>
-                {% if profile.profile_photo %}
-                    <img src="{{ profile.profile_photo.url }}" alt="Foto de perfil" class="profile-photo" id="profilePhotoPreview">
-                {% else %}
-                    <div class="profile-photo-placeholder" id="profilePhotoPlaceholder">
-                        <i class="fas fa-user"></i>
-                    </div>
-                {% endif %}
-                <form method="post" enctype="multipart/form-data" id="photoForm">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        {{ photo_form.profile_photo }}
-                        <small class="form-text text-muted">Selecciona una imagen para tu perfil</small>
-                    </div>
-                </form>
+       <div class="col-md-4">
+    <div class="profile-photo-container text-center">
+        <h5 class="text-center mb-3">Foto de Perfil</h5>
+        {% if profile.get_profile_photo_url %}
+            <div class="profile-photo-circle">
+                <img src="{{ profile.get_profile_photo_url }}" alt="Foto de perfil" class="profile-photo-img" id="profilePhotoPreview">
             </div>
-        </div>
+        {% else %}
+            <div class="profile-photo-circle profile-photo-placeholder" id="profilePhotoPlaceholder">
+                <i class="fas fa-user"></i>
+            </div>
+        {% endif %}
+        <form method="post" enctype="multipart/form-data" id="photoForm" class="mt-3">
+            {% csrf_token %}
+            <div class="mb-3">
+                {{ photo_form.profile_photo }}
+                <small class="form-text text-muted">Selecciona una imagen para tu perfil</small>
+            </div>
+            <input type="hidden" name="photo_form_submitted" value="1">
+        </form>
+    </div>
+</div>
     </div>
 </div>
 
@@ -174,58 +187,135 @@ document.addEventListener('DOMContentLoaded', function() {
                 const reader = new FileReader();
 
                 reader.onload = function(e) {
-                    // Si ya existe una imagen, actualizar su src
-                    if (photoPreview) {
-                        photoPreview.src = e.target.result;
-                    } 
-                    // Si no existe, crear una nueva imagen y reemplazar el placeholder
-                    else if (photoPlaceholder) {
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.alt = 'Foto de perfil';
-                        img.className = 'profile-photo';
-                        img.id = 'profilePhotoPreview';
-                        photoPlaceholder.parentNode.replaceChild(img, photoPlaceholder);
-                    }
+                    // Crear una imagen temporal para redimensionar antes de mostrarla
+                    const tempImg = new Image();
 
-                    // Mostrar mensaje de carga
-                    Swal.fire({
-                        title: 'Subiendo foto...',
-                        text: 'Tu foto se está subiendo',
-                        icon: 'info',
-                        showConfirmButton: false,
-                        allowOutsideClick: false
-                    });
+                    // Asignar el manejador de eventos antes de establecer la fuente
+                    tempImg.onload = function() {
 
-                    // Enviar el formulario automáticamente
-                    const formData = new FormData(photoForm);
-                    fetch(window.location.href, {
-                        method: 'POST',
-                        body: formData,
-                        credentials: 'same-origin'
-                    })
-                    .then(response => response.text())
-                    .then(html => {
+                    // Asegurarse de que la imagen se cargue correctamente
+                    try {
+                        // Crear un canvas para redimensionar la imagen
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 300; // Ancho máximo para la vista previa
+                        const MAX_HEIGHT = 300; // Alto máximo para la vista previa
+
+                        let width = tempImg.width;
+                        let height = tempImg.height;
+
+                        // Calcular las nuevas dimensiones manteniendo la proporción
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+
+                        // Configurar el canvas con las nuevas dimensiones
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        // Dibujar la imagen redimensionada en el canvas
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(tempImg, 0, 0, width, height);
+
+                        // Obtener la imagen redimensionada como URL de datos
+                        const resizedImageUrl = canvas.toDataURL('image/jpeg');
+
+                        // Si ya existe una imagen, actualizar su src
+                        if (photoPreview) {
+                            photoPreview.src = resizedImageUrl;
+                        } 
+                        // Si no existe, crear una nueva imagen y reemplazar el placeholder
+                        else if (photoPlaceholder) {
+                            const img = document.createElement('img');
+                            img.src = resizedImageUrl;
+                            img.alt = 'Foto de perfil';
+                            img.className = 'profile-photo-img';
+                            img.id = 'profilePhotoPreview';
+                            photoPlaceholder.parentNode.replaceChild(img, photoPlaceholder);
+                        }
+
+                        // Mostrar mensaje de carga después de que la imagen se haya redimensionado
                         Swal.fire({
-                            title: 'Foto actualizada',
-                            text: 'Tu foto de perfil ha sido actualizada correctamente',
-                            icon: 'success',
-                            timer: 2000,
-                            showConfirmButton: false
-                        }).then(() => {
-                            // Recargar la página para mostrar la foto actualizada
-                            window.location.reload();
+                            title: 'Subiendo foto...',
+                            text: 'Tu foto se está subiendo',
+                            icon: 'info',
+                            showConfirmButton: false,
+                            allowOutsideClick: false
                         });
-                    })
-                    .catch(error => {
+
+                        // Enviar el formulario automáticamente
+                        // Crear un nuevo FormData y añadir manualmente los campos necesarios
+                        const formData = new FormData();
+
+                        // Añadir el token CSRF
+                        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+                        // Añadir el indicador de formulario de foto
+                        formData.append('photo_form_submitted', '1');
+
+                        // Añadir explícitamente el archivo con el nombre correcto
+                        if (photoInput.files && photoInput.files[0]) {
+                            formData.append('profile_photo', photoInput.files[0]);
+                        }
+
+                        // Verificar que el archivo esté incluido correctamente
+                        console.log('FormData entries:');
+                        for (let pair of formData.entries()) {
+                            console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
+                        }
+
+                        // Obtener el token CSRF del formulario
+                        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                        // No incluir el header X-CSRFToken cuando se envían archivos
+                        fetch(window.location.href, {
+                            method: 'POST',
+                            body: formData,
+                            credentials: 'same-origin'
+                        })
+                        .then(response => response.text())
+                        .then(html => {
+                            Swal.fire({
+                                title: 'Foto actualizada',
+                                text: 'Tu foto de perfil ha sido actualizada correctamente',
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                // Recargar la página para mostrar la foto actualizada
+                                window.location.reload();
+                            });
+                        })
+                        .catch(error => {
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'Hubo un problema al subir la foto',
+                                icon: 'error',
+                                confirmButtonText: 'Entendido'
+                            });
+                            console.error('Error:', error);
+                        });
+                    } catch (error) {
+                        console.error('Error processing image:', error);
+
+                        // Mostrar mensaje de error
                         Swal.fire({
                             title: 'Error',
-                            text: 'Hubo un problema al subir la foto',
+                            text: 'Hubo un problema al procesar la imagen. Por favor, intenta con otra imagen.',
                             icon: 'error',
                             confirmButtonText: 'Entendido'
                         });
-                        console.error('Error:', error);
-                    });
+                    }
+                    };
+
+                    // Establecer la fuente de la imagen después de configurar el manejador de eventos
+                    tempImg.src = e.target.result;
                 };
 
                 reader.readAsDataURL(this.files[0]);

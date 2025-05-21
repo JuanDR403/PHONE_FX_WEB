@@ -23,7 +23,7 @@ INSTALLED_APPS = [
     'PHONE_FX',
     'registro',
     'logueo.apps.LogueoConfig',
-    'usuarios',
+    'usuarios.apps.UsuariosConfig',
     'inicio.apps.InicioConfig',
     'reset_password.apps.ResetPasswordConfig',
     'django.contrib.admin',

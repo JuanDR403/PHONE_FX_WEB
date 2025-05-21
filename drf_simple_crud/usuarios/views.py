@@ -6,6 +6,65 @@ from django import forms
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from .models import Profile
+from PIL import Image
+from io import BytesIO
+from django.core.files.uploadedfile import InMemoryUploadedFile
+import sys
+
+
+def compress_image(uploaded_image):
+    """
+    Compresses an image if its dimensions exceed 400x400 pixels.
+    Maintains the aspect ratio while resizing.
+    """
+    img = Image.open(uploaded_image)
+
+    # Check if image needs resizing (if either dimension is > 400px)
+    if img.width > 400 or img.height > 400:
+        # Calculate new dimensions while maintaining aspect ratio
+        if img.width > img.height:
+            ratio = 400 / img.width
+            new_width = 400
+            new_height = int(img.height * ratio)
+        else:
+            ratio = 400 / img.height
+            new_height = 400
+            new_width = int(img.width * ratio)
+
+        # Resize the image
+        img = img.resize((new_width, new_height), Image.LANCZOS)
+
+        # Save the resized image to a BytesIO object
+        output = BytesIO()
+
+        # Determine the format of the original image
+        if uploaded_image.name.endswith('.png'):
+            img_format = 'PNG'
+        elif uploaded_image.name.endswith('.gif'):
+            img_format = 'GIF'
+        else:
+            img_format = 'JPEG'  # Default to JPEG for other formats
+
+        # Save the image with the appropriate format and quality
+        if img_format == 'JPEG':
+            img.save(output, format=img_format, quality=85)
+        else:
+            img.save(output, format=img_format)
+
+        output.seek(0)
+
+        # Create a new InMemoryUploadedFile from the resized image
+        return InMemoryUploadedFile(
+            output,
+            'ImageField',
+            uploaded_image.name,
+            f'image/{img_format.lower()}',
+            sys.getsizeof(output),
+            None
+        )
+
+    # If no resizing is needed, return the original image
+    return uploaded_image
 
 
 class UserProfileForm(forms.ModelForm):
@@ -72,57 +131,118 @@ def edit_profile(request):
     profile, created = Profile.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
-        form = UserProfileForm(request.POST, instance=request.user)
-        photo_form = ProfilePhotoForm(request.POST, request.FILES, instance=profile)
+        # Check if this is a photo form submission
+        if 'photo_form_submitted' in request.POST:
+            photo_form = ProfilePhotoForm(request.POST, request.FILES, instance=profile)
 
-        # Debug: Check if a file was uploaded
-        if 'profile_photo' in request.FILES:
-            print(f"File uploaded: {request.FILES['profile_photo'].name}")
+            # Debug: Check if a file was uploaded
+            if 'profile_photo' in request.FILES:
+                print(f"File uploaded: {request.FILES['profile_photo'].name}")
+                print(f"File size: {request.FILES['profile_photo'].size} bytes")
+                print(f"File content type: {request.FILES['profile_photo'].content_type}")
+            else:
+                print("No file uploaded")
+                print(f"Request FILES: {request.FILES}")
+                print(f"Request POST: {request.POST}")
+
+            if photo_form.is_valid():
+                # Don't save the form yet, we need to process the image first
+                photo_instance = photo_form.save(commit=False)
+
+                # Check if a new photo was uploaded
+                if 'profile_photo' in request.FILES:
+                    # Compress the image if needed
+                    photo_instance.profile_photo = compress_image(request.FILES['profile_photo'])
+
+                # Now save the photo with the possibly compressed image
+                photo_instance.save()
+
+                if profile.profile_photo:
+                    print(f"Profile photo saved: {profile.profile_photo.path}")
+                    print(f"Profile photo URL: {profile.profile_photo.url}")
+                    print(f"Profile photo dimensions: {Image.open(profile.profile_photo.path).size}")
+                else:
+                    print("No profile photo saved")
+
+                messages.success(request, 'Tu foto de perfil ha sido actualizada correctamente.')
+                return redirect('usuarios:edit_profile')
+            else:
+                messages.error(request, 'Hubo un error al procesar la foto de perfil.')
+                form = UserProfileForm(instance=request.user)
+                return render(request, 'usuarios/edit_profile.html', {
+                    'form': form,
+                    'photo_form': photo_form,
+                    'profile': profile,
+                    'title': 'Editar Perfil'
+                })
         else:
-            print("No file uploaded")
+            # Regular form submission
+            form = UserProfileForm(request.POST, instance=request.user)
+            photo_form = ProfilePhotoForm(request.POST, request.FILES, instance=profile)
 
-        # Validación personalizada antes de is_valid()
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-
-        if User.objects.filter(username=username).exclude(pk=request.user.pk).exists():
-            messages.error(request, 'Este nombre de usuario ya está en uso')
-            return render(request, 'usuarios/edit_profile.html', {
-                'form': form,
-                'photo_form': photo_form,
-                'title': 'Editar Perfil'
-            })
-
-        if User.objects.filter(email=email).exclude(pk=request.user.pk).exists():
-            messages.error(request, 'Este correo electrónico ya está registrado')
-            return render(request, 'usuarios/edit_profile.html', {
-                'form': form,
-                'photo_form': photo_form,
-                'title': 'Editar Perfil'
-            })
-
-        if form.is_valid() and photo_form.is_valid():
-            user = form.save(commit=False)
-
-            # Cambiar la contraseña si se proporcionó una nueva
-            new_password = form.cleaned_data.get('new_password')
-            if new_password:
-                user.set_password(new_password)
-                messages.success(request, 'Tu perfil, contraseña y foto han sido actualizados correctamente.')
+            # Debug: Check if a file was uploaded
+            if 'profile_photo' in request.FILES:
+                print(f"File uploaded: {request.FILES['profile_photo'].name}")
             else:
-                messages.success(request, 'Tu perfil y foto han sido actualizados correctamente.')
+                print("No file uploaded")
 
-            user.save()
+            # Validación personalizada antes de is_valid()
+            username = request.POST.get('username')
+            email = request.POST.get('email')
 
-            # Save the profile photo and print debug info
-            photo_form.save()
-            if profile.profile_photo:
-                print(f"Profile photo saved: {profile.profile_photo.path}")
-                print(f"Profile photo URL: {profile.profile_photo.url}")
-            else:
-                print("No profile photo saved")
+            if User.objects.filter(username=username).exclude(pk=request.user.pk).exists():
+                messages.error(request, 'Este nombre de usuario ya está en uso')
+                return render(request, 'usuarios/edit_profile.html', {
+                    'form': form,
+                    'photo_form': photo_form,
+                    'profile': profile,
+                    'title': 'Editar Perfil'
+                })
 
-            return redirect('usuarios:edit_profile')
+            if User.objects.filter(email=email).exclude(pk=request.user.pk).exists():
+                messages.error(request, 'Este correo electrónico ya está registrado')
+                return render(request, 'usuarios/edit_profile.html', {
+                    'form': form,
+                    'photo_form': photo_form,
+                    'profile': profile,
+                    'title': 'Editar Perfil'
+                })
+
+            if form.is_valid() and photo_form.is_valid():
+                user = form.save(commit=False)
+
+                # Cambiar la contraseña si se proporcionó una nueva
+                new_password = form.cleaned_data.get('new_password')
+                if new_password:
+                    user.set_password(new_password)
+                    messages.success(request, 'Tu perfil, contraseña y foto han sido actualizados correctamente.')
+                else:
+                    messages.success(request, 'Tu perfil y foto han sido actualizados correctamente.')
+
+                user.save()
+
+                # Process and save the profile photo
+                if 'profile_photo' in request.FILES:
+                    # Don't save the form yet, we need to process the image first
+                    photo_instance = photo_form.save(commit=False)
+
+                    # Compress the image if needed
+                    photo_instance.profile_photo = compress_image(request.FILES['profile_photo'])
+
+                    # Now save the photo with the possibly compressed image
+                    photo_instance.save()
+                else:
+                    # No new photo uploaded, just save the form
+                    photo_form.save()
+
+                if profile.profile_photo:
+                    print(f"Profile photo saved: {profile.profile_photo.path}")
+                    print(f"Profile photo URL: {profile.profile_photo.url}")
+                    print(f"Profile photo dimensions: {Image.open(profile.profile_photo.path).size}")
+                else:
+                    print("No profile photo saved")
+
+                return redirect('usuarios:edit_profile')
     else:
         form = UserProfileForm(instance=request.user)
         photo_form = ProfilePhotoForm(instance=profile)

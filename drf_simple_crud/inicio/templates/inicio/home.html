@@ -7,17 +7,383 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1>{{ titulo }}</h1>
-    <p class="lead">{{ mensaje }}</p>
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Identificacion</th>
+                                <th>Fecha_Entrega</th>
+                                <th>Estado</th>
+                                <th></th> <!-- Columna para el botón de expandir -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Registros de exhibición -->
+                            <tr class="main-row">
+                                <td>001</td>
+                                <td>Juan Pérez</td>
+                                <td>12345678A</td>
+                                <td class="fecha-display">15/05/2023</td>
+                                <td class="estado-display"><span class="badge bg-success">Finalizado</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary toggle-row">
+                                        <i class="fas fa-chevron-down"></i> Expandir
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="expandable-row" style="display: none;">
+                                <td colspan="6">
+                                    <div class="p-3">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <h5>Descripción de Juan Pérez</h5>
+                                                <textarea class="form-control descripcion-persona" rows="3">Ingeniero de software con experiencia en desarrollo web. Especializado en frameworks JavaScript y Python.</textarea>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Fecha de Entrega:</label>
+                                                    <input type="date" class="form-control fecha-entrega" value="2023-05-15" data-id="001">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Estado:</label>
+                                                    <div class="estado-container">
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-001" id="solicitud-001" value="Solicitud" data-color="warning" data-display="Solicitud">
+                                                            <label class="form-check-label" for="solicitud-001">Solicitud</label>
+                                                        </div>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-001" id="proceso-001" value="En Proceso" data-color="info" data-display="En proceso">
+                                                            <label class="form-check-label" for="proceso-001">En Proceso</label>
+                                                        </div>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-001" id="finalizado-001" value="Finalizado" data-color="success" data-display="Finalizado" checked>
+                                                            <label class="form-check-label" for="finalizado-001">Finalizado</label>
+                                                        </div>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-001" id="olvidado-001" value="Olvidado" data-color="danger" data-display="Olvidado">
+                                                            <label class="form-check-label" for="olvidado-001">Olvidado</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
 
-    {% if user.is_authenticated %}
-        <div class="alert alert-success">
-            ¡Bienvenido, {{ user.first_name }}!
+                            <tr class="main-row">
+                                <td>002</td>
+                                <td>María González</td>
+                                <td>87654321B</td>
+                                <td class="fecha-display">20/06/2023</td>
+                                <td class="estado-display"><span class="badge bg-warning text-dark">Pendiente</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary toggle-row">
+                                        <i class="fas fa-chevron-down"></i> Expandir
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="expandable-row" style="display: none;">
+                                <td colspan="6">
+                                    <div class="p-3">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <h5>Descripción de María González</h5>
+                                                <textarea class="form-control descripcion-persona" rows="3">Diseñadora gráfica con habilidades en UX/UI. Experiencia en proyectos de diseño web y aplicaciones móviles.</textarea>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Fecha de Entrega:</label>
+                                                    <input type="date" class="form-control fecha-entrega" value="2023-06-20" data-id="002">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Estado:</label>
+                                                    <div class="estado-container">
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-002" id="solicitud-002" value="Solicitud" data-color="warning" data-display="Solicitud" checked>
+                                                            <label class="form-check-label" for="solicitud-002">Solicitud</label>
+                                                        </div>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-002" id="proceso-002" value="En Proceso" data-color="info" data-display="En proceso">
+                                                            <label class="form-check-label" for="proceso-002">En Proceso</label>
+                                                        </div>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-002" id="finalizado-002" value="Finalizado" data-color="success" data-display="Finalizado">
+                                                            <label class="form-check-label" for="finalizado-002">Finalizado</label>
+                                                        </div>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-002" id="olvidado-002" value="Olvidado" data-color="danger" data-display="Olvidado">
+                                                            <label class="form-check-label" for="olvidado-002">Olvidado</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="main-row">
+                                <td>003</td>
+                                <td>Carlos Rodríguez</td>
+                                <td>56781234C</td>
+                                <td class="fecha-display">10/07/2023</td>
+                                <td class="estado-display"><span class="badge bg-success">Finalizado</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary toggle-row">
+                                        <i class="fas fa-chevron-down"></i> Expandir
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="expandable-row" style="display: none;">
+                                <td colspan="6">
+                                    <div class="p-3">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <h5>Descripción de Carlos Rodríguez</h5>
+                                                <textarea class="form-control descripcion-persona" rows="3">Analista de datos con conocimientos en SQL, Python y herramientas de visualización. Experiencia en proyectos de business intelligence.</textarea>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Fecha de Entrega:</label>
+                                                    <input type="date" class="form-control fecha-entrega" value="2023-07-10" data-id="003">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Estado:</label>
+                                                    <div class="estado-container">
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-003" id="solicitud-003" value="Solicitud" data-color="warning" data-display="Solicitud">
+                                                            <label class="form-check-label" for="solicitud-003">Solicitud</label>
+                                                        </div>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-003" id="proceso-003" value="En Proceso" data-color="info" data-display="En proceso">
+                                                            <label class="form-check-label" for="proceso-003">En Proceso</label>
+                                                        </div>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-003" id="finalizado-003" value="Finalizado" data-color="success" data-display="Finalizado" checked>
+                                                            <label class="form-check-label" for="finalizado-003">Finalizado</label>
+                                                        </div>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-003" id="olvidado-003" value="Olvidado" data-color="danger" data-display="Olvidado">
+                                                            <label class="form-check-label" for="olvidado-003">Olvidado</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="main-row">
+                                <td>004</td>
+                                <td>Ana Martínez</td>
+                                <td>43218765D</td>
+                                <td class="fecha-display">05/08/2023</td>
+                                <td class="estado-display"><span class="badge bg-danger">Cancelado</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary toggle-row">
+                                        <i class="fas fa-chevron-down"></i> Expandir
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="expandable-row" style="display: none;">
+                                <td colspan="6">
+                                    <div class="p-3">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <h5>Descripción de Ana Martínez</h5>
+                                                <textarea class="form-control descripcion-persona" rows="3">Especialista en marketing digital con experiencia en SEO, SEM y redes sociales. Ha trabajado en campañas para empresas de diversos sectores.</textarea>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Fecha de Entrega:</label>
+                                                    <input type="date" class="form-control fecha-entrega" value="2023-08-05" data-id="004">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Estado:</label>
+                                                    <div class="estado-container">
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-004" id="solicitud-004" value="Solicitud" data-color="warning" data-display="Solicitud">
+                                                            <label class="form-check-label" for="solicitud-004">Solicitud</label>
+                                                        </div>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-004" id="proceso-004" value="En Proceso" data-color="info" data-display="En proceso">
+                                                            <label class="form-check-label" for="proceso-004">En Proceso</label>
+                                                        </div>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-004" id="finalizado-004" value="Finalizado" data-color="success" data-display="Finalizado">
+                                                            <label class="form-check-label" for="finalizado-004">Finalizado</label>
+                                                        </div>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-004" id="olvidado-004" value="Olvidado" data-color="danger" data-display="Olvidado" checked>
+                                                            <label class="form-check-label" for="olvidado-004">Olvidado</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="main-row">
+                                <td>005</td>
+                                <td>Luis Sánchez</td>
+                                <td>98765432E</td>
+                                <td class="fecha-display">30/09/2023</td>
+                                <td class="estado-display"><span class="badge bg-info text-dark">En proceso</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary toggle-row">
+                                        <i class="fas fa-chevron-down"></i> Expandir
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="expandable-row" style="display: none;">
+                                <td colspan="6">
+                                    <div class="p-3">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <h5>Descripción de Luis Sánchez</h5>
+                                                <textarea class="form-control descripcion-persona" rows="3">Desarrollador de aplicaciones móviles con experiencia en iOS y Android. Especializado en React Native y Flutter para desarrollo multiplataforma.</textarea>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Fecha de Entrega:</label>
+                                                    <input type="date" class="form-control fecha-entrega" value="2023-09-30" data-id="005">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Estado:</label>
+                                                    <div class="estado-container">
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-005" id="solicitud-005" value="Solicitud" data-color="warning" data-display="Solicitud">
+                                                            <label class="form-check-label" for="solicitud-005">Solicitud</label>
+                                                        </div>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-005" id="proceso-005" value="En Proceso" data-color="info" data-display="En proceso" checked>
+                                                            <label class="form-check-label" for="proceso-005">En Proceso</label>
+                                                        </div>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-005" id="finalizado-005" value="Finalizado" data-color="success" data-display="Finalizado">
+                                                            <label class="form-check-label" for="finalizado-005">Finalizado</label>
+                                                        </div>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input estado-radio" type="radio" name="estado-005" id="olvidado-005" value="Olvidado" data-color="danger" data-display="Olvidado">
+                                                            <label class="form-check-label" for="olvidado-005">Olvidado</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    {% else %}
-        <div class="alert alert-info">
-            Inicia sesión para acceder a todas las funciones
-        </div>
-    {% endif %}
+    </div>
 </div>
+
+<style>
+    .estado-container {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .form-check-inline {
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .expandable-row {
+        background-color: #f8f9fa;
+    }
+
+    .toggle-row:focus {
+        box-shadow: none;
+    }
+
+    .fecha-entrega {
+        min-width: 150px;
+    }
+</style>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<script>
+    $(document).ready(function() {
+        // Manejar la expansión/contracción de filas
+        $('.toggle-row').on('click', function() {
+            const $button = $(this);
+            const $mainRow = $button.closest('tr');
+            const $expandableRow = $mainRow.next('.expandable-row');
+
+            $expandableRow.toggle();
+
+            if ($expandableRow.is(':visible')) {
+                $button.html('<i class="fas fa-chevron-up"></i> Contraer');
+            } else {
+                $button.html('<i class="fas fa-chevron-down"></i> Expandir');
+            }
+        });
+
+        // Asegurar que solo un radio button esté seleccionado a la vez (por grupo)
+        $('.estado-radio').on('change', function() {
+            const name = $(this).attr('name');
+            $(`input[name="${name}"]`).not(this).prop('checked', false);
+
+            // Actualizar el estado mostrado en la fila principal
+            updateEstadoDisplay(this);
+        });
+
+        // Actualizar la fecha mostrada cuando cambia el input de fecha
+        $('.fecha-entrega').on('change', function() {
+            updateFechaDisplay(this);
+        });
+
+        // Función para actualizar el estado mostrado en la fila principal
+        function updateEstadoDisplay(radioButton) {
+            const $radio = $(radioButton);
+            const id = $radio.attr('name').split('-')[1];
+            const color = $radio.data('color');
+            const display = $radio.data('display');
+
+            // Encontrar la fila principal correspondiente
+            const $mainRow = $radio.closest('.expandable-row').prev('.main-row');
+            const $estadoCell = $mainRow.find('.estado-display');
+
+            // Actualizar el badge
+            $estadoCell.html(`<span class="badge bg-${color}${color === 'warning' || color === 'info' ? ' text-dark' : ''}">${display}</span>`);
+        }
+
+        // Función para actualizar la fecha mostrada en la fila principal
+        function updateFechaDisplay(dateInput) {
+            const $input = $(dateInput);
+            const dateValue = $input.val(); // Formato: YYYY-MM-DD
+
+            if (!dateValue) return;
+
+            // Convertir a formato DD/MM/YYYY
+            const dateParts = dateValue.split('-');
+            const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+
+            // Encontrar la fila principal correspondiente
+            const $mainRow = $input.closest('.expandable-row').prev('.main-row');
+            const $fechaCell = $mainRow.find('.fecha-display');
+
+            // Actualizar la fecha mostrada
+            $fechaCell.text(formattedDate);
+        }
+    });
+</script>
 {% endblock %}
