@@ -1,0 +1,194 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Contraseña</title>
+
+    <!-- CSS Base -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+
+    <!-- CSS de Componentes -->
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+
+    <!-- CSS de Layout -->
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+
+    <!-- CSS específico de la página (puedes crear uno si es necesario o reutilizar login.css si los estilos son muy similares) -->
+    <link rel="stylesheet" href="{% static 'css/auth/login.css' %}"> <!-- Reutilizando login.css por ahora -->
+
+    <style>
+        /* Estilos específicos para esta página (si son necesarios adicionales a login.css) */
+        .auth-box {
+            position: relative;
+            background-color: #17213c4f;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 420px; /* Ancho similar al de login */
+        }
+
+        .form-container {
+            background-color: #f9f9f900;
+            border-radius: 6px;
+            padding: 60px; /* Aumentado para dar más espacio interno */
+            margin-top: 40px; /* Espacio para la flecha, si la usas */
+        }
+
+        .auth-button-container {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 10;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e0e0e0; /* Color claro para el label, ajusta según tu tema */
+            font-size: 14px;
+        }
+
+        .form-group input[type="email"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+            margin-bottom: 20px; /* Espacio después del input */
+            background-color: white;
+        }
+
+        .form-group input[type="email"]:focus {
+            border-color: #4a90e2;
+            outline: none;
+        }
+
+        .submit-btn {
+            margin-top: 15px; /* Ajuste del margen superior del botón */
+            width: 100%; /* Hacer el botón de ancho completo */
+            padding: 12px;
+            font-size: 16px;
+        }
+
+        .message-area p {
+            text-align: center;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .message-area .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message-area .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .message-area .dev-code {
+            background-color: #e0e0e0;
+            color: #333;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .reset-links {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .reset-links a {
+            color: #b0c4de; /* Un color claro que combine */
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .reset-links a:hover {
+            text-decoration: underline;
+        }
+
+    </style>
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <!-- Contenedor principal -->
+        <div class="auth-box reset-password"> <!-- Clase específica si quieres diferenciarla -->
+            <!-- Botón de retroceso (opcional, puedes dirigirlo al login o a home) -->
+            <div class="auth-button-container">
+                <div class="styled-wrapper">
+                    <button class="button auth-back-button" onclick="window.location.href='{% url 'inicio:home' %}'"> <!-- Cambia 'logueo:login' por la URL de tu login -->
+                        <div class="button-box">
+                            <span class="button-elem">
+                                <svg viewBox="0 0 24 24" class="arrow-icon">
+                                    <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path>
+                                </svg>
+                            </span>
+                            <span class="button-elem">
+                                <svg viewBox="0 0 24 24" class="arrow-icon">
+                                    <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path>
+                                </svg>
+                            </span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Box interno para el formulario -->
+            <div class="form-container">
+                <h3 class="auth-title reset text-center" style="color: white; margin-bottom: 20px;">Recuperar Contraseña</h3>
+                <p class="text-center" style="color: #d3d3d3; font-size: 14px; margin-bottom: 25px;">Ingresa tu correo electrónico para enviarte un código de recuperación.</p>
+
+                <form method="post" class="auth-form reset-password" novalidate>
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="email">Correo electrónico:</label>
+                        <input type="email" name="email" id="email" required value="{{ request.POST.email|default:'' }}">
+                    </div>
+
+                    <button type="submit" class="submit-btn">Enviar Código</button>
+                </form>
+
+                <!-- Área para mostrar mensajes -->
+                <div class="message-area">
+                    {% if success_message %}
+                        <p class="success-message">{{ success_message }}</p>
+                        {% if reset_code_for_dev %} <!-- Solo para desarrollo -->
+                            <p class="dev-code">Código (dev): {{ reset_code_for_dev }}</p>
+                        {% endif %}
+                    {% endif %}
+                    {% if error_message %}
+                        <p class="error-message">{{ error_message }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="reset-links">
+                    <a href="{% url 'logueo:login' %}">Volver a Iniciar Sesión</a> <!-- Cambia 'logueo:login' por la URL de tu login -->
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- SweetAlert para mensajes (si lo usas también en esta página y pasas mensajes de Django) -->
+    {% comment %}
+    Si estás manejando los mensajes directamente en la plantilla como arriba (success_message, error_message),
+    quizás no necesites SweetAlert aquí a menos que también uses Django messages framework.
+    Si los usas, asegúrate de que tu vista `PasswordResetRequestPageView` los esté añadiendo.
+    {% endcomment %}
+    {% if messages %}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        {% for message in messages %}
+        Swal.fire({
+            title: '{{ message.tags|title }}',
+            text: '{{ message }}',
+            icon: '{{ message.tags }}', // Asegúrate que los tags sean 'success', 'error', 'warning', 'info'
+            confirmButtonText: 'OK'
+        });
+        {% endfor %}
+    </script>
+    {% endif %}
+</body>
+</html>
