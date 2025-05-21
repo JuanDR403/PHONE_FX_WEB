@@ -1,9 +1,8 @@
 from django.urls import path
-from .views import PasswordResetRequestView, PasswordResetVerifyView
-
-app_name = 'reset_password'
+from .views import PasswordResetRequestPageView # Asegúrate de importar la nueva vista
 
 urlpatterns = [
-    path('request/', PasswordResetRequestView.as_view(), name='password_reset_request'),
-    path('verify/', PasswordResetVerifyView.as_view(), name='password_reset_verify'),
+    # ... otras urls ...
+    path('password-reset-request/', PasswordResetRequestPageView.as_view(), name='password_reset_request_page'),
+    # ...
 ]
