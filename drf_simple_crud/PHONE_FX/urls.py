@@ -13,3 +13,7 @@ urlpatterns = [
     path('usuarios/', include('usuarios.urls')),
     path('', RedirectView.as_view(url='/login/'), name='root-redirect'),
 ]
+
+# Serve media files in development
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

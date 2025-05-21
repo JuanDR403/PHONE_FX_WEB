@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión</title>
 
+    <link rel="stylesheet" href="{% static 'logueo/css/checkbox_style.css' %}?v=3">
+
     <!-- CSS Base -->
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
 
@@ -60,7 +62,7 @@
         }
 
         .submit-btn {
-            margin-top: 15px;
+            margin-top: 8px;
         }
     </style>
 </head>
@@ -109,6 +111,14 @@
                         {% if form.password.errors %}
                             <div class="error-message">{{ form.password.errors.as_text }}</div>
                         {% endif %}
+                    </div>
+                    <!-- Checkbox "Mantener sesión iniciada" estilo Uiverse.io -->
+                    <div class="form-group remember-me" style="display: flex; align-items: center; margin: 10px 0 5px 0;">
+                        <label class="container" style="color: white; display: flex; align-items: center;">
+                            <input type="checkbox" name="remember_me" id="rememberCheckbox">
+                            <div class="checkmark"></div>
+                            <span style="margin-left: 8px;">Mantener sesión iniciada</span>
+                        </label>
                     </div>
 
                     <button type="submit" class="submit-btn">Ingresar</button>

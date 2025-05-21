@@ -1,17 +1,57 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ title }}{% endblock %}
 
+{% block extra_css %}
+<style>
+    .profile-photo-container {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        padding: 20px;
+        height: 100%;
+        margin-bottom: 20px;
+    }
+
+    .profile-photo {
+        width: 100%;
+        height: 210px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+
+    .profile-photo-placeholder {
+        width: 100%;
+        height: 210px;
+        background-color: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 15px;
+    }
+
+    .profile-photo-placeholder i {
+        font-size: 48px;
+        color: #adb5bd;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
-    <div class="row justify-content-center">
+    <div class="row">
+        <!-- Profile Form Column (Left) -->
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h3 class="mb-0">{{ title }}</h3>
                 </div>
                 <div class="card-body">
-                    <form method="post" id="profileForm">
+                    <form method="post" id="profileForm" enctype="multipart/form-data">
                         {% csrf_token %}
 
                         <!-- Username Field -->
@@ -38,12 +78,66 @@
                             {{ form.email }}
                         </div>
 
+                        <!-- Password Change Section -->
+                        <hr class="my-4">
+                        <h4 class="mb-3">Cambiar Contraseña</h4>
+                        <p class="text-muted mb-3">Deja estos campos en blanco si no deseas cambiar tu contraseña.</p>
+
+                        <!-- New Password Field -->
+                        <div class="mb-3">
+                            <label for="id_new_password" class="form-label">Nueva Contraseña</label>
+                            {{ form.new_password }}
+                            {% if form.new_password.help_text %}
+                                <small class="form-text text-muted">{{ form.new_password.help_text }}</small>
+                            {% endif %}
+                            {% if form.new_password.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.new_password.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Confirm Password Field -->
+                        <div class="mb-3">
+                            <label for="id_confirm_password" class="form-label">Confirmar Nueva Contraseña</label>
+                            {{ form.confirm_password }}
+                            {% if form.confirm_password.help_text %}
+                                <small class="form-text text-muted">{{ form.confirm_password.help_text }}</small>
+                            {% endif %}
+                            {% if form.confirm_password.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.confirm_password.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-primary">Guardar cambios</button>
                             <a href="{% url 'inicio:home' %}" class="btn btn-secondary">Cancelar</a>
                         </div>
                     </form>
                 </div>
+            </div>
+        </div>
+
+        <!-- Profile Photo Column (Right) -->
+        <div class="col-md-4">
+            <div class="profile-photo-container">
+                <h5 class="text-center mb-3">Foto de Perfil</h5>
+                {% if profile.profile_photo %}
+                    <img src="{{ profile.profile_photo.url }}" alt="Foto de perfil" class="profile-photo" id="profilePhotoPreview">
+                {% else %}
+                    <div class="profile-photo-placeholder" id="profilePhotoPlaceholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                {% endif %}
+                <form method="post" enctype="multipart/form-data" id="photoForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ photo_form.profile_photo }}
+                        <small class="form-text text-muted">Selecciona una imagen para tu perfil</small>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -68,6 +162,77 @@ document.addEventListener('DOMContentLoaded', function() {
         {% endfor %}
     {% endif %}
 
+    // Manejar la vista previa de la foto de perfil
+    const photoInput = document.getElementById('id_profile_photo');
+    const photoPreview = document.getElementById('profilePhotoPreview');
+    const photoPlaceholder = document.getElementById('profilePhotoPlaceholder');
+    const photoForm = document.getElementById('photoForm');
+
+    if (photoInput) {
+        photoInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    // Si ya existe una imagen, actualizar su src
+                    if (photoPreview) {
+                        photoPreview.src = e.target.result;
+                    } 
+                    // Si no existe, crear una nueva imagen y reemplazar el placeholder
+                    else if (photoPlaceholder) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = 'Foto de perfil';
+                        img.className = 'profile-photo';
+                        img.id = 'profilePhotoPreview';
+                        photoPlaceholder.parentNode.replaceChild(img, photoPlaceholder);
+                    }
+
+                    // Mostrar mensaje de carga
+                    Swal.fire({
+                        title: 'Subiendo foto...',
+                        text: 'Tu foto se está subiendo',
+                        icon: 'info',
+                        showConfirmButton: false,
+                        allowOutsideClick: false
+                    });
+
+                    // Enviar el formulario automáticamente
+                    const formData = new FormData(photoForm);
+                    fetch(window.location.href, {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'same-origin'
+                    })
+                    .then(response => response.text())
+                    .then(html => {
+                        Swal.fire({
+                            title: 'Foto actualizada',
+                            text: 'Tu foto de perfil ha sido actualizada correctamente',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            // Recargar la página para mostrar la foto actualizada
+                            window.location.reload();
+                        });
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Hubo un problema al subir la foto',
+                            icon: 'error',
+                            confirmButtonText: 'Entendido'
+                        });
+                        console.error('Error:', error);
+                    });
+                };
+
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    }
+
     // Validación en tiempo real con SweetAlert
     const profileForm = document.getElementById('profileForm');
 
@@ -75,6 +240,8 @@ document.addEventListener('DOMContentLoaded', function() {
     profileForm.addEventListener('submit', function(e) {
         const username = document.getElementById('id_username').value.trim();
         const email = document.getElementById('id_email').value.trim();
+        const newPassword = document.getElementById('id_new_password').value;
+        const confirmPassword = document.getElementById('id_confirm_password').value;
         const currentUsername = '{{ request.user.username }}';
         const currentEmail = '{{ request.user.email }}';
         let errorMessage = '';
@@ -90,6 +257,25 @@ document.addEventListener('DOMContentLoaded', function() {
         if(email !== currentEmail) {
             if(!email.includes('@') || !email.includes('.')) {
                 errorMessage += 'Por favor ingresa un correo electrónico válido<br>';
+            }
+        }
+
+        // Validación de contraseña
+        if(newPassword || confirmPassword) {
+            // Si uno está lleno, el otro también debe estarlo
+            if(!newPassword) {
+                errorMessage += 'Por favor ingresa tu nueva contraseña<br>';
+            }
+            if(!confirmPassword) {
+                errorMessage += 'Por favor confirma tu nueva contraseña<br>';
+            }
+            // Si ambos están llenos, deben coincidir
+            if(newPassword && confirmPassword && newPassword !== confirmPassword) {
+                errorMessage += 'Las contraseñas no coinciden<br>';
+            }
+            // Validación básica de fortaleza de contraseña
+            if(newPassword && newPassword.length < 8) {
+                errorMessage += 'La contraseña debe tener al menos 8 caracteres<br>';
             }
         }
 

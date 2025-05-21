@@ -15,6 +15,13 @@ def login_view(request):
             try:
                 user = form.get_user()
                 login(request, user)
+                # Configuración de la duración de la sesión
+                remember_me = request.POST.get(
+                    'remember_me') == 'on'  # 'on' es el valor cuando el checkbox está marcado
+                if not remember_me:
+                    # Sesión expira al cerrar el navegador
+                    request.session.set_expiry(0)
+
                 # Usar el nombre de usuario si está disponible, de lo contrario usar el email
                 display_name = user.username if user.username else user.email
                 messages.success(request, f'¡Bienvenido {display_name}!')

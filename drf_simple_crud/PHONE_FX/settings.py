@@ -119,8 +119,13 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),  # Para archivos estáticos globales
-    os.path.join(BASE_DIR, 'tu_app/static'),  # Para archivos estáticos de tu aplicación
+    # Incluir directorios de aplicaciones específicas
+    os.path.join(BASE_DIR, 'logueo/static'),  # Para archivos estáticos de logueo
 ]
+
+# Media files (User uploaded files)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -141,5 +146,3 @@ PASSWORD_RESET = {
     'EMAIL_FROM': 'no-reply@phonefx.com',
     'MAX_ATTEMPTS': 3,
 }
-
-
