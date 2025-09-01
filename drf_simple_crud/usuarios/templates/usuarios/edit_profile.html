@@ -65,28 +65,24 @@
                     <form method="post" id="profileForm" enctype="multipart/form-data">
                         {% csrf_token %}
 
-                        <!-- Username Field -->
-                        <div class="mb-3">
-                            <label for="id_username" class="form-label">Nombre de usuario</label>
-                            {{ form.username }}
-                        </div>
+
 
                         <!-- First Name Field -->
                         <div class="mb-3">
                             <label for="id_first_name" class="form-label">Nombre</label>
-                            {{ form.first_name }}
+                            {{ form.nombre }}
                         </div>
 
                         <!-- Last Name Field -->
                         <div class="mb-3">
                             <label for="id_last_name" class="form-label">Apellido</label>
-                            {{ form.last_name }}
+                            {{ form.apellido }}
                         </div>
 
                         <!-- Email Field -->
                         <div class="mb-3">
                             <label for="id_email" class="form-label">Correo electrónico</label>
-                            {{ form.email }}
+                            {{ form.correo }}
                         </div>
 
                         <!-- Password Change Section -->
@@ -136,7 +132,7 @@
         <h5 class="text-center mb-3">Foto de Perfil</h5>
         {% if profile.get_profile_photo_url %}
             <div class="profile-photo-circle">
-                <img src="{{ profile.get_profile_photo_url }}" alt="Foto de perfil" class="profile-photo-img" id="profilePhotoPreview">
+            <img src="{{ MEDIA_URL }}{{ user.perfil_usuarios.foto_perfil }}" alt="Foto de perfil" class="profile-photo-img" id="profilePhotoPreview">
             </div>
         {% else %}
             <div class="profile-photo-circle profile-photo-placeholder" id="profilePhotoPlaceholder">
@@ -230,7 +226,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Si ya existe una imagen, actualizar su src
                         if (photoPreview) {
                             photoPreview.src = resizedImageUrl;
-                        } 
+                        }
                         // Si no existe, crear una nueva imagen y reemplazar el placeholder
                         else if (photoPlaceholder) {
                             const img = document.createElement('img');

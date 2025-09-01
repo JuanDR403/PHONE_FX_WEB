@@ -20,6 +20,11 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'pedidos.apps.PedidosConfig',
+    'citas.apps.CitasConfig',
+    'productos.apps.ProductosConfig',
+    'dispositivos.apps.DispositivosConfig',
+    'carrito.apps.CarritoConfig',
     'PHONE_FX',
     'registro',
     'logueo.apps.LogueoConfig',
@@ -71,8 +76,18 @@ WSGI_APPLICATION = 'PHONE_FX.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'phonefx',
+        'USER': 'root',
+        'PASSWORD': 'root',
+        'HOST': 'localhost',
+        'PORT': '3306',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
+        'TEST': {
+            'NAME': 'test_phonefx',
+        }
     }
 }
 
