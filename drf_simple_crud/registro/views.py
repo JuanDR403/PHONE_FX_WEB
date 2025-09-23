@@ -7,8 +7,16 @@ def registro(request):
     if request.method == 'POST':
         form = RegistroUsuariosForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            # No longer logging in the user automatically
+            user = form.save(commit=False)  # Evita guardar inmediatamente
+
+            # Asignar nombre y apellido al modelo User
+            user.first_name = request.POST.get('nombre', '')
+            user.last_name = request.POST.get('apellido', '')
+            user.save()
+
+            # Si también estás creando el modelo Usuarios aquí, lo puedes hacer ahora
+            # Usuarios.objects.create(user=user, ...)
+
             return redirect('logueo:login')  # Redirige a la página de login
     else:
         form = RegistroUsuariosForm()

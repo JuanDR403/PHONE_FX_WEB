@@ -63,7 +63,12 @@ class RegistroUsuariosForm(forms.ModelForm):
         # Crear el usuario base de Django
         correo = self.cleaned_data['correo']
         password = self.cleaned_data['password']
-        user_base = User.objects.create(username=correo, email=correo)
+        user_base = User.objects.create(
+            username=correo,
+            email=correo,
+            first_name=self.cleaned_data['nombre'],
+            last_name=self.cleaned_data['apellido']
+        )
         user_base.set_password(password)
         user_base.save()
 
@@ -77,4 +82,5 @@ class RegistroUsuariosForm(forms.ModelForm):
         if commit:
             usuario.save()
         return usuario
+
 

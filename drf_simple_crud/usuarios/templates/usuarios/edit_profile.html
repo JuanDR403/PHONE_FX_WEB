@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load widget_tweaks %}
 
 {% block title %}{{ title }}{% endblock %}
 
@@ -141,10 +142,14 @@
         {% endif %}
         <form method="post" enctype="multipart/form-data" id="photoForm" class="mt-3">
             {% csrf_token %}
-            <div class="mb-3">
-                {{ photo_form.profile_photo }}
-                <small class="form-text text-muted">Selecciona una imagen para tu perfil</small>
-            </div>
+            <div class="mb-3 text-center">
+    {% render_field photo_form.profile_photo id="id_profile_photo" style="display:none;" %}
+    <small class="form-text text-muted d-block mb-2">Selecciona una imagen para tu perfil</small>
+    <button type="button" class="btn btn-outline-primary" id="choosePhotoBtn">
+        <i class="fas fa-upload"></i> Subir foto
+    </button>
+</div>
+
             <input type="hidden" name="photo_form_submitted" value="1">
         </form>
     </div>

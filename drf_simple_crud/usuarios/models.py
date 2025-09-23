@@ -22,12 +22,12 @@ class Usuarios(models.Model):
     contrasena = models.CharField(max_length=255, blank=True, null=True)
     telefono = models.CharField(max_length=20, blank=True, null=True)
     direccion = models.CharField(max_length=200, blank=True, null=True)
-
-    profile_photo = models.ImageField(
-        upload_to='profile_photos/',
+    foto_perfil = models.ImageField(  # 👈 Este es el campo correcto
+        upload_to='perfiles/',         # Se guardará en media/perfiles/
         blank=True,
         null=True,
-        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png'])]
+        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png'])],
+        db_column='foto_perfil'        # 👈 Asegura que Django use el nombre correcto en MySQL
     )
 
     id_rol = models.ForeignKey(
@@ -39,7 +39,7 @@ class Usuarios(models.Model):
     )
 
     def __str__(self):
-        return f"{self.nombre} {self.apellido}" if self.nombre else f"Usuario {self.iduser}"
+        return f"{self.nombre} {self.apellido}" if self.nombre else f"Usuario {self.user.username}"
 
     class Meta:
         db_table = 'usuarios'

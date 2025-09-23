@@ -11,6 +11,7 @@ urlpatterns = [
     path('login/', include('logueo.urls')),
     path('password-reset/', include('reset_password.urls')),
     path('usuarios/', include('usuarios.urls')),
+    path('tienda/', include('tienda.urls')),
     path('', RedirectView.as_view(url='/login/'), name='root-redirect'),
 ]
 
