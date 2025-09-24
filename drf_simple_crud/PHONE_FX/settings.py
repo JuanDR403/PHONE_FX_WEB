@@ -20,6 +20,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'tienda.apps.TiendaConfig',
     'widget_tweaks',
     'pedidos.apps.PedidosConfig',
     'citas.apps.CitasConfig',

@@ -15,11 +15,18 @@ def edit_profile(request):
         return redirect('inicio:home')
 
     if request.method == 'POST':
+        # Si solo se envió la foto desde el botón de "Subir foto"
+        if request.POST.get('photo_form_submitted') == '1' and 'foto_perfil' in request.FILES:
+            usuario.foto_perfil = request.FILES['foto_perfil']
+            usuario.save()
+            messages.success(request, 'Tu foto de perfil ha sido actualizada correctamente.')
+            return redirect('usuarios:edit_profile')
+
         form = UserProfileForm(request.POST, request.FILES, instance=usuario)
 
         # Validación de correo duplicado
         correo = request.POST.get('correo')
-        if Usuarios.objects.filter(correo=correo).exclude(pk=usuario.pk).exists():
+        if correo and Usuarios.objects.filter(correo=correo).exclude(pk=usuario.pk).exists():
             messages.error(request, 'Este correo electrónico ya está registrado.')
             return render(request, 'usuarios/edit_profile.html', {
                 'form': form,

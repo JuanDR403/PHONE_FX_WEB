@@ -23,7 +23,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'inicio:home' %}">Inicio</a>
                     </li>
-                    <!-- Agrega más elementos del navbar aquí -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'tienda:lista_productos' %}">Tienda</a>
+                    </li>
                 </ul>
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}

@@ -6,16 +6,16 @@ from productos.models import Producto
 class Carrito(models.Model):
     idcarrito = models.AutoField(db_column='idCarrito', primary_key=True)
 
-    cliente = models.ForeignKey(
+    cliente = models.OneToOneField(  # cada cliente tiene un solo carrito
         Usuarios,
-        on_delete=models.SET_NULL,
-        null=True,
+        on_delete=models.CASCADE,
         db_column='id_cliente',
-        related_name='carritos'
+        related_name='carrito',
+        null = True,
+        blank = True
     )
 
     fecha_creacion = models.CharField(max_length=45, blank=True, null=True)
-    estado = models.CharField(max_length=9, blank=True, null=True)
 
     def __str__(self):
         return f"Carrito #{self.idcarrito} - {self.cliente.nombre if self.cliente else 'Sin cliente'}"
@@ -42,7 +42,6 @@ class CarritoDetalle(models.Model):
     )
 
     cantidad = models.IntegerField()
-    subtotal = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
         return f"{self.cantidad} x {self.producto.nombre if self.producto else 'Producto eliminado'}"
