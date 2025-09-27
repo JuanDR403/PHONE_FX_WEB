@@ -18,7 +18,7 @@ class ProductoForm(forms.ModelForm):
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control'}),
             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'precio': forms.TextInput(attrs={'class': 'form-control'}),
+            'precio': forms.TextInput(attrs={'class': 'form-control precio-cop','inputmode':'numeric','autocomplete':'off'}),
             'stock': forms.NumberInput(attrs={'class': 'form-control'}),
             'categoria': forms.Select(attrs={'class': 'form-select'}),
         }

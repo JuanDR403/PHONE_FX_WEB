@@ -10,12 +10,11 @@ class Carrito(models.Model):
         Usuarios,
         on_delete=models.CASCADE,
         db_column='id_cliente',
-        related_name='carrito',
-        null = True,
-        blank = True
+        related_name='carrito'
     )
 
-    fecha_creacion = models.CharField(max_length=45, blank=True, null=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
 
     def __str__(self):
         return f"Carrito #{self.idcarrito} - {self.cliente.nombre if self.cliente else 'Sin cliente'}"

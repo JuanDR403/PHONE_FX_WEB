@@ -61,6 +61,33 @@
         </form>
       </div>
     </div>
-  </div>
 </div>
+</div>
+
+<script>
+  (function(){
+    function formatCOP(val){
+      if(!val) return '';
+      const digits = val.replace(/\D+/g,'');
+      if(!digits) return '';
+      return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+    function attach(el){
+      if(!el) return;
+      el.value = formatCOP(el.value);
+      el.addEventListener('input', function(){
+        const before = el.value;
+        const formatted = formatCOP(before);
+        el.value = formatted;
+        try { el.setSelectionRange(el.value.length, el.value.length); } catch(_){ }
+      });
+      el.addEventListener('blur', function(){ el.value = formatCOP(el.value); });
+      el.setAttribute('placeholder', '0');
+    }
+    document.addEventListener('DOMContentLoaded', function(){
+      var inputs = document.querySelectorAll('input.precio-cop');
+      if(inputs && inputs.length){ inputs.forEach(attach); }
+    });
+  })();
+</script>
 {% endblock %}
