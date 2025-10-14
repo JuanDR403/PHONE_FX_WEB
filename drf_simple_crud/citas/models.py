@@ -33,7 +33,14 @@ class Cita(models.Model):
     fecha_cita = models.CharField(max_length=50)
     hora_cita = models.CharField(max_length=45)
     tipo_servicio = models.CharField(max_length=10)
-    estado = models.CharField(max_length=10)
+    ESTADOS = [
+        ('pendiente', 'Solicitud'),
+        ('en proceso', 'En Proceso'),
+        ('finalizado', 'Finalizado'),
+        ('olvidado', 'Olvidado'),
+    ]
+
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='pendiente')
     observaciones = models.TextField(blank=True, null=True)
 
     def __str__(self):
@@ -41,3 +48,51 @@ class Cita(models.Model):
 
     class Meta:
         db_table = 'cita'
+
+
+class HistorialCita(models.Model):
+    ESTADOS = [
+        ('Solicitud', 'Solicitud'),
+        ('En Proceso', 'En Proceso'),
+        ('Finalizado', 'Finalizado'),
+        ('Olvidado', 'Olvidado'),
+    ]
+
+    idhistorial = models.AutoField(db_column='idHistorial', primary_key=True)
+
+    cita = models.ForeignKey(
+        Cita,
+        on_delete=models.CASCADE,
+        db_column='idCita',
+        related_name='historiales'
+    )
+
+    estado_anterior = models.CharField(
+        max_length=20,
+        choices=ESTADOS,
+        db_column='estado_anterior'
+    )
+
+    estado_nuevo = models.CharField(
+        max_length=20,
+        choices=ESTADOS,
+        db_column='estado_nuevo'
+    )
+
+    fecha_cambio = models.DateTimeField(
+        auto_now_add=True,
+        db_column='fecha_cambio'
+    )
+
+    observaciones = models.TextField(
+        blank=True,
+        null=True,
+        db_column='observaciones'
+    )
+
+    def __str__(self):
+        return f"Historial #{self.idhistorial} - Cita {self.cita.idcita} ({self.estado_anterior} → {self.estado_nuevo})"
+
+    class Meta:
+        managed = False
+        db_table = 'historial_cita'
