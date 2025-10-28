@@ -81,7 +81,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'phonefx',
         'USER': 'root',
-        'PASSWORD': 'root',
+        'PASSWORD': '1234',
         'HOST': 'localhost',
         'PORT': '3306',
         'OPTIONS': {
@@ -163,3 +163,9 @@ PASSWORD_RESET = {
     'EMAIL_FROM': 'no-reply@phonefx.com',
     'MAX_ATTEMPTS': 3,
 }
+
+# Mercado Pago configuration (use environment variables in production)
+MERCADOPAGO_PUBLIC_KEY = os.getenv('MP_PUBLIC_KEY', 'APP_USR-d1cd9d63-d9c2-4fd5-ae85-48656387d9ba')
+MERCADOPAGO_ACCESS_TOKEN = os.getenv('MP_ACCESS_TOKEN', 'APP_USR-943421116512765-102618-85e7cc1beead33cda7ab525fab33040c-1603390398')
+# In development you can use ngrok to expose your local server and set MP_WEBHOOK_URL to the public URL
+MERCADOPAGO_WEBHOOK_URL = os.getenv('MP_WEBHOOK_URL', '')

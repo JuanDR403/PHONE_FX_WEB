@@ -7,8 +7,17 @@ from productos.models import Producto, Categoria
 from .forms import ProductoForm
 
 # Vista de la tienda: lista de productos con filtro por categoría
+def tiene_permiso(request, roles_permitidos):
+    if not request.user.is_authenticated:
+        return False
+    perfil = getattr(request.user, 'perfil_usuarios', None)
+    if perfil and perfil.id_rol and perfil.id_rol.nombre.lower() in [r.lower() for r in roles_permitidos]:
+        return True
+    return False
 
 def lista_productos(request):
+    rol = request.user.perfil_usuarios.id_rol.nombre if hasattr(request.user, 'perfil_usuarios') else ''
+
     categoria_id = request.GET.get('categoria')
 
     categorias = Categoria.objects.all()
@@ -25,11 +34,15 @@ def lista_productos(request):
         'categorias': categorias,
         'productos': productos,
         'categoria_seleccionada': int(categoria_id) if categoria_id and categoria_id.isdigit() else None,
+        'rol': rol,
     }
     return render(request, 'tienda/lista_productos.html', context)
 
 
 def crear_producto(request):
+    if not tiene_permiso(request, ['Admin', 'asesor']):
+        return redirect('tienda:lista_productos')
+
     if request.method == 'POST':
         form = ProductoForm(request.POST, request.FILES)
         if form.is_valid():
@@ -47,6 +60,9 @@ def crear_producto(request):
 
 
 def editar_producto(request, idproducto):
+    if not tiene_permiso(request, ['Admin', 'asesor']):
+        return redirect('tienda:lista_productos')
+
     producto = get_object_or_404(Producto, pk=idproducto)
     if request.method == 'POST':
         form = ProductoForm(request.POST, request.FILES, instance=producto)
@@ -66,6 +82,9 @@ def editar_producto(request, idproducto):
 
 @require_POST
 def eliminar_producto(request, idproducto):
+    if not tiene_permiso(request, ['Admin', 'asesor']):
+        return redirect('tienda:lista_productos')
+
     producto = get_object_or_404(Producto, pk=idproducto)
     producto.delete()
     return redirect(reverse('tienda:lista_productos'))

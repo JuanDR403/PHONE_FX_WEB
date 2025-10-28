@@ -8,8 +8,19 @@ import json
 
 from citas.models import Cita, HistorialCita
 
+def tiene_permiso(request, roles_permitidos):
+    if not request.user.is_authenticated:
+        return False
+    perfil = getattr(request.user, 'perfil_usuarios', None)
+    if perfil and perfil.id_rol and perfil.id_rol.nombre in roles_permitidos:
+        return True
+    return False
+
+
 @csrf_exempt
 def actualizar_observacion(request, id):
+    if not tiene_permiso(request, ['Admin', 'cliente']):
+        return JsonResponse({'success': False, 'error': 'Sin permiso'}, status=403)
     if request.method == 'POST':
         data = json.loads(request.body)
         nueva_obs = data.get('observaciones', '').strip()
@@ -24,16 +35,27 @@ def actualizar_observacion(request, id):
 
 @login_required  # Elimina este decorador si quieres acceso público
 def home(request):
-    citas = (
+    rol = request.user.perfil_usuarios.id_rol.nombre if hasattr(request.user, 'perfil_usuarios') else ''
+
+    # Base queryset con relaciones necesarias
+    qs = (
         Cita.objects.select_related('cliente', 'asesor', 'dispositivo')
         .prefetch_related('historiales')
-        .all()
-        .order_by('-idcita')
     )
+
+    # Si el usuario es cliente, solo ve sus propias citas; Admin y asesor ven todas
+    if rol == 'cliente' and hasattr(request.user, 'perfil_usuarios'):
+        qs = qs.filter(cliente=request.user.perfil_usuarios)
+    else:
+        qs = qs.all()
+
+    citas = qs.order_by('-idcita')
+
     context = {
         'titulo': 'Página de Inicio',
         'mensaje': 'Hola, Bienvenido a PhoneFX',
         'citas': citas,
+        'rol': rol,
     }
     return render(request, 'inicio/home.html', context)
 
@@ -42,6 +64,8 @@ def home(request):
 @require_POST
 @transaction.atomic
 def actualizar_estado_cita(request):
+    if not tiene_permiso(request, ['Admin', 'asesor']):
+        return JsonResponse({'ok': False, 'error': 'Sin permiso'}, status=403)
     try:
         cita_id = int(request.POST.get('cita_id'))
         nuevo_estado = request.POST.get('estado')

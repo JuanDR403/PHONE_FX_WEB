@@ -9,4 +9,9 @@ urlpatterns = [
     path('eliminar/', views.eliminar_del_carrito, name='eliminar_del_carrito'),
     path('incrementar/', views.incrementar_cantidad, name='incrementar_cantidad'),
     path('decrementar/', views.decrementar_cantidad, name='decrementar_cantidad'),
+
+    # Mercado Pago endpoints
+    path('pagos/mercadopago/preference/', views.mp_create_preference, name='mp_create_preference'),
+    path('pagos/mercadopago/webhook/', views.mp_webhook, name='mp_webhook'),
+    path('pagos/mercadopago/retorno/', views.mp_return, name='mp_return'),
 ]

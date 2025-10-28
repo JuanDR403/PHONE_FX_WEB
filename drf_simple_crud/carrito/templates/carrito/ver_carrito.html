@@ -72,5 +72,83 @@
       Tu carrito está vacío. Visita la <a href="{% url 'tienda:lista_productos' %}">tienda</a> para agregar productos.
     </div>
   {% endif %}
+
+  {% if items and tiene_perfil %}
+  <div class="mt-3 d-flex justify-content-end">
+    <div class="text-end">
+      <!-- Botón de pago con Mercado Pago -->
+      <div id="mp-checkout-container"></div>
+      <button id="mp-pay-btn" class="btn btn-primary mt-2">
+        Pagar $ {{ subtotal_str }} con Mercado Pago
+      </button>
+      <div class="form-text">Serás redirigido a Mercado Pago para completar el pago.</div>
+    </div>
+  </div>
+  {% endif %}
 </div>
+
+{% if items and tiene_perfil %}
+<!-- SDK de Mercado Pago -->
+<script src="https://sdk.mercadopago.com/js/v2"></script>
+<script>
+(function(){
+  const payBtn = document.getElementById('mp-pay-btn');
+  if(!payBtn) return;
+
+  function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
+      }
+      return cookieValue;
+  }
+
+  const csrftoken = getCookie('csrftoken');
+
+  async function createPreference(){
+    const res = await fetch("{% url 'carrito:mp_create_preference' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken,
+      },
+      body: JSON.stringify({})
+    });
+    if(!res.ok) {
+      const t = await res.text();
+      throw new Error('No se pudo iniciar el pago: ' + t);
+    }
+    return res.json();
+  }
+
+  payBtn.addEventListener('click', async function(){
+    payBtn.disabled = true;
+    payBtn.textContent = 'Redirigiendo a Mercado Pago...';
+    try {
+      const data = await createPreference();
+      const publicKey = data.public_key || "{{ mp_public_key }}";
+      const mp = new MercadoPago(publicKey, { locale: 'es-CO' });
+      mp.checkout({
+        preference: { id: data.preference_id },
+        render: {
+          container: '#mp-checkout-container',
+          label: 'Pagar con Mercado Pago'
+        }
+      });
+    } catch (e) {
+      alert(e.message || 'Error iniciando el pago');
+      payBtn.disabled = false;
+      payBtn.textContent = 'Pagar $ {{ subtotal_str }} con Mercado Pago';
+    }
+  });
+})();
+</script>
+{% endif %}
 {% endblock %}

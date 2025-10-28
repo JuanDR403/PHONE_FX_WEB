@@ -2,14 +2,133 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, JsonResponse, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+
+import mercadopago
 
 from .models import Carrito, CarritoDetalle
 from usuarios.models import Usuarios
 from productos.models import Producto
+
+
+# Mercado Pago: SDK client helper
+
+def mp_client():
+    return mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
+
+
+@require_POST
+@login_required
+def mp_create_preference(request):
+    # Map auth user to profile
+    try:
+        perfil = Usuarios.objects.get(user=request.user)
+    except Usuarios.DoesNotExist:
+        return JsonResponse({"error": "Perfil de usuario no encontrado"}, status=400)
+
+    carrito, _ = Carrito.objects.get_or_create(cliente=perfil)
+
+    # Build items from cart details
+    detalles = (
+        CarritoDetalle.objects
+        .select_related('producto')
+        .filter(carrito=carrito)
+    )
+
+    items = []
+    currency = 'COP'
+    subtotal = Decimal('0')
+    for d in detalles:
+        if not d.producto:
+            continue
+        title = d.producto.nombre or f"Producto {d.producto_id}"
+        unit_price = _to_decimal(d.producto.precio)
+        quantity = int(d.cantidad or 0)
+        if quantity <= 0:
+            continue
+        subtotal += unit_price * quantity
+        items.append({
+            "id": str(d.producto_id),
+            "title": title,
+            "quantity": quantity,
+            "currency_id": currency,
+            "unit_price": float(unit_price),
+        })
+
+    if not items:
+        return JsonResponse({"error": "El carrito está vacío"}, status=400)
+
+    # back URLs and webhook
+    success_url = request.build_absolute_uri(reverse('carrito:mp_return') + '?status=success')
+    failure_url = request.build_absolute_uri(reverse('carrito:mp_return') + '?status=failure')
+    pending_url = request.build_absolute_uri(reverse('carrito:mp_return') + '?status=pending')
+
+    notification_url = settings.MERCADOPAGO_WEBHOOK_URL or request.build_absolute_uri(reverse('carrito:mp_webhook'))
+
+    preference_data = {
+        "items": items,
+        "back_urls": {
+            "success": success_url,
+            "failure": failure_url,
+            "pending": pending_url,
+        },
+        # "notification_url": notification_url,  # deshabilitado en desarrollo local
+        "external_reference": f"CART-{carrito.idcarrito}",
+        # Uncomment to tweak methods; by default all available methods are shown
+        # "payment_methods": {
+        #     "installments": 12,
+        # }
+    }
+
+    sdk = mp_client()
+    try:
+        result = sdk.preference().create(preference_data)
+    except Exception as e:
+        return JsonResponse({"error": "Error al crear preferencia", "detail": str(e)}, status=500)
+
+    if result.get("status") not in (200, 201):
+        return JsonResponse({"error": "No se pudo crear la preferencia", "detail": result}, status=400)
+
+    pref = result["response"]
+    return JsonResponse({
+        "preference_id": pref.get("id"),
+        "init_point": pref.get("init_point"),
+        "sandbox_init_point": pref.get("sandbox_init_point"),
+        "public_key": settings.MERCADOPAGO_PUBLIC_KEY,
+    })
+
+
+@csrf_exempt
+def mp_webhook(request):
+    # Acknowledge quickly
+    type_ = request.GET.get("type") or request.POST.get("type")
+    payment_id = request.GET.get("data.id") or request.POST.get("data.id")
+    # Minimal validation
+    if type_ == 'payment' and payment_id:
+        # Optionally, retrieve payment to verify
+        try:
+            payment = mp_client().payment().get(payment_id)
+            # You could update your order status based on payment['response']['status']
+        except Exception:
+            pass
+    return HttpResponse("OK", status=200)
+
+
+def mp_return(request):
+    status = request.GET.get('status')
+    if status == 'success':
+        messages.success(request, 'Pago aprobado en Mercado Pago. ¡Gracias!')
+    elif status == 'pending':
+        messages.info(request, 'Pago pendiente. Te notificaremos cuando se acredite.')
+    else:
+        messages.error(request, 'El pago no pudo completarse o fue cancelado.')
+    return redirect('carrito:ver_carrito')
 
 
 def _to_decimal(value):
@@ -116,6 +235,7 @@ def ver_carrito(request):
         'subtotal': subtotal,
         'subtotal_str': _format_cop_no_cents(subtotal),
         'tiene_perfil': perfil is not None,
+        'mp_public_key': settings.MERCADOPAGO_PUBLIC_KEY,
     }
     return render(request, 'carrito/ver_carrito.html', context)
 

@@ -1,4 +1,6 @@
 from django import forms
+from django.template.defaultfilters import first
+
 from usuarios.models import Usuarios, Rol
 from django.contrib.auth.models import User
 import re
@@ -64,7 +66,7 @@ class RegistroUsuariosForm(forms.ModelForm):
         correo = self.cleaned_data['correo']
         password = self.cleaned_data['password']
         user_base = User.objects.create(
-            username=correo,
+            username=usuario.nombre,
             email=correo,
             first_name=self.cleaned_data['nombre'],
             last_name=self.cleaned_data['apellido']

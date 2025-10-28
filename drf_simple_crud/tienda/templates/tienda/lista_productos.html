@@ -52,7 +52,9 @@
             {% endfor %}
           </select>
         </form>
+      {% if rol|lower == "admin" or rol|lower == "asesor" %}
         <a href="{% url 'tienda:crear_producto' %}" class="btn btn-success">Agregar producto</a>
+      {% endif %}
       </div>
     </div>
   </div>
@@ -102,6 +104,8 @@
                       {% endif %}
 
                       <!-- Acciones de compra -->
+                    {% if rol|lower == "admin" or rol|lower == "cliente" %}
+
                       <div class="d-flex flex-wrap gap-2 mt-3">
                         <form method="post" action="{% url 'carrito:agregar_al_carrito' %}">
                           {% csrf_token %}
@@ -115,7 +119,8 @@
                           <button type="submit" class="btn btn-sm btn-success" {% if not p.stock %}disabled{% endif %}>Comprar Ahora</button>
                         </form>
                       </div>
-
+                    {% endif %}
+                    {% if rol|lower == "admin" or rol|lower == "asesor" %}
                       <div class="d-flex gap-2 mt-3">
                         <a href="{% url 'tienda:editar_producto' p.idproducto %}" class="btn btn-sm btn-outline-primary">Editar</a>
                         <form method="post" action="{% url 'tienda:eliminar_producto' p.idproducto %}" onsubmit="return confirm('¿Seguro que deseas eliminar este producto?');">
@@ -123,6 +128,7 @@
                           <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
                         </form>
                       </div>
+                    {% endif %}
                     </div>
                   </div>
                 </div>

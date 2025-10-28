@@ -60,7 +60,11 @@
                                         <div class="row mb-3">
                                             <div class="col-md-6">
                                                 <h5>Descripción de {{ c.cliente.nombre }} {{ c.cliente.apellido }}</h5>
+                                                {% if rol == "Admin" or rol ==  "cliente" %}
                                                 <textarea class="form-control descripcion-persona" rows="3">{{ c.observaciones }}</textarea>
+                                                {% else %}
+                                                <p class="form-control-plaintext">{{ c.observaciones }}</p>
+                                                {% endif %}
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="mb-3">
@@ -69,6 +73,7 @@
                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label">Estado:</label>
+                                                    {% if rol == "Admin" or rol == "asesor" %}
                                                     <div class="estado-container" data-current-estado="{{ c.estado }}">
                                                         <div class="form-check form-check-inline">
                                                             <input class="form-check-input estado-radio" type="radio" name="estado-{{ c.idcita }}" id="solicitud-{{ c.idcita }}" value="pendiente" data-cita-id="{{ c.idcita }}" data-color="warning" data-display="Solicitud" {% if c.estado == 'pendiente' %}checked{% endif %}>
@@ -87,6 +92,9 @@
                                                             <label class="form-check-label" for="olvidado-{{ c.idcita }}">Olvidado</label>
                                                         </div>
                                                     </div>
+                                                    {% else %}
+                                                    <p class="form-control-plaintext">{{ c.estado }}</p>
+                                                    {% endif %}
                                                 </div>
                                                 <div class="mb-2">
                                                     <h6 class="mb-2">Historial de cambios</h6>
@@ -96,14 +104,16 @@
                                                             <div class="ms-2 me-auto">
                                                                 <div><strong>{{ h.estado_anterior }}</strong> → <strong>{{ h.estado_nuevo }}</strong></div>
                                                                 <div class="text-muted">
-                                                                <textarea class="form-control form-control-sm observacion-input"
-                                                                          data-id="{{ h.idhistorial }}"
-                                                                          data-original="{{ h.observaciones|default:'' }}"
-                                                                          rows="2">{{ h.observaciones }}</textarea>
-                                                                <button class="btn btn-sm btn-primary mt-1 guardar-observacion-btn" disabled>Guardar</button>
-
+                                                                    {% if rol == "Admin" or rol == "asesor" %}
+                                                                        <textarea class="form-control form-control-sm observacion-input"
+                                                                                  data-id="{{ h.idhistorial }}"
+                                                                                  data-original="{{ h.observaciones|default:'' }}"
+                                                                                  rows="2">{{ h.observaciones }}</textarea>
+                                                                        <button class="btn btn-sm btn-primary mt-1 guardar-observacion-btn" disabled>Guardar</button>
+                                                                    {% else %}
+                                                                        <p class="form-control-plaintext">{{ h.observaciones }}</p>
+                                                                    {% endif %}
                                                                 </div>
-
                                                             </div>
                                                             <span class="badge bg-light text-muted">{{ h.fecha_cambio|date:'Y-m-d H:i' }}</span>
                                                         </li>
@@ -111,6 +121,7 @@
                                                         <li class="list-group-item text-muted">Sin registros.</li>
                                                         {% endfor %}
                                                     </ul>
+
                                                 </div>
                                             </div>
                                         </div>
