@@ -1,0 +1,54 @@
+! version = 2.0
+
+> topic random
+
+  + hola
+  - ¡Hola! 👋 Bienvenido a *PhoneFX*. Soy tu asistente virtual 🤖. ¿Quieres información sobre nuestros productos, agendar una cita o hablar con un asesor?
+
+  + informacion
+  - Claro 😊. En *PhoneFX* ofrecemos venta y reparación de celulares, accesorios y más.
+  - Puedes visitar nuestra web: http://127.0.0.1:8000/home/
+  - ¿Sobre qué producto te gustaría más información?
+
+  + que productos tienen
+  - Tenemos celulares, pantallas, cargadores, protectores, fundas y servicio técnico 📱🔧.
+  - Si deseas, puedo agendar una cita para revisar tu dispositivo o mostrarte precios.
+
+  + reparan *
+  - Sí 🔧, realizamos reparación de celulares, cambio de pantalla, batería y mantenimiento general.
+  - ¿Deseas agendar una cita para revisión?
+
+  + agendar cita
+  - Perfecto 📅. Por favor dime la *fecha* (dd/mm/aaaa) y la *hora* (hh:mm) en que deseas tu cita.
+  - Ejemplo: "15/11/2025 14:30"
+
+  + quiero agendar una cita *
+  - Entendido 👍. Por favor confirma la *fecha* (dd/mm/aaaa) y la *hora* (hh:mm) para registrar tu cita.
+  - Ejemplo: "15/11/2025 10:00"
+
+  + reservar cita *
+  - Perfecto ✅. Dime la *fecha* y *hora* en formato "dd/mm/aaaa hh:mm" para crear tu cita.
+
+  + hablar con una persona
+  - Claro 👩‍💼, puedes comunicarte con nuestro asesor humano al número *+57 3103407868* 📞.
+  - También puedo dejar una nota para que te contacte lo antes posible.
+
+  + hablar con asesor
+  - Te comunicaré con un asesor humano. Puedes escribirle al número *+57 3103407868* o esperar su mensaje 📲.
+
+  + humano
+  - Entendido, te paso con un asesor humano. Escríbele a *+57 3103407868* o espera que te contacte en breve 🤝.
+
+  + problema
+  - Lamento escuchar eso 😔. Te pondré en contacto con un asesor humano al número *+57 3103407868*.
+
+  + gracias
+  - ¡Con gusto! 😊 Si necesitas más ayuda, solo escríbeme.
+
+  + adios
+  - ¡Hasta luego! 👋 Gracias por comunicarte con *PhoneFX*. ¡Que tengas un excelente día!
+
+  + *
+  - No entendí muy bien eso 😅. Puedes decir “informacion”, “agendar cita” o “hablar con asesor”.
+
+< topic

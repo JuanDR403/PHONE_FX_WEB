@@ -1,0 +1,22 @@
+Empresa: PhoneFX
+Servicios: Reparacion de celulares, limpieza, diagnostico, venta de accesorios.
+Ubicación: Phonefx FET.
+Horario: Lunes a Sábado, 8:00 AM - 8:00 PM
+Contacto humano: +57 310 340 7868
+
+Frases agendamiento:
+- Quiero agendar una cita
+- Reservar cita el 15/11/2025 a las 3:30 PM
+- Necesito una cita para reparación mañana a las 9:00
+
+Frases humano:
+- Quiero hablar con un humano
+- Quiero hablar con una persona
+- Necesito hablar con un asesor
+- Esto es un problema serio
+
+Preguntas frecuentes:
+- ¿Qué servicios ofrecen?
+- ¿Cuál es el horario?
+- ¿Dónde están ubicados?
+- ¿Cuánto cuesta arreglar la pantalla?
