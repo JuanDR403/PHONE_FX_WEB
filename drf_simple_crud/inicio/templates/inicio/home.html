@@ -9,6 +9,11 @@
         <div class="col-md-10">
             <div class="card">
                 <div class="card-body">
+                <div class="d-flex justify-content-end mb-3">
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalNuevaCita">
+                        + Nueva Cita
+                    </button>
+                </div>
                     <table class="table table-hover">
                         <thead class="thead-dark">
                             <tr>
@@ -34,7 +39,8 @@
                                         N/A
                                     {% endif %}
                                 </td>
-                                <td class="fecha-display">{{ c.fecha_cita }}</td>
+                                <td class="fecha-display">{{ c.fecha_cita_str }} {{ c.hora_cita_str }}</td>
+
                                 <td class="estado-display">
                                     {% if c.estado == 'finalizado' %}
                                         <span class="badge bg-success">Finalizado</span>
@@ -69,8 +75,10 @@
                                             <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label class="form-label">Fecha de Cita:</label>
-                                                    <input type="text" class="form-control" value="{{ c.fecha_cita }} {{ c.hora_cita }}" disabled>
-                                                </div>
+                                                    <input type="text" class="form-control" value="{{ c.fecha_cita_str }} {{ c.hora_cita_str }}" disabled>
+
+
+                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label">Estado:</label>
                                                     {% if rol == "Admin" or rol == "asesor" %}
@@ -135,6 +143,104 @@
                     </table>
                 </div>
             </div>
+            <div class="modal fade" id="modalNuevaCita" tabindex="-1" aria-labelledby="modalNuevaCitaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalNuevaCitaLabel">Registrar nueva cita</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <form method="POST" action="{% url 'citas:agendar_cita' %}">
+        {% csrf_token %}
+        <div class="modal-body">
+
+          <!-- Asesor -->
+          <div class="mb-3">
+            <label for="asesor" class="form-label">Asesor</label>
+            <select name="asesor" id="asesor" class="form-select" required>
+              <option value="">-- Seleccione un asesor --</option>
+              {% for user in asesores %}
+                <option value="{{ user.user.id }}">{{ user.first_name }} {{ user.last_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Dispositivo -->
+          <div class="mb-3">
+            <label for="dispositivo" class="form-label">Dispositivo</label>
+            <select name="dispositivo" id="dispositivo" class="form-select" required>
+              <option value="">-- Seleccione un dispositivo --</option>
+              {% for disp in dispositivos %}
+                <option value="{{ disp.id }}">{{ disp.nombre }}</option>
+              {% endfor %}
+              <option value="otro">+ Agregar nuevo dispositivo</option>
+            </select>
+          </div>
+
+          <!-- Nuevo dispositivo (oculto al inicio) -->
+          <div id="nuevoDispositivoForm" class="border rounded p-3 d-none">
+            <div class="mb-2">
+              <label class="form-label">Nombre del dispositivo</label>
+              <input type="text" class="form-control" name="nuevo_nombre" placeholder="Ej: iPhone 12">
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Modelo / Referencia</label>
+              <input type="text" class="form-control" name="nuevo_modelo" placeholder="Ej: A2403">
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Número de serie</label>
+              <input type="text" class="form-control" name="nuevo_serie" placeholder="Ej: SN123456789">
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label">Descripción breve</label>
+              <textarea class="form-control" name="nuevo_descripcion" rows="2"></textarea>
+            </div>
+          </div>
+
+          <div class="mb-3">
+          <label class="form-label">Tipo de servicio</label>
+          <select name="tipo_servicio" class="form-select" required>
+              <option value="" selected disabled>Seleccione un servicio</option>
+              <option value="Limpieza">Limpieza</option>
+              <option value="Reparación">Reparación</option>
+          </select>
+        </div>
+
+
+          <!-- Fecha -->
+          <div class="mb-3">
+            <label class="form-label">Fecha</label>
+            <input type="date" name="fecha_cita" class="form-control" required>
+          </div>
+
+          <!-- Hora -->
+          <div class="mb-3">
+            <label class="form-label">Hora</label>
+            <input type="time" name="hora_cita" class="form-control" required>
+          </div>
+
+          <!-- Observaciones -->
+          <div class="mb-3">
+            <label class="form-label">Observaciones</label>
+            <textarea name="observaciones" class="form-control" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Cita</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
         </div>
     </div>
 </div>
@@ -300,7 +406,21 @@
             });
         });
 
+        // ================================
+// 🔹 Selección de dispositivo -> mostrar mini formulario
+// ================================
+$(document).on('change', '#dispositivo', function() {
+    const $nuevoForm = $('#nuevoDispositivoForm');
+    if ($(this).val() === 'otro') {
+        $nuevoForm.removeClass('d-none');
+    } else {
+        $nuevoForm.addClass('d-none');
+    }
+});
+
+
     });
+
 </script>
 
 {% endblock %}

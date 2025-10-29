@@ -81,9 +81,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'phonefx',
         'USER': 'root',
-        'PASSWORD': 'rooot',
+        'PASSWORD': '1234',
         'HOST': 'localhost',
-        'PORT': '3307',
+        'PORT': '3306',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },

@@ -16,7 +16,8 @@ class Dispositivo(models.Model):
     marca = models.CharField(max_length=8, blank=True, null=True)
     modelo = models.CharField(max_length=50, blank=True, null=True)
     numero_serie = models.CharField(max_length=100, blank=True, null=True)
-    fecha_registro = models.CharField(max_length=45)
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+
 
     def __str__(self):
         return f"{self.marca} {self.modelo} - {self.numero_serie}"

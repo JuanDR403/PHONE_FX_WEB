@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required  # Opcional
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
 import json
+from usuarios.models import Usuarios
+from dispositivos.models import Dispositivo
 
 from citas.models import Cita, HistorialCita
 
@@ -34,16 +36,15 @@ def actualizar_observacion(request, id):
     return JsonResponse({'success': False, 'error': 'Método inválido'})
 
 @login_required  # Elimina este decorador si quieres acceso público
+@login_required
 def home(request):
     rol = request.user.perfil_usuarios.id_rol.nombre if hasattr(request.user, 'perfil_usuarios') else ''
 
-    # Base queryset con relaciones necesarias
     qs = (
         Cita.objects.select_related('cliente', 'asesor', 'dispositivo')
         .prefetch_related('historiales')
     )
 
-    # Si el usuario es cliente, solo ve sus propias citas; Admin y asesor ven todas
     if rol == 'cliente' and hasattr(request.user, 'perfil_usuarios'):
         qs = qs.filter(cliente=request.user.perfil_usuarios)
     else:
@@ -51,13 +52,32 @@ def home(request):
 
     citas = qs.order_by('-idcita')
 
+    # 🔹 Convertimos fecha/hora a string para evitar error de utcoffset
+    for c in citas:
+        try:
+            c.fecha_cita_str = c.fecha_cita.strftime('%Y-%m-%d')
+        except AttributeError:
+            c.fecha_cita_str = str(c.fecha_cita)  # si ya es string
+        try:
+            c.hora_cita_str = c.hora_cita.strftime('%H:%M')
+        except AttributeError:
+            c.hora_cita_str = str(c.hora_cita)
+
+    asesores = Usuarios.objects.filter(id_rol__idrol=2)
+    dispositivos_cliente = Dispositivo.objects.filter(cliente=request.user.perfil_usuarios) if rol == 'cliente' else None
+
     context = {
         'titulo': 'Página de Inicio',
         'mensaje': 'Hola, Bienvenido a PhoneFX',
         'citas': citas,
         'rol': rol,
+        'asesores': asesores,
+        'dispositivos_cliente': dispositivos_cliente,
     }
     return render(request, 'inicio/home.html', context)
+
+
+
 
 
 @login_required

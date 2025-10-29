@@ -1,7 +1,7 @@
 from django.db import models
 from usuarios.models import Usuarios
 from dispositivos.models import Dispositivo
-
+from datetime import time
 
 class Cita(models.Model):
     idcita = models.AutoField(db_column='idCita', primary_key=True)
@@ -30,8 +30,8 @@ class Cita(models.Model):
         related_name='citas'
     )
 
-    fecha_cita = models.CharField(max_length=50)
-    hora_cita = models.CharField(max_length=45)
+    fecha_cita = models.DateField()  # ✅ campo tipo fecha
+    hora_cita = models.TimeField()
     tipo_servicio = models.CharField(max_length=10)
     ESTADOS = [
         ('pendiente', 'Solicitud'),
@@ -94,5 +94,5 @@ class HistorialCita(models.Model):
         return f"Historial #{self.idhistorial} - Cita {self.cita.idcita} ({self.estado_anterior} → {self.estado_nuevo})"
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'historial_cita'

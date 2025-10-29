@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Agendar Cita</h2>
+
+  <form method="POST" id="form-cita">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label>Asesor:</label>
+      {{ form.asesor }}
+    </div>
+    <div class="mb-3">
+      <label>Dispositivo:</label>
+      {{ form.dispositivo }}
+      <small><a href="#" id="abrir-modal" class="text-primary">¿Otro dispositivo?</a></small>
+    </div>
+    <div class="mb-3">
+      <label>Fecha:</label>
+      {{ form.fecha_cita }}
+    </div>
+    <div class="mb-3">
+      <label>Hora:</label>
+      {{ form.hora_cita }}
+    </div>
+    <div class="mb-3">
+      <label>Tipo de servicio:</label>
+      {{ form.tipo_servicio }}
+    </div>
+    <div class="mb-3">
+      <label>Observaciones:</label>
+      {{ form.observaciones }}
+    </div>
+
+    <button type="submit" class="btn btn-primary">Agendar</button>
+  </form>
+</div>
+
+<!-- Modal para nuevo dispositivo -->
+<div id="modal-dispositivo" class="modal" style="display:none;">
+  <div class="modal-content p-3" style="background:#fff; border-radius:8px; width:400px; margin:auto; top:20%;">
+    <h5>Registrar nuevo dispositivo</h5>
+    <form method="POST" id="form-dispositivo">
+      {% csrf_token %}
+      {{ dispositivo_form.as_p }}
+      <button type="button" class="btn btn-secondary" id="cerrar-modal">Cancelar</button>
+      <button type="submit" class="btn btn-success">Guardar</button>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const abrirModal = document.getElementById("abrir-modal");
+  const modal = document.getElementById("modal-dispositivo");
+  const cerrarModal = document.getElementById("cerrar-modal");
+
+  abrirModal.addEventListener("click", e => {
+    e.preventDefault();
+    modal.style.display = "block";
+  });
+
+  cerrarModal.addEventListener("click", e => {
+    e.preventDefault();
+    modal.style.display = "none";
+  });
+});
+</script>
+{% endblock %}

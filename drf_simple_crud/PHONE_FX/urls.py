@@ -14,6 +14,7 @@ urlpatterns = [
     path('tienda/', include('tienda.urls')),
     path('carrito/', include('carrito.urls')),
     path('', RedirectView.as_view(url='/login/'), name='root-redirect'),
+    path('citas/', include('citas.urls')),
 ]
 
 # Serve media files in development
