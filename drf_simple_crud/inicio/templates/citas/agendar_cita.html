@@ -1,68 +1,717 @@
 {% extends "base.html" %}
+{% load static %}
 {% block content %}
+    {% if rol == "admin" or rol == "cliente" %}
+
 <div class="container mt-4">
   <h2>Agendar Cita</h2>
 
   <form method="POST" id="form-cita">
     {% csrf_token %}
+
     <div class="mb-3">
-      <label>Asesor:</label>
+      <label class="form-label">Asesor:</label>
       {{ form.asesor }}
     </div>
+
     <div class="mb-3">
-      <label>Dispositivo:</label>
-      {{ form.dispositivo }}
-      <small><a href="#" id="abrir-modal" class="text-primary">¿Otro dispositivo?</a></small>
-    </div>
-    <div class="mb-3">
-      <label>Fecha:</label>
-      {{ form.fecha_cita }}
-    </div>
-    <div class="mb-3">
-      <label>Hora:</label>
-      {{ form.hora_cita }}
-    </div>
-    <div class="mb-3">
-      <label>Tipo de servicio:</label>
-      {{ form.tipo_servicio }}
-    </div>
-    <div class="mb-3">
-      <label>Observaciones:</label>
-      {{ form.observaciones }}
+      <label class="form-label">Dispositivo:</label>
+      <select name="dispositivo" class="form-select" required id="id_dispositivo">
+        <option value="">Selecciona un dispositivo</option>
+        {% for dispositivo in form.dispositivo.field.queryset %}
+          <option value="{{ dispositivo.iddispositivo }}">{{ dispositivo.marca }} {{ dispositivo.modelo }}</option>
+        {% endfor %}
+      </select>
+      <small class="form-text">
+        <a href="#" class="text-primary" data-bs-toggle="modal" data-bs-target="#modalDispositivo">
+          ¿No encuentras tu dispositivo? Registrar nuevo
+        </a>
+      </small>
     </div>
 
-    <button type="submit" class="btn btn-primary">Agendar</button>
+    <div class="mb-3">
+      <label class="form-label">Fecha:</label>
+      {{ form.fecha_cita }}
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Hora:</label>
+      {{ form.hora_cita }}
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Tipo de servicio:</label>
+      {{ form.tipo_servicio }}
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label text-muted">
+            Observaciones: <span class="fw-normal">(Opcional)</span>
+        </label>
+        {{ form.observaciones }}
+    </div>
+
+    <button type="submit" class="btn btn-primary" id="btn-agendar-cita">Agendar Cita</button>
   </form>
 </div>
 
 <!-- Modal para nuevo dispositivo -->
-<div id="modal-dispositivo" class="modal" style="display:none;">
-  <div class="modal-content p-3" style="background:#fff; border-radius:8px; width:400px; margin:auto; top:20%;">
-    <h5>Registrar nuevo dispositivo</h5>
-    <form method="POST" id="form-dispositivo">
-      {% csrf_token %}
-      {{ dispositivo_form.as_p }}
-      <button type="button" class="btn btn-secondary" id="cerrar-modal">Cancelar</button>
-      <button type="submit" class="btn btn-success">Guardar</button>
-    </form>
+<div class="modal fade" id="modalDispositivo" tabindex="-1" aria-labelledby="modalDispositivoLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalDispositivoLabel">Registrar Nuevo Dispositivo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="form-dispositivo-modal" method="post" action="{% url 'citas:agregar_dispositivo' %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Marca:</label>
+            {{ dispositivo_form.marca }}
+            <div class="invalid-feedback" id="error-marca"></div>
+          </div>
+
+          <div class="mb-3">
+                <label class="form-label">Modelo:</label>
+                <!-- Input hidden para el valor real -->
+                <input type="hidden" name="modelo" id="id_modelo_real" required>
+
+                <!-- Select solo para la UI -->
+                <select class="form-select" id="id_modelo_ui" disabled required>
+                    <option value="">Primero selecciona una marca</option>
+                </select>
+                <div class="invalid-feedback" id="error-modelo"></div>
+            </div>
+            <!-- Agrega esto temporalmente en tu template para debug -->
+            <div style="display: none;">
+                <p>ID real del select marca: {{ dispositivo_form.marca.auto_id }}</p>
+                <p>ID real del select modelo: {{ dispositivo_form.modelo.auto_id }}</p>
+            </div>
+          <div class="mb-3">
+            <label class="form-label">Número de Serie (opcional):</label>
+            {{ dispositivo_form.numero_serie }}
+            <div class="invalid-feedback" id="error-numero_serie"></div>
+          </div>
+
+          <div class="alert alert-info">
+            <small>La fecha de registro se asignará automáticamente al momento de guardar.</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btn-guardar-dispositivo">Guardar Dispositivo</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 
+<!-- Modal de éxito -->
+<div class="modal fade" id="modalExito" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">¡Éxito!</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Dispositivo registrado correctamente. Se ha agregado a la lista de dispositivos.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+SCRIPT 1: GESTIÓN DE MODAL DE DISPOSITIVOS
+Función: Maneja todo el comportamiento del modal para registrar nuevos dispositivos
+Incluye:
+- Prevención de ejecución múltiple
+- Carga dinámica de modelos según marca seleccionada
+- Envío AJAX del formulario de dispositivo
+- Actualización en tiempo real del select principal
+-->
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-  const abrirModal = document.getElementById("abrir-modal");
-  const modal = document.getElementById("modal-dispositivo");
-  const cerrarModal = document.getElementById("cerrar-modal");
+// Evitar ejecución múltiple
+if (window.modalScriptEjecutado) {
+    console.log('ℹ️ Script ya ejecutado, saliendo...');
+} else {
+    window.modalScriptEjecutado = true;
 
-  abrirModal.addEventListener("click", e => {
-    e.preventDefault();
-    modal.style.display = "block";
-  });
+    console.log('=== INICIANDO CONFIGURACIÓN MODAL ===');
 
-  cerrarModal.addEventListener("click", e => {
-    e.preventDefault();
-    modal.style.display = "none";
-  });
+    // Datos de modelos por marca (COMPLETO)
+    const MODELOS_POR_MARCA = {
+        'Apple': ['iPhone 15 Pro Max', 'iPhone 15 Pro', 'iPhone 15', 'iPhone 14 Pro Max', 'iPhone 14 Pro', 'iPhone 14', 'iPhone 13', 'iPhone 12', 'iPhone 11', 'iPhone SE', 'iPad Pro', 'iPad Air', 'iPad Mini', 'MacBook Pro', 'MacBook Air', 'iMac', 'Apple Watch'],
+        'Samsung': ['Galaxy S24 Ultra', 'Galaxy S24+', 'Galaxy S24', 'Galaxy S23 Ultra', 'Galaxy S23+', 'Galaxy S23', 'Galaxy Z Fold5', 'Galaxy Z Flip5', 'Galaxy A54', 'Galaxy A34', 'Galaxy A14', 'Galaxy Tab S9', 'Galaxy Watch6'],
+        'Xiaomi': ['Redmi Note 13 Pro+', 'Redmi Note 13 Pro', 'Redmi Note 13', 'Xiaomi 13T Pro', 'Xiaomi 13T', 'Xiaomi 13', 'Poco X6 Pro', 'Poco X6', 'Poco M6 Pro', 'Redmi 12'],
+        'OPPO': ['Find X6 Pro', 'Reno 11 Pro', 'Reno 11', 'A98', 'A78', 'A58'],
+        'Vivo': ['X100 Pro', 'X100', 'V29', 'V27', 'Y100', 'Y27'],
+        'Huawei': ['P60 Pro', 'P60', 'Mate 60 Pro', 'Mate 60', 'Nova 11', 'Enjoy 70'],
+        'Realme': ['GT5 Pro', 'GT5', '11 Pro+', '11 Pro', '11', 'C55'],
+        'Honor': ['Magic5 Pro', 'Magic5', 'X9a', 'X8a', 'X7'],
+        'OnePlus': ['12', '11', 'Nord 3', 'Nord CE 3', 'Nord N30'],
+        'Motorola': ['Edge 40 Pro', 'Edge 40', 'G84', 'G54', 'E13'],
+        'Sony': ['Xperia 1 V', 'Xperia 5 V', 'Xperia 10 V'],
+        'Nokia': ['G42', 'C32', 'C22', 'C12'],
+        'Infinix': ['Note 30 Pro', 'Note 30', 'Hot 30', 'Smart 8'],
+        'Tecno': ['Camon 20 Pro', 'Camon 20', 'Pova 5', 'Spark 10'],
+        'Google': ['Pixel 8 Pro', 'Pixel 8', 'Pixel 7a', 'Pixel 7 Pro', 'Pixel 7', 'Pixel 6a', 'Pixel Fold', 'Pixel Tablet']
+    };
+
+    // Función para actualizar modelos
+    function actualizarModelos(marca) {
+        console.log('🔧 Actualizando modelos para:', marca);
+
+        const selectModeloUI = document.getElementById('id_modelo_ui');
+        const inputModeloReal = document.getElementById('id_modelo_real');
+
+        if (!selectModeloUI || !inputModeloReal) {
+            console.error('❌ No se encontraron los elementos de modelo');
+            return;
+        }
+
+        // Limpiar opciones
+        selectModeloUI.innerHTML = '';
+        inputModeloReal.value = '';
+
+        const modelos = MODELOS_POR_MARCA[marca] || [];
+        console.log(`📱 Encontrados ${modelos.length} modelos para ${marca}`);
+
+        if (modelos.length > 0) {
+            selectModeloUI.disabled = false;
+
+            // Agregar opción por defecto
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Selecciona un modelo';
+            selectModeloUI.appendChild(defaultOption);
+
+            // Agregar modelos
+            modelos.forEach(modelo => {
+                const option = document.createElement('option');
+                option.value = modelo;
+                option.textContent = modelo;
+                selectModeloUI.appendChild(option);
+            });
+
+            console.log('✅ Modelos actualizados correctamente');
+        } else {
+            selectModeloUI.disabled = true;
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'Primero selecciona una marca';
+            selectModeloUI.appendChild(option);
+        }
+    }
+
+    // Configurar cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 DOM listo - configurando modal...');
+
+        const modal = document.getElementById('modalDispositivo');
+        if (modal) {
+            modal.addEventListener('shown.bs.modal', function() {
+                console.log('📋 Modal abierto - configurando event listeners...');
+
+                const selectMarca = this.querySelector('select[name="marca"]');
+                if (selectMarca) {
+                    selectMarca.addEventListener('change', function(e) {
+                        console.log('🔄 Cambio en select marca:', e.target.value);
+                        actualizarModelos(e.target.value);
+                    });
+                    console.log('✅ Event listener agregado al select de marca');
+                }
+
+                // Configurar cambio en el select UI
+                const selectModeloUI = document.getElementById('id_modelo_ui');
+                if (selectModeloUI) {
+                    selectModeloUI.addEventListener('change', function(e) {
+                        const inputModeloReal = document.getElementById('id_modelo_real');
+                        inputModeloReal.value = e.target.value;
+                        console.log('📝 Modelo seleccionado:', e.target.value);
+                    });
+                }
+            });
+        }
+
+        // Configurar el envío del formulario de dispositivo
+        const formDispositivo = document.getElementById('form-dispositivo-modal');
+        if (formDispositivo) {
+            formDispositivo.addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log('📤 Enviando formulario de dispositivo...');
+
+                // Validaciones
+                const marca = document.querySelector('#modalDispositivo select[name="marca"]')?.value;
+                const modelo = document.getElementById('id_modelo_real')?.value;
+
+                if (!marca) {
+                    alert('Por favor selecciona una marca');
+                    return;
+                }
+
+                if (!modelo) {
+                    alert('Por favor selecciona un modelo');
+                    return;
+                }
+
+                console.log('📦 Datos a enviar - Marca:', marca, 'Modelo:', modelo);
+
+                // Enviar datos
+                const formData = new FormData(this);
+                formData.set('modelo', modelo); // Asegurar que se envíe el valor correcto
+
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('✅ Dispositivo guardado exitosamente');
+
+                        // Agregar al select principal
+                        const selectPrincipal = document.getElementById('id_dispositivo');
+                        if (selectPrincipal) {
+                            const option = document.createElement('option');
+                            option.value = data.dispositivo_id;
+                            option.textContent = data.dispositivo_text;
+                            option.selected = true;
+                            selectPrincipal.appendChild(option);
+                        }
+
+                        // Cerrar modal de dispositivo
+                        const modalDispositivo = bootstrap.Modal.getInstance(document.getElementById('modalDispositivo'));
+                        if (modalDispositivo) modalDispositivo.hide();
+
+                        // Mostrar SweetAlert de éxito
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Éxito!',
+                            text: 'Dispositivo registrado correctamente. Se ha agregado a la lista de dispositivos.',
+                            confirmButtonText: 'Aceptar',
+                            confirmButtonColor: '#3085d6',
+                            timer: 3000,
+                            timerProgressBar: true
+                        });
+
+                        // Resetear formulario
+                        this.reset();
+                        const selectModeloReset = document.querySelector('#modalDispositivo select[name="modelo"]');
+                        if (selectModeloReset) {
+                            selectModeloReset.innerHTML = '<option value="">Primero selecciona una marca</option>';
+                            selectModeloReset.disabled = true;
+                        }
+
+                    } else {
+                        console.error('❌ Error al guardar:', data.errors);
+
+                        // SweetAlert para errores
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Hubo un error al guardar el dispositivo. Por favor, verifica los datos.',
+                            confirmButtonText: 'Entendido',
+                            confirmButtonColor: '#d33'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('💥 Error en la solicitud:', error);
+                    alert('Error al guardar el dispositivo');
+                });
+            });
+        }
+    });
+
+    console.log('✅ Script completamente configurado');
+}
+</script>
+
+<!--
+SCRIPT 2: CONFIRMACIÓN Y ENVÍO DE FORMULARIO DE CITA
+Función: Maneja la confirmación y envío del formulario principal de citas
+Incluye:
+- Mostrar resumen de la cita antes de enviar
+- Envío asíncrono con feedback visual
+- Manejo de respuestas (éxito/error)
+-->
+<script>
+function configurarFormularioCita() {
+    const formCita = document.getElementById('form-cita');
+
+    if (formCita) {
+        formCita.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Obtener datos para el resumen
+            const asesorSelect = document.querySelector('select[name="asesor"]');
+            const asesorText = asesorSelect.options[asesorSelect.selectedIndex].text;
+            const dispositivoSelect = document.getElementById('id_dispositivo');
+            const dispositivoText = dispositivoSelect.options[dispositivoSelect.selectedIndex].text;
+            const fecha = document.querySelector('input[name="fecha_cita"]').value;
+            const hora = document.querySelector('input[name="hora_cita"]').value;
+            const tipoServicio = document.querySelector('select[name="tipo_servicio"]').value;
+
+            // Mostrar confirmación con resumen
+            Swal.fire({
+                title: 'Confirmar Cita',
+                html: `
+                    <div class="text-start">
+                        <p><strong>Asesor:</strong> ${asesorText}</p>
+                        <p><strong>Dispositivo:</strong> ${dispositivoText}</p>
+                        <p><strong>Fecha:</strong> ${fecha}</p>
+                        <p><strong>Hora:</strong> ${hora}</p>
+                        <p><strong>Servicio:</strong> ${tipoServicio}</p>
+                    </div>
+                    <p class="mt-3 text-muted">¿Estás seguro de que quieres agendar esta cita?</p>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, Agendar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#dc3545'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Enviar formulario
+                    enviarFormularioCita(this);
+                }
+            });
+        });
+    }
+}
+
+function enviarFormularioCita(form) {
+    // Mostrar loading
+    Swal.fire({
+        title: 'Agendando cita...',
+        text: 'Por favor espera un momento',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    const formData = new FormData(form);
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => {
+        if (response.redirected) {
+            // Éxito - redirección
+            Swal.fire({
+                icon: 'success',
+                title: '¡Cita Agendada!',
+                html: `
+                    <div class="text-center">
+                        <i class="fas fa-calendar-check text-success mb-3" style="font-size: 3rem;"></i>
+                        <p class="mb-2">Tu cita se ha agendado correctamente.</p>
+                        <p class="text-muted small">Serás redirigido al inicio...</p>
+                    </div>
+                `,
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                didClose: () => {
+                    window.location.href = response.url;
+                }
+            });
+        } else {
+            return response.text().then(text => {
+                // Si hay errores de validación, mostrarlos
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Validación',
+                    text: 'Por favor verifica los datos del formulario',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#dc3545'
+                });
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de Conexión',
+            text: 'No se pudo agendar la cita. Intenta nuevamente.',
+            confirmButtonText: 'Reintentar',
+            confirmButtonColor: '#dc3545'
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', configurarFormularioCita);
+</script>
+
+<!--
+SCRIPT 3: VALIDACIONES DE FECHA Y HORA
+Función: Valida las restricciones de fecha y hora para las citas
+Incluye:
+- Fecha mínima (mañana)
+- Horario permitido (8:00 AM - 2:00 PM)
+- Verificación de disponibilidad de fecha
+- Validación en tiempo real
+-->
+<script>
+// Configurar validaciones de fecha y hora
+function configurarValidacionesCita() {
+    const fechaInput = document.querySelector('input[name="fecha_cita"]');
+    const horaInput = document.querySelector('input[name="hora_cita"]');
+
+    if (fechaInput) {
+        // Establecer fecha mínima (mañana)
+        const hoy = new Date();
+        const manana = new Date(hoy);
+        manana.setDate(hoy.getDate() + 1);
+        const fechaMinima = manana.toISOString().split('T')[0];
+        fechaInput.min = fechaMinima;
+
+        // Agregar validación en tiempo real
+        fechaInput.addEventListener('change', validarFecha);
+    }
+
+    if (horaInput) {
+        // Configurar horario restringido
+        horaInput.min = '08:00';
+        horaInput.max = '14:00';
+        horaInput.step = '1800'; // 30 minutos
+
+        // Agregar validación en tiempo real
+        horaInput.addEventListener('change', validarHora);
+
+        // Forzar horario dentro del rango
+        horaInput.addEventListener('input', function() {
+            if (this.value) {
+                const [horas, minutos] = this.value.split(':').map(Number);
+                const horaDecimal = horas + minutos / 60;
+
+                if (horaDecimal < 8) {
+                    this.value = '08:00';
+                } else if (horaDecimal > 14) {
+                    this.value = '14:00';
+                }
+            }
+        });
+    }
+}
+
+// Validar fecha
+function validarFecha() {
+    const fechaInput = document.querySelector('input[name="fecha_cita"]');
+    const fechaSeleccionada = new Date(fechaInput.value);
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    if (fechaInput.value) {
+        if (fechaSeleccionada < hoy) {
+            mostrarError('No se pueden agendar citas en fechas pasadas.');
+            return false;
+        } else if (fechaSeleccionada.getTime() === hoy.getTime()) {
+            mostrarError('Las citas deben agendarse con al menos un día de anticipación.');
+            return false;
+        } else {
+            // Verificar disponibilidad de la fecha
+            verificarDisponibilidadFecha(fechaInput.value);
+            return true;
+        }
+    }
+    return false;
+}
+
+// Validar hora
+function validarHora() {
+    const horaInput = document.querySelector('input[name="hora_cita"]');
+
+    if (horaInput.value) {
+        const [horas, minutos] = horaInput.value.split(':').map(Number);
+        const horaSeleccionada = horas + minutos / 60;
+
+        if (horaSeleccionada < 8 || horaSeleccionada > 14) {
+            mostrarError('El horario debe estar entre 8:00 AM y 2:00 PM.');
+            return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+// Verificar disponibilidad de fecha via AJAX
+function verificarDisponibilidadFecha(fecha) {
+    fetch(`/citas/verificar-fecha/?fecha=${fecha}`)
+        .then(response => response.json())
+        .then(data => {
+            if (!data.disponible) {
+                mostrarError('Ya existe una cita agendada para esta fecha. Por favor selecciona otra fecha.');
+            }
+        })
+        .catch(error => console.error('Error verificando fecha:', error));
+}
+
+// Mostrar error con SweetAlert
+function mostrarError(mensaje) {
+    Swal.fire({
+        icon: 'warning',
+        title: 'Validación',
+        text: mensaje,
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#ffc107'
+    });
+}
+
+// Validar formulario completo antes de enviar
+function validarFormularioCompleto() {
+    const fechaValida = validarFecha();
+    const horaValida = validarHora();
+
+    if (!fechaValida || !horaValida) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Datos Incorrectos',
+            text: 'Por favor corrige los errores en fecha y hora antes de agendar la cita.',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#ffc107'
+        });
+        return false;
+    }
+
+    return true;
+}
+
+// Inicializar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    configurarValidacionesCita();
+
+    // Modificar el envío del formulario para incluir validaciones
+    const formCita = document.getElementById('form-cita');
+    if (formCita) {
+        formCita.addEventListener('submit', function(e) {
+            if (!validarFormularioCompleto()) {
+                e.preventDefault();
+                return false;
+            }
+
+            // Si pasa las validaciones, continuar con el proceso normal
+            return true;
+        });
+    }
 });
 </script>
+
+<!--
+SCRIPT 4: CONTADOR DE CARACTERES PARA OBSERVACIONES
+Función: Muestra y controla el límite de caracteres en el campo observaciones
+Incluye:
+- Contador en tiempo real
+- Cambio de color según caracteres restantes
+- Límite de 400 caracteres
+-->
+<script>
+// Contador de caracteres para observaciones
+function contarCaracteresObservaciones(textarea) {
+    const maxCaracteres = 400;
+    const caracteresActuales = textarea.value.length;
+    const contador = document.getElementById('contador-observaciones');
+
+    if (contador) {
+        contador.textContent = `${caracteresActuales}/${maxCaracteres} caracteres`;
+
+        // Cambiar color cuando se acerca al límite
+        if (caracteresActuales > 350) {
+            contador.className = 'text-warning';
+        } else if (caracteresActuales >= maxCaracteres) {
+            contador.className = 'text-danger';
+        } else {
+            contador.className = 'text-muted';
+        }
+    }
+}
+
+// Inicializar contador cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    const textareaObservaciones = document.querySelector('textarea[name="observaciones"]');
+    if (textareaObservaciones) {
+        // Crear elemento contador
+        const contador = document.createElement('div');
+        contador.id = 'contador-observaciones';
+        contador.className = 'text-muted small mt-1';
+        contador.textContent = `0/400 caracteres`;
+
+        // Insertar después del textarea
+        textareaObservaciones.parentNode.appendChild(contador);
+
+        // Contar caracteres iniciales
+        contarCaracteresObservaciones(textareaObservaciones);
+    }
+});
+</script>
+
+<!--
+SCRIPT 5: MANEJO DE MENSAJES DEL SISTEMA
+Función: Muestra mensajes de Django (éxito, error, etc.) usando SweetAlert
+Incluye:
+- Detección automática de mensajes Django
+- Display según tipo de mensaje (error/success)
+- Estilos personalizados para cada tipo
+-->
+<script>
+// Función para mostrar mensajes de Django con SweetAlert
+function mostrarMensajes() {
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == 'error' %}
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Permisos',
+                    html: `{{ message|safe }}`,
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#dc3545',
+                    backdrop: true,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                });
+            {% elif message.tags == 'success' %}
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: '{{ message }}',
+                    confirmButtonText: 'Aceptar',
+                    confirmButtonColor: '#28a745',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+}
+
+// Ejecutar cuando el documento esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    mostrarMensajes();
+});
+</script>
+{% else %}
+<div class="container mt-4">
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">Acceso Denegado</h4>
+        <p>No tienes permisos para acceder a esta página. Solo usuarios con rol de Admin o Cliente pueden agendar citas.</p>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
+
+

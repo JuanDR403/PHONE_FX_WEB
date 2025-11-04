@@ -14,8 +14,11 @@ def tiene_permiso(request, roles_permitidos):
     if not request.user.is_authenticated:
         return False
     perfil = getattr(request.user, 'perfil_usuarios', None)
-    if perfil and perfil.id_rol and perfil.id_rol.nombre in roles_permitidos:
-        return True
+    if perfil and perfil.id_rol and perfil.id_rol.nombre:
+        # Convertir a minúsculas para comparación case-insensitive
+        rol_actual = perfil.id_rol.nombre.lower()
+        roles_permitidos_lower = [r.lower() for r in roles_permitidos]
+        return rol_actual in roles_permitidos_lower
     return False
 
 
@@ -38,7 +41,10 @@ def actualizar_observacion(request, id):
 @login_required  # Elimina este decorador si quieres acceso público
 @login_required
 def home(request):
-    rol = request.user.perfil_usuarios.id_rol.nombre if hasattr(request.user, 'perfil_usuarios') else ''
+    if hasattr(request.user, 'perfil_usuarios') and request.user.perfil_usuarios.id_rol:
+        rol = request.user.perfil_usuarios.id_rol.nombre.lower()
+    else:
+        rol = ''
 
     qs = (
         Cita.objects.select_related('cliente', 'asesor', 'dispositivo')
@@ -151,3 +157,35 @@ def actualizar_estado_cita(request):
         return JsonResponse({'ok': False, 'error': 'Cita no encontrada.'}, status=404)
     except Exception as e:
         return JsonResponse({'ok': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def actualizar_descripcion_cita(request):
+    if not tiene_permiso(request, ['admin', 'cliente']):
+        return JsonResponse({'success': False, 'error': 'No tienes permisos para esta acción'}, status=403)
+
+    try:
+        cita_id = request.POST.get('cita_id')
+        nueva_descripcion = request.POST.get('descripcion', '').strip()
+
+        if not cita_id:
+            return JsonResponse({'success': False, 'error': 'ID de cita no proporcionado'}, status=400)
+
+        cita = Cita.objects.get(idcita=cita_id)
+
+        # 🔹 VALIDACIÓN EXTRA: Si es cliente, solo puede editar sus propias citas
+        if request.user.perfil_usuarios.id_rol.nombre.lower() == 'cliente':
+            if cita.cliente != request.user.perfil_usuarios:
+                return JsonResponse({'success': False, 'error': 'Solo puedes editar tus propias citas'}, status=403)
+
+        # Actualizar la descripción/observaciones
+        cita.observaciones = nueva_descripcion
+        cita.save(update_fields=['observaciones'])
+
+        return JsonResponse({'success': True})
+
+    except Cita.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Cita no encontrada'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
