@@ -1,139 +1,219 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-    {% if rol == "admin" or rol == "cliente" %}
+{% if rol == "admin" or rol == "cliente" %}
 
-<div class="container mt-4">
-  <h2>Agendar Cita</h2>
+<div class="row justify-content-center">
+  <div class="col-12 col-md-10 col-lg-8">
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">
+          <i class="fas fa-calendar-plus me-2"></i>
+          Agendar Nueva Cita
+        </h4>
+      </div>
+      <div class="card-body">
+        <form method="POST" id="form-cita">
+          {% csrf_token %}
 
-  <form method="POST" id="form-cita">
-    {% csrf_token %}
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-bold">
+                  <i class="fas fa-user-tie text-primary me-2"></i>
+                  Asesor
+                </label>
+                {{ form.asesor }}
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Selecciona el asesor que atenderá tu cita
+                </div>
+              </div>
+            </div>
 
-    <div class="mb-3">
-      <label class="form-label">Asesor:</label>
-      {{ form.asesor }}
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-bold">
+                  <i class="fas fa-mobile-alt text-primary me-2"></i>
+                  Dispositivo
+                </label>
+                <select name="dispositivo" class="form-select" required id="id_dispositivo">
+                  <option value="">Selecciona un dispositivo</option>
+                  {% for dispositivo in form.dispositivo.field.queryset %}
+                    <option value="{{ dispositivo.iddispositivo }}">{{ dispositivo.marca }} {{ dispositivo.modelo }}</option>
+                  {% endfor %}
+                </select>
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  <a href="#" class="text-primary fw-bold" data-bs-toggle="modal" data-bs-target="#modalDispositivo">
+                    <i class="fas fa-plus-circle me-1"></i>¿No encuentras tu dispositivo? Registrar nuevo
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-bold">
+                  <i class="fas fa-calendar-day text-primary me-2"></i>
+                  Fecha de la Cita
+                </label>
+                {{ form.fecha_cita }}
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Selecciona una fecha futura (mínimo mañana)
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-bold">
+                  <i class="fas fa-clock text-primary me-2"></i>
+                  Hora de la Cita
+                </label>
+                {{ form.hora_cita }}
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Horario disponible: 8:00 AM - 2:00 PM
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">
+              <i class="fas fa-tools text-primary me-2"></i>
+              Tipo de Servicio
+            </label>
+            {{ form.tipo_servicio }}
+            <div class="form-text">
+              <i class="fas fa-info-circle me-1"></i>
+              Selecciona el tipo de servicio que requieres
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold">
+              <i class="fas fa-sticky-note text-primary me-2"></i>
+              Observaciones
+              <span class="text-muted fw-normal">(Opcional)</span>
+            </label>
+            {{ form.observaciones }}
+            <div class="d-flex justify-content-between align-items-center mt-1">
+              <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>
+                Describe cualquier detalle adicional sobre tu dispositivo o problema
+              </div>
+              <span id="contador-observaciones" class="text-muted small">400 caracteres restantes</span>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 pt-3 border-top">
+            <button type="submit" class="btn btn-primary btn-lg" id="btn-agendar-cita">
+              <i class="fas fa-calendar-check me-2"></i>Agendar Cita
+            </button>
+            <a href="{% url 'inicio:home' %}" class="btn btn-secondary btn-lg">
+              <i class="fas fa-times me-2"></i>Cancelar
+            </a>
+          </div>
+        </form>
+      </div>
     </div>
-
-    <div class="mb-3">
-      <label class="form-label">Dispositivo:</label>
-      <select name="dispositivo" class="form-select" required id="id_dispositivo">
-        <option value="">Selecciona un dispositivo</option>
-        {% for dispositivo in form.dispositivo.field.queryset %}
-          <option value="{{ dispositivo.iddispositivo }}">{{ dispositivo.marca }} {{ dispositivo.modelo }}</option>
-        {% endfor %}
-      </select>
-      <small class="form-text">
-        <a href="#" class="text-primary" data-bs-toggle="modal" data-bs-target="#modalDispositivo">
-          ¿No encuentras tu dispositivo? Registrar nuevo
-        </a>
-      </small>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Fecha:</label>
-      {{ form.fecha_cita }}
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Hora:</label>
-      {{ form.hora_cita }}
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Tipo de servicio:</label>
-      {{ form.tipo_servicio }}
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label text-muted">
-            Observaciones: <span class="fw-normal">(Opcional)</span>
-        </label>
-        {{ form.observaciones }}
-    </div>
-
-    <button type="submit" class="btn btn-primary" id="btn-agendar-cita">Agendar Cita</button>
-  </form>
+  </div>
 </div>
 
 <!-- Modal para nuevo dispositivo -->
 <div class="modal fade" id="modalDispositivo" tabindex="-1" aria-labelledby="modalDispositivoLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalDispositivoLabel">Registrar Nuevo Dispositivo</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="modalDispositivoLabel">
+          <i class="fas fa-plus-circle me-2"></i>
+          Registrar Nuevo Dispositivo
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form id="form-dispositivo-modal" method="post" action="{% url 'citas:agregar_dispositivo' %}">
         {% csrf_token %}
         <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label">Marca:</label>
-            {{ dispositivo_form.marca }}
-            <div class="invalid-feedback" id="error-marca"></div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-bold">
+                  <i class="fas fa-tag text-primary me-2"></i>
+                  Marca
+                </label>
+                {{ dispositivo_form.marca }}
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Selecciona la marca de tu dispositivo
+                </div>
+                <div class="invalid-feedback" id="error-marca"></div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-bold">
+                  <i class="fas fa-mobile text-primary me-2"></i>
+                  Modelo
+                </label>
+                <!-- Input hidden para el valor real -->
+                <input type="hidden" name="modelo" id="id_modelo_real" required>
+                <!-- Select solo para la UI -->
+                <select class="form-select" id="id_modelo_ui" disabled required>
+                  <option value="">Primero selecciona una marca</option>
+                </select>
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  El modelo se habilita al seleccionar una marca
+                </div>
+                <div class="invalid-feedback" id="error-modelo"></div>
+              </div>
+            </div>
           </div>
 
           <div class="mb-3">
-                <label class="form-label">Modelo:</label>
-                <!-- Input hidden para el valor real -->
-                <input type="hidden" name="modelo" id="id_modelo_real" required>
-
-                <!-- Select solo para la UI -->
-                <select class="form-select" id="id_modelo_ui" disabled required>
-                    <option value="">Primero selecciona una marca</option>
-                </select>
-                <div class="invalid-feedback" id="error-modelo"></div>
-            </div>
-            <!-- Agrega esto temporalmente en tu template para debug -->
-            <div style="display: none;">
-                <p>ID real del select marca: {{ dispositivo_form.marca.auto_id }}</p>
-                <p>ID real del select modelo: {{ dispositivo_form.modelo.auto_id }}</p>
-            </div>
-          <div class="mb-3">
-            <label class="form-label">Número de Serie (opcional):</label>
+            <label class="form-label fw-bold">
+              <i class="fas fa-barcode text-primary me-2"></i>
+              Número de Serie
+              <span class="text-muted fw-normal">(Opcional)</span>
+            </label>
             {{ dispositivo_form.numero_serie }}
+            <div class="form-text">
+              <i class="fas fa-info-circle me-1"></i>
+              Ingresa el número de serie si lo conoces
+            </div>
             <div class="invalid-feedback" id="error-numero_serie"></div>
           </div>
 
           <div class="alert alert-info">
-            <small>La fecha de registro se asignará automáticamente al momento de guardar.</small>
+            <div class="d-flex align-items-center">
+              <i class="fas fa-info-circle me-2 fa-lg"></i>
+              <div>
+                <strong>Información importante:</strong>
+                <p class="mb-0 small">La fecha de registro se asignará automáticamente al momento de guardar.</p>
+              </div>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-primary" id="btn-guardar-dispositivo">Guardar Dispositivo</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" id="btn-guardar-dispositivo">
+            <i class="fas fa-save me-2"></i>Guardar Dispositivo
+          </button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- Modal de éxito -->
-<div class="modal fade" id="modalExito" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">¡Éxito!</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p>Dispositivo registrado correctamente. Se ha agregado a la lista de dispositivos.</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aceptar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!--
-SCRIPT 1: GESTIÓN DE MODAL DE DISPOSITIVOS
-Función: Maneja todo el comportamiento del modal para registrar nuevos dispositivos
-Incluye:
-- Prevención de ejecución múltiple
-- Carga dinámica de modelos según marca seleccionada
-- Envío AJAX del formulario de dispositivo
-- Actualización en tiempo real del select principal
--->
+<!-- Scripts mejorados con el mismo diseño -->
 <script>
 // Evitar ejecución múltiple
 if (window.modalScriptEjecutado) {
@@ -250,20 +330,42 @@ if (window.modalScriptEjecutado) {
                 const modelo = document.getElementById('id_modelo_real')?.value;
 
                 if (!marca) {
-                    alert('Por favor selecciona una marca');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Marca Requerida',
+                        text: 'Por favor selecciona una marca para tu dispositivo.',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#ffc107'
+                    });
                     return;
                 }
 
                 if (!modelo) {
-                    alert('Por favor selecciona un modelo');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Modelo Requerido',
+                        text: 'Por favor selecciona un modelo para tu dispositivo.',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#ffc107'
+                    });
                     return;
                 }
 
                 console.log('📦 Datos a enviar - Marca:', marca, 'Modelo:', modelo);
 
+                // Mostrar loading
+                Swal.fire({
+                    title: 'Registrando Dispositivo...',
+                    text: 'Por favor espera un momento',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
                 // Enviar datos
                 const formData = new FormData(this);
-                formData.set('modelo', modelo); // Asegurar que se envíe el valor correcto
+                formData.set('modelo', modelo);
 
                 fetch(this.action, {
                     method: 'POST',
@@ -275,6 +377,8 @@ if (window.modalScriptEjecutado) {
                 })
                 .then(response => response.json())
                 .then(data => {
+                    Swal.close();
+
                     if (data.success) {
                         console.log('✅ Dispositivo guardado exitosamente');
 
@@ -295,10 +399,15 @@ if (window.modalScriptEjecutado) {
                         // Mostrar SweetAlert de éxito
                         Swal.fire({
                             icon: 'success',
-                            title: '¡Éxito!',
-                            text: 'Dispositivo registrado correctamente. Se ha agregado a la lista de dispositivos.',
-                            confirmButtonText: 'Aceptar',
-                            confirmButtonColor: '#3085d6',
+                            title: '¡Dispositivo Registrado!',
+                            html: `
+                                <div class="text-center">
+                                    <i class="fas fa-check-circle text-success mb-3" style="font-size: 3rem;"></i>
+                                    <p>Dispositivo registrado correctamente.</p>
+                                    <p class="text-muted small">Se ha agregado a la lista de dispositivos.</p>
+                                </div>
+                            `,
+                            showConfirmButton: false,
                             timer: 3000,
                             timerProgressBar: true
                         });
@@ -317,7 +426,7 @@ if (window.modalScriptEjecutado) {
                         // SweetAlert para errores
                         Swal.fire({
                             icon: 'error',
-                            title: 'Error',
+                            title: 'Error al Registrar',
                             text: 'Hubo un error al guardar el dispositivo. Por favor, verifica los datos.',
                             confirmButtonText: 'Entendido',
                             confirmButtonColor: '#d33'
@@ -325,8 +434,15 @@ if (window.modalScriptEjecutado) {
                     }
                 })
                 .catch(error => {
+                    Swal.close();
                     console.error('💥 Error en la solicitud:', error);
-                    alert('Error al guardar el dispositivo');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error de Conexión',
+                        text: 'No se pudo registrar el dispositivo. Intenta nuevamente.',
+                        confirmButtonText: 'Reintentar',
+                        confirmButtonColor: '#d33'
+                    });
                 });
             });
         }
@@ -336,14 +452,51 @@ if (window.modalScriptEjecutado) {
 }
 </script>
 
-<!--
-SCRIPT 2: CONFIRMACIÓN Y ENVÍO DE FORMULARIO DE CITA
-Función: Maneja la confirmación y envío del formulario principal de citas
-Incluye:
-- Mostrar resumen de la cita antes de enviar
-- Envío asíncrono con feedback visual
-- Manejo de respuestas (éxito/error)
--->
+<!-- Script para contador de caracteres en observaciones -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const textareaObservaciones = document.querySelector('textarea[name="observaciones"]');
+    const contadorObservaciones = document.getElementById('contador-observaciones');
+
+    const LIMITE_OBSERVACIONES = 400;
+
+    function actualizarContadorObservaciones() {
+        if (!textareaObservaciones || !contadorObservaciones) return;
+
+        const caracteresActuales = textareaObservaciones.value.length;
+        const caracteresRestantes = LIMITE_OBSERVACIONES - caracteresActuales;
+
+        contadorObservaciones.textContent = `${caracteresRestantes} caracteres restantes`;
+
+        // Cambiar color según los caracteres restantes
+        if (caracteresRestantes <= 0) {
+            contadorObservaciones.className = 'text-danger small fw-bold';
+            textareaObservaciones.classList.add('is-invalid');
+        } else if (caracteresRestantes <= 50) {
+            contadorObservaciones.className = 'text-warning small';
+            textareaObservaciones.classList.remove('is-invalid');
+        } else {
+            contadorObservaciones.className = 'text-muted small';
+            textareaObservaciones.classList.remove('is-invalid');
+        }
+    }
+
+    if (textareaObservaciones && contadorObservaciones) {
+        textareaObservaciones.addEventListener('input', function() {
+            // Limitar caracteres en tiempo real
+            if (this.value.length > LIMITE_OBSERVACIONES) {
+                this.value = this.value.substring(0, LIMITE_OBSERVACIONES);
+            }
+            actualizarContadorObservaciones();
+        });
+
+        // Inicializar con el valor actual
+        actualizarContadorObservaciones();
+    }
+});
+</script>
+
+<!-- Scripts existentes mejorados (manteniendo la funcionalidad) -->
 <script>
 function configurarFormularioCita() {
     const formCita = document.getElementById('form-cita');
@@ -352,37 +505,79 @@ function configurarFormularioCita() {
         formCita.addEventListener('submit', function(e) {
             e.preventDefault();
 
+            // Validar campos requeridos
+            const asesor = document.querySelector('select[name="asesor"]').value;
+            const dispositivo = document.getElementById('id_dispositivo').value;
+            const fecha = document.querySelector('input[name="fecha_cita"]').value;
+            const hora = document.querySelector('input[name="hora_cita"]').value;
+            const tipoServicio = document.querySelector('select[name="tipo_servicio"]').value;
+
+            let errores = [];
+
+            if (!asesor) errores.push('Debes seleccionar un asesor.');
+            if (!dispositivo) errores.push('Debes seleccionar un dispositivo.');
+            if (!fecha) errores.push('Debes seleccionar una fecha.');
+            if (!hora) errores.push('Debes seleccionar una hora.');
+            if (!tipoServicio) errores.push('Debes seleccionar un tipo de servicio.');
+
+            if (errores.length > 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Campos Requeridos',
+                    html: `
+                        <div class="text-start">
+                            <p>Por favor completa los siguientes campos:</p>
+                            <ul class="small">
+                                ${errores.map(error => `<li>${error}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `,
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#dc3545'
+                });
+                return;
+            }
+
             // Obtener datos para el resumen
             const asesorSelect = document.querySelector('select[name="asesor"]');
             const asesorText = asesorSelect.options[asesorSelect.selectedIndex].text;
             const dispositivoSelect = document.getElementById('id_dispositivo');
             const dispositivoText = dispositivoSelect.options[dispositivoSelect.selectedIndex].text;
-            const fecha = document.querySelector('input[name="fecha_cita"]').value;
-            const hora = document.querySelector('input[name="hora_cita"]').value;
-            const tipoServicio = document.querySelector('select[name="tipo_servicio"]').value;
 
             // Mostrar confirmación con resumen
             Swal.fire({
-                title: 'Confirmar Cita',
+                title: '¿Confirmar Cita?',
                 html: `
                     <div class="text-start">
-                        <p><strong>Asesor:</strong> ${asesorText}</p>
-                        <p><strong>Dispositivo:</strong> ${dispositivoText}</p>
-                        <p><strong>Fecha:</strong> ${fecha}</p>
-                        <p><strong>Hora:</strong> ${hora}</p>
-                        <p><strong>Servicio:</strong> ${tipoServicio}</p>
+                        <div class="row">
+                            <div class="col-6">
+                                <p><strong>Asesor:</strong></p>
+                                <p><strong>Dispositivo:</strong></p>
+                                <p><strong>Fecha:</strong></p>
+                                <p><strong>Hora:</strong></p>
+                                <p><strong>Servicio:</strong></p>
+                            </div>
+                            <div class="col-6">
+                                <p>${asesorText}</p>
+                                <p>${dispositivoText}</p>
+                                <p>${fecha}</p>
+                                <p>${hora}</p>
+                                <p>${tipoServicio}</p>
+                            </div>
+                        </div>
+                        <p class="mt-3 text-muted border-top pt-2">¿Estás seguro de que quieres agendar esta cita?</p>
                     </div>
-                    <p class="mt-3 text-muted">¿Estás seguro de que quieres agendar esta cita?</p>
                 `,
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'Sí, Agendar',
-                cancelButtonText: 'Cancelar',
+                confirmButtonText: 'Sí, Agendar Cita',
+                cancelButtonText: 'Revisar Datos',
                 confirmButtonColor: '#28a745',
-                cancelButtonColor: '#dc3545'
+                cancelButtonColor: '#6c757d',
+                backdrop: true,
+                width: '600px'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Enviar formulario
                     enviarFormularioCita(this);
                 }
             });
@@ -432,7 +627,6 @@ function enviarFormularioCita(form) {
             });
         } else {
             return response.text().then(text => {
-                // Si hay errores de validación, mostrarlos
                 Swal.fire({
                     icon: 'error',
                     title: 'Error de Validación',
@@ -455,19 +649,6 @@ function enviarFormularioCita(form) {
     });
 }
 
-document.addEventListener('DOMContentLoaded', configurarFormularioCita);
-</script>
-
-<!--
-SCRIPT 3: VALIDACIONES DE FECHA Y HORA
-Función: Valida las restricciones de fecha y hora para las citas
-Incluye:
-- Fecha mínima (mañana)
-- Horario permitido (8:00 AM - 2:00 PM)
-- Verificación de disponibilidad de fecha
-- Validación en tiempo real
--->
-<script>
 // Configurar validaciones de fecha y hora
 function configurarValidacionesCita() {
     const fechaInput = document.querySelector('input[name="fecha_cita"]');
@@ -489,7 +670,7 @@ function configurarValidacionesCita() {
         // Configurar horario restringido
         horaInput.min = '08:00';
         horaInput.max = '14:00';
-        horaInput.step = '1800'; // 30 minutos
+        horaInput.step = '1800';
 
         // Agregar validación en tiempo real
         horaInput.addEventListener('change', validarHora);
@@ -510,7 +691,7 @@ function configurarValidacionesCita() {
     }
 }
 
-// Validar fecha
+// Funciones de validación (mantener las existentes)
 function validarFecha() {
     const fechaInput = document.querySelector('input[name="fecha_cita"]');
     const fechaSeleccionada = new Date(fechaInput.value);
@@ -525,7 +706,6 @@ function validarFecha() {
             mostrarError('Las citas deben agendarse con al menos un día de anticipación.');
             return false;
         } else {
-            // Verificar disponibilidad de la fecha
             verificarDisponibilidadFecha(fechaInput.value);
             return true;
         }
@@ -533,14 +713,11 @@ function validarFecha() {
     return false;
 }
 
-// Validar hora
 function validarHora() {
     const horaInput = document.querySelector('input[name="hora_cita"]');
-
     if (horaInput.value) {
         const [horas, minutos] = horaInput.value.split(':').map(Number);
         const horaSeleccionada = horas + minutos / 60;
-
         if (horaSeleccionada < 8 || horaSeleccionada > 14) {
             mostrarError('El horario debe estar entre 8:00 AM y 2:00 PM.');
             return false;
@@ -550,7 +727,6 @@ function validarHora() {
     return false;
 }
 
-// Verificar disponibilidad de fecha via AJAX
 function verificarDisponibilidadFecha(fecha) {
     fetch(`/citas/verificar-fecha/?fecha=${fecha}`)
         .then(response => response.json())
@@ -562,7 +738,6 @@ function verificarDisponibilidadFecha(fecha) {
         .catch(error => console.error('Error verificando fecha:', error));
 }
 
-// Mostrar error con SweetAlert
 function mostrarError(mensaje) {
     Swal.fire({
         icon: 'warning',
@@ -573,103 +748,13 @@ function mostrarError(mensaje) {
     });
 }
 
-// Validar formulario completo antes de enviar
-function validarFormularioCompleto() {
-    const fechaValida = validarFecha();
-    const horaValida = validarHora();
-
-    if (!fechaValida || !horaValida) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Datos Incorrectos',
-            text: 'Por favor corrige los errores en fecha y hora antes de agendar la cita.',
-            confirmButtonText: 'Entendido',
-            confirmButtonColor: '#ffc107'
-        });
-        return false;
-    }
-
-    return true;
-}
-
 // Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
     configurarValidacionesCita();
-
-    // Modificar el envío del formulario para incluir validaciones
-    const formCita = document.getElementById('form-cita');
-    if (formCita) {
-        formCita.addEventListener('submit', function(e) {
-            if (!validarFormularioCompleto()) {
-                e.preventDefault();
-                return false;
-            }
-
-            // Si pasa las validaciones, continuar con el proceso normal
-            return true;
-        });
-    }
+    configurarFormularioCita();
 });
-</script>
 
-<!--
-SCRIPT 4: CONTADOR DE CARACTERES PARA OBSERVACIONES
-Función: Muestra y controla el límite de caracteres en el campo observaciones
-Incluye:
-- Contador en tiempo real
-- Cambio de color según caracteres restantes
-- Límite de 400 caracteres
--->
-<script>
-// Contador de caracteres para observaciones
-function contarCaracteresObservaciones(textarea) {
-    const maxCaracteres = 400;
-    const caracteresActuales = textarea.value.length;
-    const contador = document.getElementById('contador-observaciones');
-
-    if (contador) {
-        contador.textContent = `${caracteresActuales}/${maxCaracteres} caracteres`;
-
-        // Cambiar color cuando se acerca al límite
-        if (caracteresActuales > 350) {
-            contador.className = 'text-warning';
-        } else if (caracteresActuales >= maxCaracteres) {
-            contador.className = 'text-danger';
-        } else {
-            contador.className = 'text-muted';
-        }
-    }
-}
-
-// Inicializar contador cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', function() {
-    const textareaObservaciones = document.querySelector('textarea[name="observaciones"]');
-    if (textareaObservaciones) {
-        // Crear elemento contador
-        const contador = document.createElement('div');
-        contador.id = 'contador-observaciones';
-        contador.className = 'text-muted small mt-1';
-        contador.textContent = `0/400 caracteres`;
-
-        // Insertar después del textarea
-        textareaObservaciones.parentNode.appendChild(contador);
-
-        // Contar caracteres iniciales
-        contarCaracteresObservaciones(textareaObservaciones);
-    }
-});
-</script>
-
-<!--
-SCRIPT 5: MANEJO DE MENSAJES DEL SISTEMA
-Función: Muestra mensajes de Django (éxito, error, etc.) usando SweetAlert
-Incluye:
-- Detección automática de mensajes Django
-- Display según tipo de mensaje (error/success)
-- Estilos personalizados para cada tipo
--->
-<script>
-// Función para mostrar mensajes de Django con SweetAlert
+// Mostrar mensajes de Django
 function mostrarMensajes() {
     {% if messages %}
         {% for message in messages %}
@@ -699,19 +784,23 @@ function mostrarMensajes() {
     {% endif %}
 }
 
-// Ejecutar cuando el documento esté listo
-document.addEventListener('DOMContentLoaded', function() {
-    mostrarMensajes();
-});
+document.addEventListener('DOMContentLoaded', mostrarMensajes);
 </script>
+
 {% else %}
-<div class="container mt-4">
-    <div class="alert alert-danger" role="alert">
-        <h4 class="alert-heading">Acceso Denegado</h4>
-        <p>No tienes permisos para acceder a esta página. Solo usuarios con rol de Admin o Cliente pueden agendar citas.</p>
+<div class="row justify-content-center">
+  <div class="col-12 col-md-8 col-lg-6">
+    <div class="card">
+      <div class="card-body text-center py-5">
+        <i class="fas fa-ban text-danger mb-3" style="font-size: 4rem;"></i>
+        <h3 class="text-danger">Acceso Denegado</h3>
+        <p class="text-muted">No tienes permisos para acceder a esta página. Solo usuarios con rol de Admin o Cliente pueden agendar citas.</p>
+        <a href="{% url 'inicio:home' %}" class="btn btn-primary mt-3">
+          <i class="fas fa-home me-2"></i>Volver al Inicio
+        </a>
+      </div>
     </div>
+  </div>
 </div>
 {% endif %}
 {% endblock %}
-
-

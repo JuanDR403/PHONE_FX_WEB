@@ -1,25 +1,33 @@
+# tienda/views.py
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
+from django.contrib import messages
 from productos.models import Producto, Categoria
 from .forms import ProductoForm
 
-# Vista de la tienda: lista de productos con filtro por categoría
+
 def tiene_permiso(request, roles_permitidos):
     if not request.user.is_authenticated:
         return False
     perfil = getattr(request.user, 'perfil_usuarios', None)
-    if perfil and perfil.id_rol and perfil.id_rol.nombre.lower() in [r.lower() for r in roles_permitidos]:
-        return True
+    if perfil and perfil.id_rol and perfil.id_rol.nombre:
+        rol_actual = perfil.id_rol.nombre.lower()
+        roles_permitidos_lower = [r.lower() for r in roles_permitidos]
+        return rol_actual in roles_permitidos_lower
     return False
 
+
 def lista_productos(request):
-    rol = request.user.perfil_usuarios.id_rol.nombre if hasattr(request.user, 'perfil_usuarios') else ''
+    # Obtener rol en minúsculas para consistencia
+    if hasattr(request.user, 'perfil_usuarios') and request.user.perfil_usuarios.id_rol:
+        rol = request.user.perfil_usuarios.id_rol.nombre.lower()
+    else:
+        rol = ''
 
     categoria_id = request.GET.get('categoria')
-
     categorias = Categoria.objects.all()
     productos = Producto.objects.select_related('categoria').all()
 
@@ -27,7 +35,6 @@ def lista_productos(request):
         try:
             productos = productos.filter(categoria_id=int(categoria_id))
         except (ValueError, TypeError):
-            # Si el parámetro no es válido, no filtra
             pass
 
     context = {
@@ -40,7 +47,8 @@ def lista_productos(request):
 
 
 def crear_producto(request):
-    if not tiene_permiso(request, ['Admin', 'asesor']):
+    if not tiene_permiso(request, ['admin', 'asesor']):
+        messages.error(request, '❌ No tienes permisos para crear productos.')
         return redirect('tienda:lista_productos')
 
     if request.method == 'POST':
@@ -51,16 +59,21 @@ def crear_producto(request):
             if imagen_subida:
                 fs = FileSystemStorage()
                 filename = fs.save(f"productos/{imagen_subida.name}", imagen_subida)
-                producto.imagen = settings.MEDIA_URL + filename  # guardamos URL servible
+                producto.imagen = settings.MEDIA_URL + filename
             producto.save()
+            messages.success(request, '✅ Producto creado exitosamente.')
             return redirect(reverse('tienda:lista_productos'))
+        else:
+            messages.error(request, '❌ Por favor corrige los errores en el formulario.')
     else:
         form = ProductoForm()
+
     return render(request, 'tienda/crear_producto.html', {'form': form})
 
 
 def editar_producto(request, idproducto):
-    if not tiene_permiso(request, ['Admin', 'asesor']):
+    if not tiene_permiso(request, ['admin', 'asesor']):
+        messages.error(request, '❌ No tienes permisos para editar productos.')
         return redirect('tienda:lista_productos')
 
     producto = get_object_or_404(Producto, pk=idproducto)
@@ -74,17 +87,24 @@ def editar_producto(request, idproducto):
                 filename = fs.save(f"productos/{imagen_subida.name}", imagen_subida)
                 producto.imagen = settings.MEDIA_URL + filename
             producto.save()
+            messages.success(request, '✅ Producto actualizado exitosamente.')
             return redirect(reverse('tienda:lista_productos'))
+        else:
+            messages.error(request, '❌ Por favor corrige los errores en el formulario.')
     else:
         form = ProductoForm(instance=producto)
+
     return render(request, 'tienda/editar_producto.html', {'form': form, 'producto': producto})
 
 
 @require_POST
 def eliminar_producto(request, idproducto):
-    if not tiene_permiso(request, ['Admin', 'asesor']):
+    if not tiene_permiso(request, ['admin', 'asesor']):
+        messages.error(request, '❌ No tienes permisos para eliminar productos.')
         return redirect('tienda:lista_productos')
 
     producto = get_object_or_404(Producto, pk=idproducto)
+    nombre_producto = producto.nombre
     producto.delete()
+    messages.success(request, f'✅ Producto "{nombre_producto}" eliminado exitosamente.')
     return redirect(reverse('tienda:lista_productos'))

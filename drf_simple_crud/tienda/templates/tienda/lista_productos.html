@@ -216,4 +216,168 @@
     {% endfor %}
   </div>
 {% endif %}
+    <!-- Scripts para SweetAlert y funcionalidades -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+// Función para toggle de descripción
+function toggleDescripcion(elementId, button) {
+  const element = document.getElementById(elementId);
+  if (element.style.maxHeight && element.style.maxHeight !== 'none') {
+    element.style.maxHeight = 'none';
+    button.textContent = 'Ver menos';
+  } else {
+    element.style.maxHeight = '4.5em';
+    button.textContent = 'Ver más';
+  }
+}
+
+// Función para eliminar producto con SweetAlert
+function confirmarEliminacion(productoId, productoNombre) {
+  Swal.fire({
+    title: '¿Eliminar Producto?',
+    html: `
+      <div class="text-center">
+        <i class="fas fa-trash-alt text-danger mb-3" style="font-size: 3rem;"></i>
+        <p>¿Estás seguro de que quieres eliminar el producto?</p>
+        <p><strong>"${productoNombre}"</strong></p>
+        <p class="text-muted small">Esta acción no se puede deshacer.</p>
+      </div>
+    `,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, Eliminar',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#dc3545',
+    cancelButtonColor: '#6c757d',
+    backdrop: true,
+    width: '500px'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Crear formulario dinámico para enviar la solicitud POST
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = `/tienda/eliminar/${productoId}/`;
+
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+      const csrfInput = document.createElement('input');
+      csrfInput.type = 'hidden';
+      csrfInput.name = 'csrfmiddlewaretoken';
+      csrfInput.value = csrfToken;
+
+      form.appendChild(csrfInput);
+      document.body.appendChild(form);
+
+      // Mostrar loading
+      Swal.fire({
+        title: 'Eliminando Producto...',
+        text: 'Por favor espera un momento',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      form.submit();
+    }
+  });
+}
+
+// Event listeners para formularios de compra
+document.addEventListener('DOMContentLoaded', function() {
+  // Eliminar producto
+  document.querySelectorAll('.eliminar-producto-btn').forEach(button => {
+    button.addEventListener('click', function() {
+      const productoId = this.getAttribute('data-producto-id');
+      const productoNombre = this.getAttribute('data-producto-nombre');
+      confirmarEliminacion(productoId, productoNombre);
+    });
+  });
+
+  // Agregar al carrito con confirmación
+  document.querySelectorAll('.agregar-carrito-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const productoNombre = this.closest('.card').querySelector('.card-title').textContent;
+
+      Swal.fire({
+        title: 'Agregar al Carrito',
+        html: `
+          <div class="text-center">
+            <i class="fas fa-cart-plus text-primary mb-3" style="font-size: 3rem;"></i>
+            <p>¿Agregar <strong>${productoNombre}</strong> al carrito?</p>
+          </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, Agregar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.submit();
+        }
+      });
+    });
+  });
+
+  // Comprar ahora con confirmación
+  document.querySelectorAll('.comprar-ahora-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const productoNombre = this.closest('.card').querySelector('.card-title').textContent;
+
+      Swal.fire({
+        title: 'Comprar Ahora',
+        html: `
+          <div class="text-center">
+            <i class="fas fa-bolt text-warning mb-3" style="font-size: 3rem;"></i>
+            <p>¿Proceder con la compra de <strong>${productoNombre}</strong>?</p>
+            <p class="text-muted small">Serás redirigido al proceso de pago.</p>
+          </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, Comprar',
+        cancelButtonText: 'Seguir Viendo',
+        confirmButtonColor: '#ffc107',
+        cancelButtonColor: '#6c757d'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.submit();
+        }
+      });
+    });
+  });
+});
+
+// Mostrar mensajes de Django
+function mostrarMensajes() {
+  {% if messages %}
+    {% for message in messages %}
+      {% if message.tags == 'success' %}
+        Swal.fire({
+          icon: 'success',
+          title: '¡Éxito!',
+          text: '{{ message }}',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#28a745',
+          timer: 3000,
+          timerProgressBar: true
+        });
+      {% elif message.tags == 'error' %}
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: '{{ message }}',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#dc3545'
+        });
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+}
+
+document.addEventListener('DOMContentLoaded', mostrarMensajes);
+</script>
 {% endblock %}

@@ -8,57 +8,142 @@
   <div class="col-12 col-md-8 col-lg-6">
     <div class="card">
       <div class="card-header">
-        <h5 class="mb-0">Agregar nuevo producto</h5>
+        <h5 class="mb-0">
+          <i class="fas fa-plus-circle text-primary me-2"></i>
+          Agregar nuevo producto
+        </h5>
       </div>
       <div class="card-body">
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" id="form-producto">
           {% csrf_token %}
+
           <div class="mb-3">
-            <label class="form-label">Nombre</label>
+            <label class="form-label fw-bold">Nombre del Producto</label>
             {{ form.nombre }}
-            {% if form.nombre.errors %}<div class="text-danger small">{{ form.nombre.errors }}</div>{% endif %}
+            <div class="d-flex justify-content-between align-items-center mt-1">
+              <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>
+                Nombre descriptivo del producto
+              </div>
+              <span id="contador-nombre" class="text-muted small">100 caracteres restantes</span>
+            </div>
+            {% if form.nombre.errors %}
+              <div class="text-danger small mt-1">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                {{ form.nombre.errors }}
+              </div>
+            {% endif %}
           </div>
+
           <div class="mb-3">
-            <label class="form-label">Descripción</label>
+            <label class="form-label fw-bold">Descripción</label>
             {{ form.descripcion }}
-            {% if form.descripcion.errors %}<div class="text-danger small">{{ form.descripcion.errors }}</div>{% endif %}
+            <div class="d-flex justify-content-between align-items-center mt-1">
+              <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>
+                Describe las características principales del producto.
+              </div>
+              <span id="contador-descripcion" class="text-muted small">300 caracteres restantes</span>
+            </div>
+            {% if form.descripcion.errors %}
+              <div class="text-danger small mt-1">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                {{ form.descripcion.errors }}
+              </div>
+            {% endif %}
           </div>
-          <div class="mb-3">
-            <label class="form-label">Precio</label>
-            {{ form.precio }}
-            {% if form.precio.errors %}<div class="text-danger small">{{ form.precio.errors }}</div>{% endif %}
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-bold">Precio (COP)</label>
+                {{ form.precio }}
+                {% if form.precio.errors %}
+                  <div class="text-danger small mt-1">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    {{ form.precio.errors }}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-bold">Stock Disponible</label>
+                {{ form.stock }}
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Máximo 999 unidades
+                </div>
+                {% if form.stock.errors %}
+                  <div class="text-danger small mt-1">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    {{ form.stock.errors }}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
           </div>
+
           <div class="mb-3">
-            <label class="form-label">Stock</label>
-            {{ form.stock }}
-            {% if form.stock.errors %}<div class="text-danger small">{{ form.stock.errors }}</div>{% endif %}
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Imagen</label>
+            <label class="form-label fw-bold">Imagen del Producto</label>
             {{ form.imagen_archivo }}
-            <div class="form-text">Seleccione una imagen desde su equipo. Opcional.</div>
-            {% if form.imagen_archivo.errors %}<div class="text-danger small">{{ form.imagen_archivo.errors }}</div>{% endif %}
+            <div class="form-text">
+              <i class="fas fa-image me-1"></i>
+              Formatos soportados: JPG, PNG, GIF. Tamaño máximo: 5MB.
+            </div>
+            {% if form.imagen_archivo.errors %}
+              <div class="text-danger small mt-1">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                {{ form.imagen_archivo.errors }}
+              </div>
+            {% endif %}
           </div>
-          <div class="mb-3">
-            <label class="form-label">Categoría</label>
-            {{ form.categoria }}
-            {% if form.categoria.errors %}<div class="text-danger small">{{ form.categoria.errors }}</div>{% endif %}
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-bold">Categoría</label>
+                {{ form.categoria }}
+                {% if form.categoria.errors %}
+                  <div class="text-danger small mt-1">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    {{ form.categoria.errors }}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-bold">Estado</label>
+                {{ form.activo }}
+                <div class="form-text">
+                  Los productos inactivos no se mostrarán en la tienda.
+                </div>
+                {% if form.activo.errors %}
+                  <div class="text-danger small mt-1">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    {{ form.activo.errors }}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Activo</label>
-            {{ form.activo }}
-            {% if form.activo.errors %}<div class="text-danger small">{{ form.activo.errors }}</div>{% endif %}
-          </div>
-          <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary">Guardar</button>
-            <a href="{% url 'tienda:lista_productos' %}" class="btn btn-secondary">Cancelar</a>
+
+          <div class="d-flex gap-2 pt-3 border-top">
+            <button type="submit" class="btn btn-primary" id="btn-guardar">
+              <i class="fas fa-save me-2"></i>Guardar Producto
+            </button>
+            <a href="{% url 'tienda:lista_productos' %}" class="btn btn-secondary">
+              <i class="fas fa-times me-2"></i>Cancelar
+            </a>
           </div>
         </form>
       </div>
     </div>
-</div>
+  </div>
 </div>
 
+<!-- Script para formato de precio COP -->
 <script>
   (function(){
     function formatCOP(val){
@@ -67,26 +152,269 @@
       if(!digits) return '';
       return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
+
     function attach(el){
       if(!el) return;
-      // Preformat current value
       el.value = formatCOP(el.value);
       el.addEventListener('input', function(e){
-        const start = el.selectionStart;
-        const end = el.selectionEnd;
         const before = el.value;
         const formatted = formatCOP(before);
         el.value = formatted;
-        // Move caret to end to keep UX simple
         try { el.setSelectionRange(el.value.length, el.value.length); } catch(_){ }
       });
       el.addEventListener('blur', function(){ el.value = formatCOP(el.value); });
       el.setAttribute('placeholder', '0');
     }
+
     document.addEventListener('DOMContentLoaded', function(){
       var inputs = document.querySelectorAll('input.precio-cop');
       if(inputs && inputs.length){ inputs.forEach(attach); }
     });
   })();
+</script>
+
+<!-- Script para contadores de caracteres y validación de stock -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('form-producto');
+  const inputNombre = document.querySelector('input[name="nombre"]');
+  const textareaDescripcion = document.querySelector('textarea[name="descripcion"]');
+  const inputStock = document.querySelector('input[name="stock"]');
+  const contadorNombre = document.getElementById('contador-nombre');
+  const contadorDescripcion = document.getElementById('contador-descripcion');
+
+  // Límites de caracteres
+  const LIMITE_NOMBRE = 100;
+  const LIMITE_DESCRIPCION = 300;
+  const MAX_STOCK = 999;
+
+  // 🔹 INICIALIZAR CONTADORES
+  function inicializarContadores() {
+    actualizarContador(inputNombre, contadorNombre, LIMITE_NOMBRE);
+    actualizarContador(textareaDescripcion, contadorDescripcion, LIMITE_DESCRIPCION);
+  }
+
+  // 🔹 FUNCIÓN: Actualizar contador de caracteres
+  function actualizarContador(elemento, contador, limite) {
+    if (!elemento || !contador) return;
+
+    const caracteresActuales = elemento.value.length;
+    const caracteresRestantes = limite - caracteresActuales;
+
+    contador.textContent = `${caracteresRestantes} caracteres restantes`;
+
+    // Cambiar color según los caracteres restantes
+    if (caracteresRestantes <= 0) {
+      contador.className = 'text-danger small fw-bold';
+      elemento.classList.add('is-invalid');
+    } else if (caracteresRestantes <= 20) {
+      contador.className = 'text-warning small';
+      elemento.classList.remove('is-invalid');
+    } else {
+      contador.className = 'text-muted small';
+      elemento.classList.remove('is-invalid');
+    }
+  }
+
+  // 🔹 FUNCIÓN: Validar y limitar stock
+  function validarStock(input) {
+    if (!input) return;
+
+    let valor = input.value.replace(/\D/g, ''); // Solo números
+    valor = valor.slice(0, 3); // Máximo 3 dígitos
+
+    if (valor > MAX_STOCK) {
+      valor = MAX_STOCK;
+    }
+
+    input.value = valor;
+
+    // Actualizar clase visual
+    if (valor > 0) {
+      input.classList.remove('is-invalid');
+      input.classList.add('is-valid');
+    } else {
+      input.classList.remove('is-valid');
+    }
+  }
+
+  // 🔹 EVENT LISTENERS para contadores
+  if (inputNombre && contadorNombre) {
+    inputNombre.addEventListener('input', function() {
+      // Limitar caracteres en tiempo real
+      if (this.value.length > LIMITE_NOMBRE) {
+        this.value = this.value.substring(0, LIMITE_NOMBRE);
+      }
+      actualizarContador(this, contadorNombre, LIMITE_NOMBRE);
+    });
+
+    // Inicializar con el valor actual
+    actualizarContador(inputNombre, contadorNombre, LIMITE_NOMBRE);
+  }
+
+  if (textareaDescripcion && contadorDescripcion) {
+    textareaDescripcion.addEventListener('input', function() {
+      // Limitar caracteres en tiempo real
+      if (this.value.length > LIMITE_DESCRIPCION) {
+        this.value = this.value.substring(0, LIMITE_DESCRIPCION);
+      }
+      actualizarContador(this, contadorDescripcion, LIMITE_DESCRIPCION);
+    });
+
+    // Inicializar con el valor actual
+    actualizarContador(textareaDescripcion, contadorDescripcion, LIMITE_DESCRIPCION);
+  }
+
+  // 🔹 EVENT LISTENER para stock
+  if (inputStock) {
+    inputStock.addEventListener('input', function() {
+      validarStock(this);
+    });
+
+    inputStock.addEventListener('blur', function() {
+      validarStock(this);
+    });
+
+    // Inicializar validación
+    validarStock(inputStock);
+
+    // Prevenir entrada de caracteres no numéricos
+    inputStock.addEventListener('keypress', function(e) {
+      const charCode = e.which ? e.which : e.keyCode;
+      if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+        e.preventDefault();
+        return false;
+      }
+      return true;
+    });
+  }
+
+  // 🔹 VALIDACIÓN DEL FORMULARIO antes de enviar
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Validar campos requeridos
+      const nombre = inputNombre.value.trim();
+      const descripcion = textareaDescripcion.value.trim();
+      const precio = document.querySelector('input[name="precio"]').value.trim();
+      const stock = inputStock.value.trim();
+
+      let errores = [];
+
+      // Validar nombre
+      if (!nombre) {
+        errores.push('El nombre del producto es obligatorio.');
+      } else if (nombre.length > LIMITE_NOMBRE) {
+        errores.push(`El nombre no puede exceder ${LIMITE_NOMBRE} caracteres.`);
+      }
+
+      // Validar descripción
+      if (descripcion.length > LIMITE_DESCRIPCION) {
+        errores.push(`La descripción no puede exceder ${LIMITE_DESCRIPCION} caracteres.`);
+      }
+
+      // Validar precio
+      if (!precio || parseInt(precio.replace(/\D/g, '')) <= 0) {
+        errores.push('El precio debe ser mayor a cero.');
+      }
+
+      // Validar stock
+      if (stock && (parseInt(stock) < 0 || parseInt(stock) > MAX_STOCK)) {
+        errores.push(`El stock debe estar entre 0 y ${MAX_STOCK}.`);
+      }
+
+      // Mostrar errores si los hay
+      if (errores.length > 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Errores en el Formulario',
+          html: `
+            <div class="text-start">
+              <p>Por favor corrige los siguientes errores:</p>
+              <ul class="small">
+                ${errores.map(error => `<li>${error}</li>`).join('')}
+              </ul>
+            </div>
+          `,
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#dc3545'
+        });
+        return;
+      }
+
+      // Mostrar confirmación
+      Swal.fire({
+        title: '¿Crear Producto?',
+        html: `
+          <div class="text-start">
+            <p><strong>Nombre:</strong> ${nombre}</p>
+            <p><strong>Precio:</strong> $${formatNumber(precio)} COP</p>
+            <p><strong>Stock:</strong> ${stock || '0'} unidades</p>
+            <p><strong>Caracteres usados:</strong> ${nombre.length}/${LIMITE_NOMBRE} (nombre), ${descripcion.length}/${LIMITE_DESCRIPCION} (descripción)</p>
+            <p class="text-muted small mt-2">¿Confirmas que quieres crear este producto?</p>
+          </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, Crear Producto',
+        cancelButtonText: 'Revisar Datos',
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        backdrop: true,
+        width: '500px'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Mostrar loading
+          Swal.fire({
+            title: 'Creando Producto...',
+            text: 'Por favor espera un momento',
+            allowOutsideClick: false,
+            didOpen: () => {
+              Swal.showLoading();
+            }
+          });
+
+          // Enviar formulario
+          form.submit();
+        }
+      });
+    });
+  }
+
+  function formatNumber(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  }
+});
+
+// Mostrar mensajes de Django
+function mostrarMensajes() {
+  {% if messages %}
+    {% for message in messages %}
+      {% if message.tags == 'success' %}
+        Swal.fire({
+          icon: 'success',
+          title: '¡Éxito!',
+          text: '{{ message }}',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#28a745',
+          timer: 3000,
+          timerProgressBar: true
+        });
+      {% elif message.tags == 'error' %}
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: '{{ message }}',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#dc3545'
+        });
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+}
+
+document.addEventListener('DOMContentLoaded', mostrarMensajes);
 </script>
 {% endblock %}
