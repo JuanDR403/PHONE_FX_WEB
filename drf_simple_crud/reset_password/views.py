@@ -8,6 +8,8 @@ from django.conf import settings
 from django.core.cache import cache
 from .models import PasswordResetCode
 import logging
+from django.contrib import messages
+from django.shortcuts import redirect
 
 # Nuevas importaciones para la vista de página HTML
 from django.shortcuts import render
@@ -162,7 +164,7 @@ class PasswordResetRequestPageView(View):
     """
     Vista para mostrar la página de solicitud de reseteo de contraseña.
     """
-    template_name = 'reset_password/request_reset_page.html' # Deberás crear este archivo HTML
+    template_name = 'reset_password/request_reset_page.html'
 
     def get(self, request, *args, **kwargs):
         # Simplemente muestra la página con el formulario
@@ -170,16 +172,16 @@ class PasswordResetRequestPageView(View):
 
     def post(self, request, *args, **kwargs):
         email = request.POST.get('email', '').strip().lower()
-        context = {} # Contexto para pasar a la plantilla
+        context = {}
 
         if not email:
             context['error_message'] = "El campo email es requerido."
-            return render(request, self.template_name, context, status=status.HTTP_400_BAD_REQUEST)
+            return render(request, self.template_name, context, status=400)
 
         cache_key = f"reset_attempt_{email}"
         if cache.get(cache_key):
             context['error_message'] = "Espere 5 minutos antes de solicitar otro código."
-            return render(request, self.template_name, context, status=status.HTTP_429_TOO_MANY_REQUESTS)
+            return render(request, self.template_name, context, status=429)
 
         try:
             user = User.objects.get(email=email)
@@ -187,17 +189,18 @@ class PasswordResetRequestPageView(View):
             PasswordResetCode.objects.filter(user=user).update(is_used=True)
             reset_code_obj = PasswordResetCode.objects.create(user=user)
 
-            # Lógica para enviar el email (similar a _send_reset_email)
+            # Lógica para enviar el email
             email_subject = "Recuperación de contraseña - PhoneFX"
             email_context = {
                 'user': user,
                 'code': reset_code_obj.code,
                 'expiry_minutes': settings.PASSWORD_RESET['CODE_TIMEOUT']
             }
+
             try:
                 send_mail(
                     subject=email_subject,
-                    message="", # Puedes generar un mensaje de texto plano aquí si lo deseas
+                    message="",
                     html_message=render_to_string('reset_password/email_template.html', email_context),
                     from_email=settings.PASSWORD_RESET['EMAIL_FROM'],
                     recipient_list=[user.email],
@@ -205,30 +208,96 @@ class PasswordResetRequestPageView(View):
                 )
                 logger.info(f'Código enviado a {email} (desde página web)')
                 cache.set(cache_key, True, timeout=300)
-                context['success_message'] = (
-                    f"Se ha enviado un código de recuperación a su correo electrónico. "
-                    f"El código es válido por {settings.PASSWORD_RESET['CODE_TIMEOUT']} minutos."
-                )
-                # Opcionalmente, puedes mostrar el código en la página solo para desarrollo:
-                # context['reset_code_for_dev'] = reset_code_obj.code
+
+                # REDIRECCIÓN AUTOMÁTICA en lugar de mostrar mensaje
+                messages.success(request,
+                                 f"Se ha enviado un código de recuperación a su correo electrónico. "
+                                 f"El código es válido por {settings.PASSWORD_RESET['CODE_TIMEOUT']} minutos."
+                                 )
+                return redirect('reset_password:verify_code')  # Redirección automática
+
             except Exception as e:
                 logger.error(f'Error enviando email a {user.email} (desde página web): {str(e)}')
                 context['error_message'] = "Hubo un error al enviar el correo. Por favor, inténtelo de nuevo más tarde."
-                return render(request, self.template_name, context, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-            return render(request, self.template_name, context)
+                return render(request, self.template_name, context, status=500)
 
         except User.DoesNotExist:
-            # Por seguridad, usualmente no se revela si el email existe o no.
-            # Se puede mostrar un mensaje genérico.
+            # Por seguridad, mostramos mensaje genérico pero NO redireccionamos
             logger.warning(f'Intento de reseteo para email no registrado (desde página web): {email}')
-            context['success_message'] = ( # Mensaje genérico aunque el usuario no exista
+            context['success_message'] = (
                 f"Si una cuenta con el email {email} existe, se habrá enviado un código de recuperación. "
                 f"El código es válido por {settings.PASSWORD_RESET['CODE_TIMEOUT']} minutos."
             )
-            # No establezcas el cache_key aquí para no dar pistas si el usuario existe.
             return render(request, self.template_name, context)
         except Exception as e:
             logger.error(f'Error inesperado en solicitud de reseteo (página web) para {email}: {str(e)}')
             context['error_message'] = "Ocurrió un error inesperado. Por favor, inténtelo de nuevo."
-            return render(request, self.template_name, context, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return render(request, self.template_name, context, status=500)
+
+
+class PasswordResetVerifyPageView(View):
+    """
+    Vista para mostrar y procesar la página de verificación de código
+    """
+    template_name = 'reset_password/verify_code.html'
+
+    def get(self, request, *args, **kwargs):
+        # Mostrar el formulario de verificación
+        return render(request, self.template_name)
+
+    def post(self, request, *args, **kwargs):
+        code = request.POST.get('code', '').strip()
+        new_password = request.POST.get('new_password', '')
+        confirm_password = request.POST.get('confirm_password', '')
+
+        # Validaciones básicas
+        if not code or not new_password or not confirm_password:
+            messages.error(request, "Todos los campos son requeridos")
+            return render(request, self.template_name, status=400)
+
+        if new_password != confirm_password:
+            messages.error(request, "Las contraseñas no coinciden")
+            return render(request, self.template_name, status=400)
+
+        if len(new_password) < 8:
+            messages.error(request, "La contraseña debe tener al menos 8 caracteres")
+            return render(request, self.template_name, status=400)
+
+        try:
+            # Buscar el código no utilizado
+            reset_code = PasswordResetCode.objects.get(
+                code=code,
+                is_used=False
+            )
+
+            # Verificar si ha expirado
+            if reset_code.is_expired:
+                reset_code.is_used = True
+                reset_code.save()
+                messages.error(request, "El código ha expirado. Por favor, solicita uno nuevo.")
+                return render(request, self.template_name, status=400)
+
+            # Actualizar la contraseña del usuario
+            user = reset_code.user
+            user.set_password(new_password)
+            user.save()
+
+            # Marcar el código como utilizado
+            reset_code.is_used = True
+            reset_code.save()
+
+            logger.info(f'Contraseña actualizada exitosamente para {user.email} (desde página web)')
+            messages.success(request,
+                             "¡Contraseña actualizada correctamente! Ya puedes iniciar sesión con tu nueva contraseña.")
+
+            # Redirigir al login
+            return redirect('logueo:login')  # Cambia por el nombre de tu URL de login
+
+        except PasswordResetCode.DoesNotExist:
+            logger.warning(f'Código inválido intentado (desde página web): {code}')
+            messages.error(request, "Código inválido o ya utilizado")
+            return render(request, self.template_name, status=400)
+        except Exception as e:
+            logger.error(f'Error inesperado en verificación de código (página web): {str(e)}')
+            messages.error(request, "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.")
+            return render(request, self.template_name, status=500)

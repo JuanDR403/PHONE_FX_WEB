@@ -1,27 +1,30 @@
 import os
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ==============================================================================
+# CONFIGURACIÓN BÁSICA DE DJANGO - DESARROLLO LOCAL
+# ==============================================================================
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-+kn+pe_f-rfp%dr#s#^rqm7m$*8a#l#l4s!l$^=2iv1f)cqf0n'
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
-ALLOWED_HOSTS = []
-
-
-# Application definition
+# ==============================================================================
+# CONFIGURACIÓN DE APLICACIONES
+# ==============================================================================
 
 INSTALLED_APPS = [
-    'tienda.apps.TiendaConfig',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
     'widget_tweaks',
+    'rest_framework',
+    'tienda.apps.TiendaConfig',
     'pedidos.apps.PedidosConfig',
     'citas.apps.CitasConfig',
     'productos.apps.ProductosConfig',
@@ -33,14 +36,6 @@ INSTALLED_APPS = [
     'usuarios.apps.UsuariosConfig',
     'inicio.apps.InicioConfig',
     'reset_password.apps.ResetPasswordConfig',
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-
-    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -72,9 +67,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'PHONE_FX.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+# ==============================================================================
+# CONFIGURACIÓN DE BASE DE DATOS
+# ==============================================================================
 
 DATABASES = {
     'default': {
@@ -93,9 +88,9 @@ DATABASES = {
     }
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
+# ==============================================================================
+# VALIDACIÓN DE CONTRASEÑAS Y AUTENTICACIÓN
+# ==============================================================================
 
 AUTHENTICATION_BACKENDS = [
     'logueo.backends.EmailOrUsernameModelBackend',
@@ -117,55 +112,69 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# ==============================================================================
+# CONFIGURACIÓN INTERNACIONAL
+# ==============================================================================
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+LANGUAGE_CODE = 'es-es'
+TIME_ZONE = 'America/Bogota'
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
+# ==============================================================================
+# ARCHIVOS ESTÁTICOS Y MEDIA
+# ==============================================================================
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # Para archivos estáticos globales
-    # Incluir directorios de aplicaciones específicas
-    os.path.join(BASE_DIR, 'logueo/static'),  # Para archivos estáticos de logueo
+    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'logueo/static'),
 ]
 
-# Media files (User uploaded files)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-# Redirecciones
+# ==============================================================================
+# CONFIGURACIÓN DE AUTENTICACIÓN Y REDIRECCIONES
+# ==============================================================================
+
 LOGIN_URL = 'logueo:login'
 LOGIN_REDIRECT_URL = 'inicio:home'
 LOGOUT_REDIRECT_URL = 'logueo:login'
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# ==============================================================================
+# CONFIGURACIÓN DE EMAIL - DESARROLLO (GMAIL)
+# ==============================================================================
 
-# Tiempo de expiración del código (en minutos)
-PASSWORD_RESET_TIMEOUT = 5
-PASSWORD_RESET_THROTTLE = '100/hour'
-# Añade al final del archivo:
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'juan_ricoce@fet.edu.co'  # ← CAMBIA POR TU GMAIL
+EMAIL_HOST_PASSWORD = 'kmhl sktu cdbv dyit'  # ← CONTRASEÑA DE APLICACIÓN
+DEFAULT_FROM_EMAIL = 'no-reply@phonefx.com'
+
+# ==============================================================================
+# CONFIGURACIÓN DE RESETEO DE CONTRASEÑA
+# ==============================================================================
+
 PASSWORD_RESET = {
-    'CODE_TIMEOUT': 8,  # Minutos
+    'CODE_TIMEOUT': 8,
     'EMAIL_FROM': 'no-reply@phonefx.com',
     'MAX_ATTEMPTS': 3,
 }
 
-# Mercado Pago configuration (use environment variables in production)
-MERCADOPAGO_PUBLIC_KEY = os.getenv('MP_PUBLIC_KEY', 'APP_USR-d1cd9d63-d9c2-4fd5-ae85-48656387d9ba')
-MERCADOPAGO_ACCESS_TOKEN = os.getenv('MP_ACCESS_TOKEN', 'APP_USR-943421116512765-102618-85e7cc1beead33cda7ab525fab33040c-1603390398')
-# In development you can use ngrok to expose your local server and set MP_WEBHOOK_URL to the public URL
-MERCADOPAGO_WEBHOOK_URL = os.getenv('MP_WEBHOOK_URL', '')
+# ==============================================================================
+# CONFIGURACIÓN DE MERCADO PAGO
+# ==============================================================================
+
+MERCADOPAGO_PUBLIC_KEY = 'APP_USR-d1cd9d63-d9c2-4fd5-ae85-48656387d9ba'
+MERCADOPAGO_ACCESS_TOKEN = 'APP_USR-943421116512765-102618-85e7cc1beead33cda7ab525fab33040c-1603390398'
+MERCADOPAGO_WEBHOOK_URL = ''
+
+# ==============================================================================
+# CONFIGURACIÓN ADICIONAL
+# ==============================================================================
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+

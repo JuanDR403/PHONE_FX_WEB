@@ -238,7 +238,7 @@ def ver_carrito(request):
         'mp_public_key': settings.MERCADOPAGO_PUBLIC_KEY,
     }
     return render(request, 'carrito/ver_carrito.html', context)
-
+#anadir al front end de la vista publica
 
 @login_required
 @transaction.atomic

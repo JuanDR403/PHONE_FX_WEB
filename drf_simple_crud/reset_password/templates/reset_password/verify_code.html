@@ -1,37 +1,191 @@
-{% extends 'base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Código - PhoneFX</title>
 
-{% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h3>Ingresa tu Código</h3>
+    <!-- CSS Base -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href="{% static 'css/auth/login.css' %}">
+
+    <style>
+        .auth-box {
+            position: relative;
+            background-color: #17213c4f;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 420px;
+        }
+
+        .form-container {
+            background-color: #f9f9f900;
+            border-radius: 6px;
+            padding: 40px;
+            margin-top: 40px;
+        }
+
+        .auth-button-container {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 10;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            background-color: white;
+        }
+
+        .form-group input:focus {
+            border-color: #4a90e2;
+            outline: none;
+        }
+
+        .submit-btn {
+            margin-top: 15px;
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+        }
+
+        .message-area {
+            margin-top: 20px;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .reset-links {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .reset-links a {
+            color: #b0c4de;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .reset-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="auth-box reset-password">
+            <!-- Botón de retroceso - ahora va al inicio -->
+            <div class="auth-button-container">
+                <div class="styled-wrapper">
+                    <button class="button auth-back-button" onclick="window.location.href='{% url 'inicio:home' %}'">
+                        <div class="button-box">
+                            <span class="button-elem">
+                                <svg viewBox="0 0 24 24" class="arrow-icon">
+                                    <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path>
+                                </svg>
+                            </span>
+                            <span class="button-elem">
+                                <svg viewBox="0 0 24 24" class="arrow-icon">
+                                    <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path>
+                                </svg>
+                            </span>
+                        </div>
+                    </button>
                 </div>
-                <div class="card-body">
-                    {% if messages %}
-                        {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }}">
-                            {{ message }}
-                        </div>
-                        {% endfor %}
-                    {% endif %}
+            </div>
 
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="code" class="form-label">Código de verificación</label>
-                            <input type="text" class="form-control" id="code" name="code" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="new_password" class="form-label">Nueva Contraseña</label>
-                            <input type="password" class="form-control" id="new_password" name="new_password" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
-                    </form>
+            <!-- Box interno para el formulario -->
+            <div class="form-container">
+                <h3 class="auth-title reset text-center" style="color: white; margin-bottom: 20px;">Verificar Código</h3>
+                <p class="text-center" style="color: #d3d3d3; font-size: 14px; margin-bottom: 25px;">
+                    Ingresa el código que recibiste por correo y tu nueva contraseña.
+                </p>
+
+                <!-- Mostrar mensajes de Django -->
+                {% if messages %}
+                <div class="message-area">
+                    {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}error{% else %}success{% endif %}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <form method="post" class="auth-form reset-password" novalidate>
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="code">Código de verificación:</label>
+                        <input type="text" name="code" id="code" required placeholder="Ingresa el código que recibiste">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new_password">Nueva Contraseña:</label>
+                        <input type="password" name="new_password" id="new_password" required placeholder="Mínimo 8 caracteres">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm_password">Confirmar Contraseña:</label>
+                        <input type="password" name="confirm_password" id="confirm_password" required placeholder="Repite tu contraseña">
+                    </div>
+
+                    <button type="submit" class="submit-btn">Cambiar Contraseña</button>
+                </form>
+
+                <div class="reset-links">
+                    <a href="{% url 'reset_password:request_reset' %}">¿No recibiste el código? Solicitar otro</a><br>
+                    <a href="{% url 'logueo:login' %}">Volver a Iniciar Sesión</a>
                 </div>
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
+
+    <!-- SweetAlert para mensajes -->
+    {% if messages %}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        {% for message in messages %}
+        Swal.fire({
+            title: '{{ message.tags|title }}',
+            text: '{{ message }}',
+            icon: '{{ message.tags }}',
+            confirmButtonText: 'OK'
+        });
+        {% endfor %}
+    </script>
+    {% endif %}
+</body>
+</html>

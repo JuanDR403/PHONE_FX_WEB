@@ -18,30 +18,30 @@
     }
 
     .profile-photo-box {
-        width: 250px; /* Tamaño fijo del avatar (cuadrado) */
-        height: 250px; /* Alto fijo para avatar */
-        border-radius: 8px; /* Esquina levemente redondeada */
-        overflow: hidden; /* Oculta cualquier parte de la imagen que sobresalga */
-        display: inline-block; /* Para centrarlo con text-center */
-        border: 3px solid #ddd; /* Borde opcional */
-        background-color: #f5f5f5; /* Color de fondo para el placeholder */
+        width: 250px;
+        height: 250px;
+        border-radius: 8px;
+        overflow: hidden;
+        display: inline-block;
+        border: 3px solid #ddd;
+        background-color: #f5f5f5;
         position: relative;
         margin-bottom: 15px;
     }
 
     .profile-photo-img {
-        width: 100%; /* Ocupa todo el ancho del contenedor */
-        height: 100%; /* Ocupa toda la altura del contenedor */
-        object-fit: cover; /* Cubre todo el cuadro, se expande o contrae según sea necesario */
-        object-position: center; /* Centra la imagen */
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
     }
 
     .profile-photo-placeholder {
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 60px; /* Tamaño del icono */
-        color: #aaa; /* Color del icono */
+        font-size: 60px;
+        color: #aaa;
         width: 250px;
         height: 250px;
         border: 3px solid #ddd;
@@ -52,6 +52,22 @@
     .profile-photo-placeholder i {
         font-size: 60px;
         color: #aaa;
+    }
+
+    .password-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+        border: 1px solid #dee2e6;
+    }
+
+    .verification-fields {
+        background-color: #e8f4fd;
+        border-radius: 6px;
+        padding: 15px;
+        margin-top: 15px;
+        border: 1px solid #b8daff;
     }
 </style>
 {% endblock %}
@@ -66,64 +82,123 @@
                     <h3 class="mb-0">{{ title }}</h3>
                 </div>
                 <div class="card-body">
-                    <form method="post" id="profileForm" enctype="multipart/form-data">
+                    <form method="post" id="mainForm" enctype="multipart/form-data">
                         {% csrf_token %}
-
-
 
                         <!-- First Name Field -->
                         <div class="mb-3">
-                            <label for="id_first_name" class="form-label">Nombre</label>
+                            <label for="id_nombre" class="form-label">Nombre</label>
                             {{ form.nombre }}
+                            {% if form.nombre.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.nombre.errors }}
+                                </div>
+                            {% endif %}
                         </div>
 
                         <!-- Last Name Field -->
                         <div class="mb-3">
-                            <label for="id_last_name" class="form-label">Apellido</label>
+                            <label for="id_apellido" class="form-label">Apellido</label>
                             {{ form.apellido }}
+                            {% if form.apellido.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.apellido.errors }}
+                                </div>
+                            {% endif %}
                         </div>
 
                         <!-- Email Field -->
                         <div class="mb-3">
-                            <label for="id_email" class="form-label">Correo electrónico</label>
+                            <label for="id_correo" class="form-label">Correo electrónico</label>
                             {{ form.correo }}
+                            {% if form.correo.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.correo.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Teléfono Field -->
+                        <div class="mb-3">
+                            <label for="id_telefono" class="form-label">Teléfono</label>
+                            {{ form.telefono }}
+                            {% if form.telefono.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.telefono.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Dirección Field -->
+                        <div class="mb-3">
+                            <label for="id_direccion" class="form-label">Dirección</label>
+                            {{ form.direccion }}
+                            {% if form.direccion.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.direccion.errors }}
+                                </div>
+                            {% endif %}
                         </div>
 
                         <!-- Password Change Section -->
                         <hr class="my-4">
                         <h4 class="mb-3">Cambiar Contraseña</h4>
-                        <p class="text-muted mb-3">Deja estos campos en blanco si no deseas cambiar tu contraseña.</p>
+                        <p class="text-muted mb-3">Para cambiar tu contraseña, solicita un código de verificación a tu correo.</p>
 
-                        <!-- New Password Field -->
+                        <!-- Botón para solicitar código -->
                         <div class="mb-3">
-                            <label for="id_new_password" class="form-label">Nueva Contraseña</label>
-                            {{ form.new_password }}
-                            {% if form.new_password.help_text %}
-                                <small class="form-text text-muted">{{ form.new_password.help_text }}</small>
-                            {% endif %}
-                            {% if form.new_password.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ form.new_password.errors }}
-                                </div>
-                            {% endif %}
+                            <button type="button" class="btn btn-outline-primary" id="requestCodeBtn">
+                                <i class="fas fa-envelope"></i> Enviar código de verificación
+                            </button>
+                            <small class="form-text text-muted d-block mt-1">
+                                Recibirás un código de 8 dígitos en tu correo electrónico.
+                            </small>
                         </div>
 
-                        <!-- Confirm Password Field -->
-                        <div class="mb-3">
-                            <label for="id_confirm_password" class="form-label">Confirmar Nueva Contraseña</label>
-                            {{ form.confirm_password }}
-                            {% if form.confirm_password.help_text %}
-                                <small class="form-text text-muted">{{ form.confirm_password.help_text }}</small>
-                            {% endif %}
-                            {% if form.confirm_password.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ form.confirm_password.errors }}
-                                </div>
-                            {% endif %}
+                        <!-- Sección de verificación (inicialmente oculta) -->
+                        <div id="verificationSection" class="verification-fields" style="display: {% if show_password_section %}block{% else %}none{% endif %};">
+                            <h5 class="text-primary mb-3"><i class="fas fa-shield-alt"></i> Verificación Requerida</h5>
+
+                            <!-- Verification Code Field -->
+                            <div class="mb-3">
+                                <label for="id_verification_code" class="form-label">Código de Verificación *</label>
+                                <input type="text" name="verification_code" id="id_verification_code"
+                                       class="form-control" placeholder="Ingresa el código de 8 dígitos" maxlength="8"
+                                       pattern="[A-Z0-9]{8}" title="Código de 8 dígitos (letras mayúsculas y números)">
+                                <div class="form-text">Ingresa el código de 8 dígitos que recibiste en tu correo.</div>
+                            </div>
+
+                            <!-- New Password Field -->
+                            <div class="mb-3">
+                                <label for="id_new_password" class="form-label">Nueva Contraseña *</label>
+                                <input type="password" name="new_password" id="id_new_password"
+                                       class="form-control" placeholder="Mínimo 8 caracteres" minlength="8">
+                                <div class="form-text">La contraseña debe tener al menos 8 caracteres y no puede ser igual a la anterior.</div>
+                            </div>
+
+                            <!-- Confirm Password Field -->
+                            <div class="mb-3">
+                                <label for="id_confirm_password" class="form-label">Confirmar Nueva Contraseña *</label>
+                                <input type="password" name="confirm_password" id="id_confirm_password"
+                                       class="form-control" placeholder="Repite tu contraseña" minlength="8">
+                            </div>
+
+                            <!-- Hidden field para identificar la acción -->
+                            <input type="hidden" name="verify_code_and_change" id="verifyCodeField" value="0">
+
+                            <!-- Botones de verificación -->
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-success" id="verifyAndChangeBtn">
+                                    <i class="fas fa-check"></i> Verificar y Cambiar Contraseña
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="cancelVerificationBtn">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </button>
+                            </div>
                         </div>
 
                         <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                            <button type="submit" class="btn btn-primary" id="saveProfileBtn">Guardar cambios del perfil</button>
                             <a href="{% url 'inicio:home' %}" class="btn btn-secondary">Cancelar</a>
                         </div>
                     </form>
@@ -131,31 +206,32 @@
             </div>
         </div>
 
-       <div class="col-md-4">
-    <div class="profile-photo-container text-center">
-        <h5 class="text-center mb-3">Foto de Perfil</h5>
-        {% if usuario.foto_perfil %}
-            <div class="profile-photo-box">
-                <img src="{{ usuario.foto_perfil.url }}" alt="Foto de perfil" class="profile-photo-img" id="profilePhotoPreview">
+        <!-- Profile Photo Column (Right) -->
+        <div class="col-md-4">
+            <div class="profile-photo-container text-center">
+                <h5 class="text-center mb-3">Foto de Perfil</h5>
+                {% if usuario.foto_perfil %}
+                    <div class="profile-photo-box">
+                        <img src="{{ usuario.foto_perfil.url }}" alt="Foto de perfil" class="profile-photo-img" id="profilePhotoPreview">
+                    </div>
+                {% else %}
+                    <div class="profile-photo-placeholder" id="profilePhotoPlaceholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                {% endif %}
+                <form method="post" enctype="multipart/form-data" id="photoForm">
+                    {% csrf_token %}
+                    <div class="mb-3 text-center">
+                        <input type="file" name="foto_perfil" id="id_foto_perfil" accept="image/*" style="display:none;" />
+                        <small class="form-text text-muted d-block mb-2">Selecciona una imagen para tu perfil</small>
+                        <button type="button" class="btn btn-outline-primary" id="choosePhotoBtn">
+                            <i class="fas fa-upload"></i> Subir foto
+                        </button>
+                    </div>
+                    <input type="hidden" name="photo_form_submitted" value="1">
+                </form>
             </div>
-        {% else %}
-            <div class="profile-photo-placeholder" id="profilePhotoPlaceholder">
-                <i class="fas fa-user"></i>
-            </div>
-        {% endif %}
-        <form method="post" enctype="multipart/form-data" id="photoForm" class="mt-3">
-            {% csrf_token %}
-            <div class="mb-3 text-center">
-                <input type="file" name="foto_perfil" id="id_foto_perfil" accept="image/*" style="display:none;" />
-                <small class="form-text text-muted d-block mb-2">Selecciona una imagen para tu perfil</small>
-                <button type="button" class="btn btn-outline-primary" id="choosePhotoBtn">
-                    <i class="fas fa-upload"></i> Subir foto
-                </button>
-            </div>
-            <input type="hidden" name="photo_form_submitted" value="1">
-        </form>
-    </div>
-</div>
+        </div>
     </div>
 </div>
 
@@ -178,7 +254,9 @@ document.addEventListener('DOMContentLoaded', function() {
         {% endfor %}
     {% endif %}
 
-    // Manejar la vista previa de la foto de perfil (250x250) escalando sin recortar
+    // =============================================
+    // MANEJO DE FOTO DE PERFIL
+    // =============================================
     const photoInput = document.getElementById('id_foto_perfil');
     const photoPreview = document.getElementById('profilePhotoPreview');
     const photoPlaceholder = document.getElementById('profilePhotoPlaceholder');
@@ -191,172 +269,183 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function scaleImageTo250(objectUrl, file) {
-        const tempImg = new Image();
-        tempImg.onload = function() {
-            const targetSize = 250;
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = targetSize;
-            canvas.height = targetSize;
-
-            const iw = tempImg.naturalWidth;
-            const ih = tempImg.naturalHeight;
-            const scale = Math.max(targetSize / iw, targetSize / ih);
-            const sw = iw * scale;
-            const sh = ih * scale;
-            const dx = (targetSize - sw) / 2;
-            const dy = (targetSize - sh) / 2;
-
-            // Fondo blanco para JPEG (evita fondo negro/transparente)
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, targetSize, targetSize);
-            ctx.drawImage(tempImg, dx, dy, sw, sh);
-
-            const previewDataUrl = canvas.toDataURL('image/jpeg', 0.92);
-            canvas.toBlob((blob) => {
-                if (!blob) {
-                    // Fallback: subir original si falla el canvas
-                    uploadScaled(null, objectUrl, file);
-                    return;
-                }
-                const jpegBlob = new Blob([blob], { type: 'image/jpeg' });
-                uploadScaled(jpegBlob, previewDataUrl, file);
-            }, 'image/jpeg', 0.92);
-        };
-        tempImg.onerror = function() {
-            uploadScaled(null, objectUrl, file);
-        };
-        tempImg.src = objectUrl;
-    }
-
-    function uploadScaled(blobToUpload, previewDataUrl, originalFile) {
-        // Actualizar vista previa en el cuadro 250x250
-        if (photoPreview) {
-            if (previewDataUrl) {
-                photoPreview.src = previewDataUrl;
-            } else {
-                photoPreview.src = URL.createObjectURL(originalFile);
-            }
-        } else if (photoPlaceholder) {
-            const container = document.createElement('div');
-            container.className = 'profile-photo-box';
-            const img = document.createElement('img');
-            img.src = previewDataUrl || URL.createObjectURL(originalFile);
-            img.alt = 'Foto de perfil';
-            img.className = 'profile-photo-img';
-            img.id = 'profilePhotoPreview';
-            container.appendChild(img);
-            photoPlaceholder.replaceWith(container);
-        }
-
-        // Mostrar mensaje de carga y enviar
-        Swal.fire({
-            title: 'Subiendo foto...',
-            text: 'Tu foto se está subiendo',
-            icon: 'info',
-            showConfirmButton: false,
-            allowOutsideClick: false
-        });
-
-        const formData = new FormData();
-        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
-        formData.append('photo_form_submitted', '1');
-
-        if (blobToUpload) {
-            const name = (originalFile && originalFile.name) ? originalFile.name.replace(/\.[^/.]+$/, '') : 'foto';
-            const scaledFile = new File([blobToUpload], name + '.jpg', { type: 'image/jpeg' });
-            formData.append('foto_perfil', scaledFile);
-        } else {
-            formData.append('foto_perfil', originalFile);
-        }
-
-        fetch(window.location.href, {
-            method: 'POST',
-            body: formData,
-            credentials: 'same-origin'
-        })
-        .then(response => response.text())
-        .then(() => {
-            Swal.fire({
-                title: 'Foto actualizada',
-                text: 'Tu foto de perfil ha sido actualizada correctamente',
-                icon: 'success',
-                timer: 1500,
-                showConfirmButton: false
-            }).then(() => {
-                window.location.reload();
-            });
-        })
-        .catch(error => {
-            Swal.fire({
-                title: 'Error',
-                text: 'Hubo un problema al subir la foto',
-                icon: 'error',
-                confirmButtonText: 'Entendido'
-            });
-            console.error('Error:', error);
-        });
-    }
-
     if (photoInput) {
         photoInput.addEventListener('change', function() {
             const file = this.files && this.files[0];
             if (!file) return;
 
-            const objectUrl = URL.createObjectURL(file);
-            scaleImageTo250(objectUrl, file);
+            // Mostrar mensaje de carga
+            Swal.fire({
+                title: 'Subiendo foto...',
+                text: 'Tu foto se está subiendo',
+                icon: 'info',
+                showConfirmButton: false,
+                allowOutsideClick: false
+            });
+
+            // Enviar formulario de foto
+            const formData = new FormData(photoForm);
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            })
+            .then(response => response.text())
+            .then(() => {
+                Swal.fire({
+                    title: 'Foto actualizada',
+                    text: 'Tu foto de perfil ha sido actualizada correctamente',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.reload();
+                });
+            })
+            .catch(error => {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Hubo un problema al subir la foto',
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+                console.error('Error:', error);
+            });
         });
     }
+// =============================================
+// MANEJO DE VERIFICACIÓN PARA CAMBIO DE CONTRASEÑA
+// =============================================
+const requestCodeBtn = document.getElementById('requestCodeBtn');
+const verificationSection = document.getElementById('verificationSection');
+const cancelVerificationBtn = document.getElementById('cancelVerificationBtn');
+const verifyAndChangeBtn = document.getElementById('verifyAndChangeBtn');
+const verifyCodeField = document.getElementById('verifyCodeField');
+const mainForm = document.getElementById('mainForm');
+const saveProfileBtn = document.getElementById('saveProfileBtn');
 
-    // Validación en tiempo real con SweetAlert
-    const profileForm = document.getElementById('profileForm');
+// Solicitar código de verificación
+if (requestCodeBtn) {
+    requestCodeBtn.addEventListener('click', function() {
+        // Mostrar mensaje de carga
+        Swal.fire({
+            title: 'Enviando código...',
+            text: 'Estamos enviando un código de verificación a tu correo',
+            icon: 'info',
+            showConfirmButton: false,
+            allowOutsideClick: false
+        });
 
-    // Validar antes de enviar
-    profileForm.addEventListener('submit', function(e) {
-        const username = document.getElementById('id_username').value.trim();
-        const email = document.getElementById('id_email').value.trim();
-        const newPassword = document.getElementById('id_new_password').value;
-        const confirmPassword = document.getElementById('id_confirm_password').value;
-        const currentUsername = '{{ request.user.username }}';
-        const currentEmail = '{{ request.user.email }}';
+        // Crear formulario temporal para enviar la solicitud
+        const tempForm = document.createElement('form');
+        tempForm.method = 'POST';
+        tempForm.action = window.location.href;
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        csrfInput.type = 'hidden';
+
+        const codeInput = document.createElement('input');
+        codeInput.name = 'send_verification_code';
+        codeInput.value = '1';
+        codeInput.type = 'hidden';
+
+        tempForm.appendChild(csrfInput);
+        tempForm.appendChild(codeInput);
+        document.body.appendChild(tempForm);
+
+        fetch(window.location.href, {
+            method: 'POST',
+            body: new FormData(tempForm),
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            document.body.removeChild(tempForm);
+            return response.text();
+        })
+        .then(html => {
+            // Cerrar el SweetAlert de carga
+            Swal.close();
+
+            // Mostrar mensaje de éxito y mostrar los campos
+            Swal.fire({
+                title: '¡Código enviado!',
+                text: 'Revisa tu correo electrónico. Hemos enviado un código de verificación.',
+                icon: 'success',
+                confirmButtonText: 'Entendido'
+            }).then(() => {
+                // Mostrar la sección de verificación
+                verificationSection.style.display = 'block';
+                requestCodeBtn.style.display = 'none';
+
+                // Hacer scroll suave a la sección de verificación
+                verificationSection.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            });
+        })
+        .catch(error => {
+            document.body.removeChild(tempForm);
+            Swal.fire({
+                title: 'Error',
+                text: 'No se pudo enviar el código. Inténtalo de nuevo.',
+                icon: 'error',
+                confirmButtonText: 'Entendido'
+            });
+            console.error('Error:', error);
+        });
+    });
+}
+
+// Cancelar verificación
+if (cancelVerificationBtn) {
+    cancelVerificationBtn.addEventListener('click', function() {
+        verificationSection.style.display = 'none';
+        requestCodeBtn.style.display = 'block';
+
+        // Limpiar campos
+        document.getElementById('id_verification_code').value = '';
+        document.getElementById('id_new_password').value = '';
+        document.getElementById('id_confirm_password').value = '';
+        verifyCodeField.value = '0';
+    });
+}
+
+// Verificar y cambiar contraseña
+if (verifyAndChangeBtn) {
+    verifyAndChangeBtn.addEventListener('click', function() {
+        const verificationCode = document.getElementById('id_verification_code');
+        const newPassword = document.getElementById('id_new_password');
+        const confirmPassword = document.getElementById('id_confirm_password');
+
         let errorMessage = '';
 
-        // Validación de username
-        if(username !== currentUsername) {
-            if(username.length < 3) {
-                errorMessage += 'El nombre de usuario debe tener al menos 3 caracteres<br>';
-            }
-        }
-
-        // Validación de email
-        if(email !== currentEmail) {
-            if(!email.includes('@') || !email.includes('.')) {
-                errorMessage += 'Por favor ingresa un correo electrónico válido<br>';
-            }
+        // Validación del código
+        if (!verificationCode.value.trim()) {
+            errorMessage += 'El código de verificación es requerido<br>';
+        } else if (verificationCode.value.trim().length !== 8) {
+            errorMessage += 'El código debe tener exactamente 8 dígitos<br>';
+        } else if (!/^[A-Z0-9]{8}$/.test(verificationCode.value.trim())) {
+            errorMessage += 'El código debe contener solo letras mayúsculas y números<br>';
         }
 
         // Validación de contraseña
-        if(newPassword || confirmPassword) {
-            // Si uno está lleno, el otro también debe estarlo
-            if(!newPassword) {
-                errorMessage += 'Por favor ingresa tu nueva contraseña<br>';
-            }
-            if(!confirmPassword) {
-                errorMessage += 'Por favor confirma tu nueva contraseña<br>';
-            }
-            // Si ambos están llenos, deben coincidir
-            if(newPassword && confirmPassword && newPassword !== confirmPassword) {
-                errorMessage += 'Las contraseñas no coinciden<br>';
-            }
-            // Validación básica de fortaleza de contraseña
-            if(newPassword && newPassword.length < 8) {
-                errorMessage += 'La contraseña debe tener al menos 8 caracteres<br>';
-            }
+        if (!newPassword.value) {
+            errorMessage += 'La nueva contraseña es requerida<br>';
+        } else if (newPassword.value.length < 8) {
+            errorMessage += 'La contraseña debe tener al menos 8 caracteres<br>';
         }
 
-        if(errorMessage) {
-            e.preventDefault();
+        if (!confirmPassword.value) {
+            errorMessage += 'Debes confirmar tu contraseña<br>';
+        } else if (newPassword.value !== confirmPassword.value) {
+            errorMessage += 'Las contraseñas no coinciden<br>';
+        }
+
+        if (errorMessage) {
             Swal.fire({
                 icon: 'error',
                 title: 'Error de validación',
@@ -366,39 +455,52 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Verificación de existencia (opcional, ya que el backend también lo hace)
-        if(username !== currentUsername) {
-            fetch(`/api/check-username/?username=${username}&current_user={{ request.user.pk }}`)
-                .then(response => response.json())
-                .then(data => {
-                    if(data.exists) {
-                        e.preventDefault();
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Este nombre de usuario ya está en uso',
-                            confirmButtonText: 'Entendido'
-                        });
-                    }
+        // Confirmación final
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: 'Se cambiará tu contraseña después de verificar el código',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, cambiar contraseña',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Activar el campo hidden y enviar el formulario
+                verifyCodeField.value = '1';
+                mainForm.submit();
+            }
+        });
+    });
+}
+
+// Manejar envío del formulario principal
+if (mainForm) {
+    mainForm.addEventListener('submit', function(e) {
+        const email = document.getElementById('id_correo').value.trim();
+        const currentEmail = '{{ usuario.correo }}';
+
+        // Solo validar email si se está cambiando
+        if(email !== currentEmail) {
+            if(!email.includes('@') || !email.includes('.')) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de validación',
+                    text: 'Por favor ingresa un correo electrónico válido',
+                    confirmButtonText: 'Entendido'
                 });
+                return;
+            }
         }
 
-        if(email !== currentEmail) {
-            fetch(`/api/check-email/?email=${email}&current_user={{ request.user.pk }}`)
-                .then(response => response.json())
-                .then(data => {
-                    if(data.exists) {
-                        e.preventDefault();
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Este correo electrónico ya está registrado',
-                            confirmButtonText: 'Entendido'
-                        });
-                    }
-                });
+        // Si no se está verificando código, asegurarse de que el campo esté en 0
+        if (verifyCodeField.value !== '1') {
+            verifyCodeField.value = '0';
         }
     });
+}
 });
 </script>
 {% endblock %}

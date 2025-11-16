@@ -154,12 +154,16 @@
                 <div class="message-area">
                     {% if success_message %}
                         <p class="success-message">{{ success_message }}</p>
-                        {% if reset_code_for_dev %} <!-- Solo para desarrollo -->
+                        {% if reset_code_for_dev %}
                             <p class="dev-code">Código (dev): {{ reset_code_for_dev }}</p>
                         {% endif %}
-                    {% endif %}
-                    {% if error_message %}
-                        <p class="error-message">{{ error_message }}</p>
+
+                        <!-- Botón para ir a la página de verificación -->
+                        <div class="text-center mt-4">
+                            <a href="{% url 'reset_password:verify_code' %}" class="submit-btn" style="display: inline-block; width: auto; padding: 10px 20px;">
+                                Ingresar Código de Verificación
+                            </a>
+                        </div>
                     {% endif %}
                 </div>
 
