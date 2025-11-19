@@ -538,17 +538,23 @@
                                                 </div>
                                             {% endif %}
                                             <div class="product-badge">
-                                                {% if p.stock > 10 %}
-                                                    <span class="stock-badge stock-available-badge">
-                                                        <i class="fas fa-check me-1"></i>Disponible
-                                                    </span>
-                                                {% elif p.stock > 0 and p.stock <= 10 %}
-                                                    <span class="stock-badge stock-low-badge">
-                                                        <i class="fas fa-exclamation me-1"></i>Últimas unidades
-                                                    </span>
+                                                {% if p.activo == 'Si' %}
+                                                    {% if p.stock > 10 %}
+                                                        <span class="stock-badge stock-available-badge">
+                                                            <i class="fas fa-check me-1"></i>Disponible
+                                                        </span>
+                                                    {% elif p.stock > 0 and p.stock <= 10 %}
+                                                        <span class="stock-badge stock-low-badge">
+                                                            <i class="fas fa-exclamation me-1"></i>Últimas unidades
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="stock-badge stock-unavailable-badge">
+                                                            <i class="fas fa-times me-1"></i>Agotado
+                                                        </span>
+                                                    {% endif %}
                                                 {% else %}
                                                     <span class="stock-badge stock-unavailable-badge">
-                                                        <i class="fas fa-times me-1"></i>Agotado
+                                                        <i class="fas fa-ban me-1"></i>Inactivo
                                                     </span>
                                                 {% endif %}
                                             </div>
@@ -568,26 +574,40 @@
                                             <!-- Información de Stock Mejorada -->
                                             <div class="product-stock-info">
                                                 <i class="fas fa-boxes stock-icon
-                                                    {% if p.stock > 10 %}stock-available
-                                                    {% elif p.stock > 0 %}stock-low
+                                                    {% if p.activo == 'Si' %}
+                                                        {% if p.stock > 10 %}stock-available
+                                                        {% elif p.stock > 0 %}stock-low
+                                                        {% else %}stock-unavailable{% endif %}
                                                     {% else %}stock-unavailable{% endif %}"></i>
                                                 <span class="stock-text
-                                                    {% if p.stock > 10 %}stock-available
-                                                    {% elif p.stock > 0 %}stock-low
+                                                    {% if p.activo == 'Si' %}
+                                                        {% if p.stock > 10 %}stock-available
+                                                        {% elif p.stock > 0 %}stock-low
+                                                        {% else %}stock-unavailable{% endif %}
                                                     {% else %}stock-unavailable{% endif %}">
-                                                    {% if p.stock > 10 %}
-                                                        En stock
-                                                    {% elif p.stock > 0 %}
-                                                        Stock bajo
+                                                    {% if p.activo == 'Si' %}
+                                                        {% if p.stock > 10 %}
+                                                            En stock
+                                                        {% elif p.stock > 0 %}
+                                                            Stock bajo
+                                                        {% else %}
+                                                            Sin stock
+                                                        {% endif %}
                                                     {% else %}
-                                                        Sin stock
+                                                        Producto inactivo
                                                     {% endif %}
                                                 </span>
                                                 <span class="stock-quantity
-                                                    {% if p.stock > 10 %}stock-available
-                                                    {% elif p.stock > 0 %}stock-low
+                                                    {% if p.activo == 'Si' %}
+                                                        {% if p.stock > 10 %}stock-available
+                                                        {% elif p.stock > 0 %}stock-low
+                                                        {% else %}stock-unavailable{% endif %}
                                                     {% else %}stock-unavailable{% endif %}">
-                                                    {{ p.stock }} unidades
+                                                    {% if p.activo == 'Si' %}
+                                                        {{ p.stock }} unidades
+                                                    {% else %}
+                                                        No disponible
+                                                    {% endif %}
                                                 </span>
                                             </div>
 
@@ -606,18 +626,22 @@
                                             <div class="product-actions">
                                                 {% if rol|lower == "admin" or rol|lower == "cliente" %}
                                                     <div class="d-flex gap-2">
+                                                        <!-- Botón Agregar al Carrito -->
                                                         <form method="post" action="{% url 'carrito:agregar_al_carrito' %}" class="w-50">
                                                             {% csrf_token %}
                                                             <input type="hidden" name="producto_id" value="{{ p.idproducto }}">
-                                                            <button type="submit" class="btn-product-primary w-100" {% if p.stock == 0 %}disabled{% endif %}>
+                                                            <button type="submit" class="btn-product-primary w-100"
+                                                                {% if p.stock == 0 or p.activo == 'No' %}disabled{% endif %}>
                                                                 <i class="fas fa-cart-plus me-2"></i>Carrito
                                                             </button>
                                                         </form>
+                                                        <!-- Botón Comprar Ahora -->
                                                         <form method="post" action="{% url 'carrito:agregar_al_carrito' %}" class="w-50">
                                                             {% csrf_token %}
                                                             <input type="hidden" name="producto_id" value="{{ p.idproducto }}">
                                                             <input type="hidden" name="comprar_ahora" value="1">
-                                                            <button type="submit" class="btn-product-secondary w-100" {% if p.stock == 0 %}disabled{% endif %}>
+                                                            <button type="submit" class="btn-product-secondary w-100"
+                                                                {% if p.stock == 0 or p.activo == 'No' %}disabled{% endif %}>
                                                                 <i class="fas fa-bolt me-2"></i>Comprar
                                                             </button>
                                                         </form>
@@ -675,17 +699,23 @@
                             </div>
                         {% endif %}
                         <div class="product-badge">
-                            {% if p.stock > 10 %}
-                                <span class="stock-badge stock-available-badge">
-                                    <i class="fas fa-check me-1"></i>Disponible
-                                </span>
-                            {% elif p.stock > 0 and p.stock <= 10 %}
-                                <span class="stock-badge stock-low-badge">
-                                    <i class="fas fa-exclamation me-1"></i>Últimas unidades
-                                </span>
+                            {% if p.activo == 'Si' %}
+                                {% if p.stock > 10 %}
+                                    <span class="stock-badge stock-available-badge">
+                                        <i class="fas fa-check me-1"></i>Disponible
+                                    </span>
+                                {% elif p.stock > 0 and p.stock <= 10 %}
+                                    <span class="stock-badge stock-low-badge">
+                                        <i class="fas fa-exclamation me-1"></i>Últimas unidades
+                                    </span>
+                                {% else %}
+                                    <span class="stock-badge stock-unavailable-badge">
+                                        <i class="fas fa-times me-1"></i>Agotado
+                                    </span>
+                                {% endif %}
                             {% else %}
                                 <span class="stock-badge stock-unavailable-badge">
-                                    <i class="fas fa-times me-1"></i>Agotado
+                                    <i class="fas fa-ban me-1"></i>Inactivo
                                 </span>
                             {% endif %}
                         </div>
@@ -705,26 +735,40 @@
                         <!-- Información de Stock Mejorada -->
                         <div class="product-stock-info">
                             <i class="fas fa-boxes stock-icon
-                                {% if p.stock > 10 %}stock-available
-                                {% elif p.stock > 0 %}stock-low
+                                {% if p.activo == 'Si' %}
+                                    {% if p.stock > 10 %}stock-available
+                                    {% elif p.stock > 0 %}stock-low
+                                    {% else %}stock-unavailable{% endif %}
                                 {% else %}stock-unavailable{% endif %}"></i>
                             <span class="stock-text
-                                {% if p.stock > 10 %}stock-available
-                                {% elif p.stock > 0 %}stock-low
+                                {% if p.activo == 'Si' %}
+                                    {% if p.stock > 10 %}stock-available
+                                    {% elif p.stock > 0 %}stock-low
+                                    {% else %}stock-unavailable{% endif %}
                                 {% else %}stock-unavailable{% endif %}">
-                                {% if p.stock > 10 %}
-                                    En stock
-                                {% elif p.stock > 0 %}
-                                    Stock bajo
+                                {% if p.activo == 'Si' %}
+                                    {% if p.stock > 10 %}
+                                        En stock
+                                    {% elif p.stock > 0 %}
+                                        Stock bajo
+                                    {% else %}
+                                        Sin stock
+                                    {% endif %}
                                 {% else %}
-                                    Sin stock
+                                    Producto inactivo
                                 {% endif %}
                             </span>
                             <span class="stock-quantity
-                                {% if p.stock > 10 %}stock-available
-                                {% elif p.stock > 0 %}stock-low
+                                {% if p.activo == 'Si' %}
+                                    {% if p.stock > 10 %}stock-available
+                                    {% elif p.stock > 0 %}stock-low
+                                    {% else %}stock-unavailable{% endif %}
                                 {% else %}stock-unavailable{% endif %}">
-                                {{ p.stock }} unidades
+                                {% if p.activo == 'Si' %}
+                                    {{ p.stock }} unidades
+                                {% else %}
+                                    No disponible
+                                {% endif %}
                             </span>
                         </div>
 
@@ -743,18 +787,22 @@
                         <div class="product-actions">
                             {% if rol|lower == "admin" or rol|lower == "cliente" %}
                                 <div class="d-flex gap-2">
+                                    <!-- Botón Agregar al Carrito -->
                                     <form method="post" action="{% url 'carrito:agregar_al_carrito' %}" class="w-50">
                                         {% csrf_token %}
                                         <input type="hidden" name="producto_id" value="{{ p.idproducto }}">
-                                        <button type="submit" class="btn-product-primary w-100" {% if p.stock == 0 %}disabled{% endif %}>
+                                        <button type="submit" class="btn-product-primary w-100"
+                                            {% if p.stock == 0 or p.activo == 'No' %}disabled{% endif %}>
                                             <i class="fas fa-cart-plus me-2"></i>Carrito
                                         </button>
                                     </form>
+                                    <!-- Botón Comprar Ahora -->
                                     <form method="post" action="{% url 'carrito:agregar_al_carrito' %}" class="w-50">
                                         {% csrf_token %}
                                         <input type="hidden" name="producto_id" value="{{ p.idproducto }}">
                                         <input type="hidden" name="comprar_ahora" value="1">
-                                        <button type="submit" class="btn-product-secondary w-100" {% if p.stock == 0 %}disabled{% endif %}>
+                                        <button type="submit" class="btn-product-secondary w-100"
+                                            {% if p.stock == 0 or p.activo == 'No' %}disabled{% endif %}>
                                             <i class="fas fa-bolt me-2"></i>Comprar
                                         </button>
                                     </form>
