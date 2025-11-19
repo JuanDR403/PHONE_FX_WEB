@@ -3,218 +3,653 @@
 {% block content %}
 {% if rol == "admin" or rol == "cliente" %}
 
-<div class="row justify-content-center">
-  <div class="col-12 col-md-10 col-lg-8">
-    <div class="card shadow-sm">
-      <div class="card-header bg-primary text-white">
-        <h4 class="mb-0">
-          <i class="fas fa-calendar-plus me-2"></i>
-          Agendar Nueva Cita
-        </h4>
-      </div>
-      <div class="card-body">
-        <form method="POST" id="form-cita">
-          {% csrf_token %}
+<style>
+    .form-container {
+        background: var(--bg-card);
+        border-radius: 20px;
+        padding: 40px;
+        margin: 20px 0;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 20px 40px var(--shadow-color);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
 
-          <div class="row">
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label fw-bold">
-                  <i class="fas fa-user-tie text-primary me-2"></i>
-                  Asesor
-                </label>
-                {{ form.asesor }}
-                <div class="form-text">
-                  <i class="fas fa-info-circle me-1"></i>
-                  Selecciona el asesor que atenderá tu cita
+    .form-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent-purple) 0%, var(--accent-green) 50%, var(--accent-yellow) 100%);
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 40px;
+        position: relative;
+    }
+
+    .form-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        font-size: 2.5rem;
+        background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-green) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+    }
+
+    .form-subtitle {
+        color: var(--text-secondary);
+        font-family: 'Poppins', sans-serif;
+        font-weight: 300;
+        font-size: 1.1rem;
+    }
+
+    .form-card {
+        background: var(--bg-card);
+        border-radius: 16px;
+        padding: 30px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 25px;
+        transition: all 0.3s ease;
+    }
+
+    .form-card:hover {
+        background: var(--bg-secondary);
+        border-color: var(--accent-purple);
+        transform: translateY(-2px);
+    }
+
+    .form-label {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--text-primary);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-label i {
+        margin-right: 10px;
+        font-size: 1.2rem;
+        background: linear-gradient(135deg, var(--accent-purple), var(--accent-green));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* ESTILOS MEJORADOS PARA TODOS LOS SELECTS */
+    .form-select {
+        background: var(--search-bg) !important;
+        border: 2px solid var(--border-color) !important;
+        border-radius: 12px !important;
+        color: var(--text-primary) !important;
+        font-family: 'Poppins', sans-serif;
+        font-size: 1rem;
+        padding: 15px 20px !important;
+        transition: all 0.3s ease;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        cursor: pointer;
+        width: 100%;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23E040FB' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: calc(100% - 20px) center !important;
+        background-size: 16px 16px !important;
+        position: relative;
+        z-index: 2;
+    }
+
+    .form-select:focus {
+        background: var(--bg-card) !important;
+        border-color: var(--accent-purple) !important;
+        box-shadow: 0 0 0 3px rgba(224, 64, 251, 0.1) !important;
+        color: var(--text-primary) !important;
+        outline: none;
+    }
+
+    .form-select:hover {
+        border-color: var(--accent-purple) !important;
+        background: var(--bg-secondary) !important;
+    }
+
+    /* ESTILOS PARA LAS OPCIONES DESPLEGADAS */
+    .form-select option {
+        background: var(--bg-primary) !important;
+        color: var(--text-primary) !important;
+        padding: 12px 15px !important;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.95rem;
+        border-bottom: 1px solid var(--border-color);
+        transition: all 0.2s ease;
+    }
+
+    .form-select option:hover {
+        background: linear-gradient(135deg, var(--accent-purple), var(--accent-green)) !important;
+        color: #000000 !important;
+        font-weight: 600;
+    }
+
+    .form-select option:checked {
+        background: linear-gradient(135deg, var(--accent-purple), var(--accent-green)) !important;
+        color: #000000 !important;
+        font-weight: 600;
+    }
+
+    .form-select option:focus {
+        background: rgba(224, 64, 251, 0.3) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Estilos específicos para el dropdown del select */
+    .form-select:focus option:checked {
+        background: linear-gradient(135deg, var(--accent-purple), var(--accent-green)) !important;
+        color: #000000 !important;
+    }
+
+    /* Mejoras para el desplegable en diferentes navegadores */
+    select.form-select::-ms-expand {
+        display: none;
+    }
+
+    /* Contenedor para mejorar el estilo del select */
+    .select-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .select-wrapper::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: 20px;
+        transform: translateY(-50%);
+        width: 10px;
+        height: 10px;
+        border-right: 2px solid var(--accent-purple);
+        border-bottom: 2px solid var(--accent-purple);
+        transform: translateY(-50%) rotate(45deg);
+        pointer-events: none;
+        transition: transform 0.3s ease;
+    }
+
+    .form-select:focus + .select-wrapper::after {
+        transform: translateY(-50%) rotate(-135deg);
+    }
+
+    .form-input, .form-textarea {
+        background: var(--search-bg) !important;
+        border: 2px solid var(--border-color) !important;
+        border-radius: 12px !important;
+        color: var(--text-primary) !important;
+        font-family: 'Poppins', sans-serif;
+        font-size: 1rem;
+        padding: 15px 20px !important;
+        transition: all 0.3s ease;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+        background: var(--bg-card) !important;
+        border-color: var(--accent-purple) !important;
+        box-shadow: 0 0 0 3px rgba(224, 64, 251, 0.1) !important;
+        color: var(--text-primary) !important;
+        outline: none;
+    }
+
+    .form-input::placeholder, .form-textarea::placeholder {
+        color: var(--text-muted) !important;
+    }
+
+    .form-text {
+        color: var(--text-muted) !important;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.9rem;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-text i {
+        margin-right: 6px;
+        color: var(--accent-green);
+    }
+
+    .char-counter {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-green) 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 15px 30px;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #000000;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(224, 64, 251, 0.3);
+    }
+
+    .btn-primary-custom:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(224, 64, 251, 0.4);
+        color: #000000;
+    }
+
+    .btn-secondary-custom {
+        background: var(--search-bg);
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        padding: 15px 30px;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+    }
+
+    .btn-secondary-custom:hover {
+        background: var(--bg-card);
+        border-color: var(--accent-purple);
+        color: var(--text-primary);
+        transform: translateY(-2px);
+    }
+
+    .link-custom {
+        color: var(--accent-green) !important;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .link-custom:hover {
+        color: rgba(145, 255, 182, 0.8) !important;
+        text-decoration: underline;
+    }
+
+    .modal-custom .modal-content {
+        background: var(--bg-card);
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+    }
+
+    .modal-custom .modal-header {
+        border-bottom: 1px solid var(--border-color);
+        background: var(--search-bg);
+    }
+
+    .modal-custom .modal-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-green) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .alert-custom {
+        background: var(--success-bg);
+        border: 1px solid var(--accent-green);
+        border-radius: 12px;
+        color: var(--accent-green);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .grid-2-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+    }
+
+    /* Estados de validación */
+    .is-invalid {
+        border-color: #FF7F7F !important;
+        box-shadow: 0 0 0 3px rgba(255, 127, 127, 0.1) !important;
+    }
+
+    .is-valid {
+        border-color: var(--accent-green) !important;
+        box-shadow: 0 0 0 3px rgba(145, 255, 182, 0.1) !important;
+    }
+
+    /* Estilos adicionales para mejorar la experiencia del select */
+    .form-group-select {
+        position: relative;
+    }
+
+    /* Efecto de sombra para el dropdown */
+    .form-select:focus {
+        position: relative;
+        z-index: 1000;
+    }
+
+    /* Mejora visual para opciones agrupadas */
+    .form-select optgroup {
+        background: var(--bg-secondary) !important;
+        color: var(--accent-purple) !important;
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        padding: 10px;
+    }
+
+    .form-select optgroup option {
+        background: var(--bg-primary) !important;
+        color: var(--text-primary) !important;
+        padding-left: 20px !important;
+    }
+
+    /* Estilos específicos para modo claro */
+    [data-theme="light"] .form-container {
+        box-shadow: 0 10px 30px var(--shadow-color);
+    }
+
+    [data-theme="light"] .form-card:hover {
+        box-shadow: 0 8px 25px var(--shadow-color);
+    }
+
+    [data-theme="light"] .btn-primary-custom {
+        color: #000000;
+    }
+
+    [data-theme="light"] .btn-primary-custom:hover {
+        color: #000000;
+    }
+
+    [data-theme="light"] .modal-custom .modal-header {
+        background: var(--bg-secondary);
+    }
+
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 25px;
+            margin: 10px;
+        }
+
+        .form-title {
+            font-size: 2rem;
+        }
+
+        .grid-2-col {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .btn-primary-custom,
+        .btn-secondary-custom {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+            <div class="form-container">
+                <div class="form-header">
+                    <h1 class="form-title">
+                        <i class="fas fa-calendar-plus me-3"></i>
+                        Agendar Nueva Cita
+                    </h1>
+                    <p class="form-subtitle">Programa tu cita de mantenimiento y reparación</p>
                 </div>
-              </div>
-            </div>
 
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label fw-bold">
-                  <i class="fas fa-mobile-alt text-primary me-2"></i>
-                  Dispositivo
-                </label>
-                <select name="dispositivo" class="form-select" required id="id_dispositivo">
-                  <option value="">Selecciona un dispositivo</option>
-                  {% for dispositivo in form.dispositivo.field.queryset %}
-                    <option value="{{ dispositivo.iddispositivo }}">{{ dispositivo.marca }} {{ dispositivo.modelo }}</option>
-                  {% endfor %}
-                </select>
-                <div class="form-text">
-                  <i class="fas fa-info-circle me-1"></i>
-                  <a href="#" class="text-primary fw-bold" data-bs-toggle="modal" data-bs-target="#modalDispositivo">
-                    <i class="fas fa-plus-circle me-1"></i>¿No encuentras tu dispositivo? Registrar nuevo
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
+                <form method="POST" id="form-cita">
+                    {% csrf_token %}
 
-          <div class="row">
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label fw-bold">
-                  <i class="fas fa-calendar-day text-primary me-2"></i>
-                  Fecha de la Cita
-                </label>
-                {{ form.fecha_cita }}
-                <div class="form-text">
-                  <i class="fas fa-info-circle me-1"></i>
-                  Selecciona una fecha futura (mínimo mañana)
-                </div>
-              </div>
-            </div>
+                    <!-- Información Principal -->
+                    <div class="form-card">
+                        <h3 class="mb-4" style="font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--text-primary);">
+                            <i class="fas fa-info-circle me-2" style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                            Información Principal
+                        </h3>
 
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label fw-bold">
-                  <i class="fas fa-clock text-primary me-2"></i>
-                  Hora de la Cita
-                </label>
-                {{ form.hora_cita }}
-                <div class="form-text">
-                  <i class="fas fa-info-circle me-1"></i>
-                  Horario disponible: 8:00 AM - 2:00 PM
-                </div>
-              </div>
-            </div>
-          </div>
+                        <div class="grid-2-col">
+                            <div class="form-group-select">
+                                <label class="form-label">
+                                    <i class="fas fa-user-tie"></i>
+                                    Asesor
+                                </label>
+                                <div class="select-wrapper">
+                                    {{ form.asesor }}
+                                </div>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i>
+                                    Selecciona el asesor que atenderá tu cita
+                                </div>
+                            </div>
 
-          <div class="mb-3">
-            <label class="form-label fw-bold">
-              <i class="fas fa-tools text-primary me-2"></i>
-              Tipo de Servicio
-            </label>
-            {{ form.tipo_servicio }}
-            <div class="form-text">
-              <i class="fas fa-info-circle me-1"></i>
-              Selecciona el tipo de servicio que requieres
-            </div>
-          </div>
+                            <div class="form-group-select">
+                                <label class="form-label">
+                                    <i class="fas fa-mobile-alt"></i>
+                                    Dispositivo
+                                </label>
+                                <div class="select-wrapper">
+                                    <select name="dispositivo" class="form-select" required id="id_dispositivo">
+                                        <option value="">Selecciona un dispositivo</option>
+                                        {% for dispositivo in form.dispositivo.field.queryset %}
+                                            <option value="{{ dispositivo.iddispositivo }}">{{ dispositivo.marca }} {{ dispositivo.modelo }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i>
+                                    <a href="#" class="link-custom" data-bs-toggle="modal" data-bs-target="#modalDispositivo">
+                                        <i class="fas fa-plus-circle me-1"></i>¿No encuentras tu dispositivo? Registrar nuevo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-          <div class="mb-4">
-            <label class="form-label fw-bold">
-              <i class="fas fa-sticky-note text-primary me-2"></i>
-              Observaciones
-              <span class="text-muted fw-normal">(Opcional)</span>
-            </label>
-            {{ form.observaciones }}
-            <div class="d-flex justify-content-between align-items-center mt-1">
-              <div class="form-text">
-                <i class="fas fa-info-circle me-1"></i>
-                Describe cualquier detalle adicional sobre tu dispositivo o problema
-              </div>
-              <span id="contador-observaciones" class="text-muted small">400 caracteres restantes</span>
-            </div>
-          </div>
+                    <!-- Fecha y Hora -->
+                    <div class="form-card">
+                        <h3 class="mb-4" style="font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--text-primary);">
+                            <i class="fas fa-clock me-2" style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                            Fecha y Hora
+                        </h3>
 
-          <div class="d-flex gap-2 pt-3 border-top">
-            <button type="submit" class="btn btn-primary btn-lg" id="btn-agendar-cita">
-              <i class="fas fa-calendar-check me-2"></i>Agendar Cita
-            </button>
-            <a href="{% url 'inicio:home' %}" class="btn btn-secondary btn-lg">
-              <i class="fas fa-times me-2"></i>Cancelar
-            </a>
-          </div>
-        </form>
-      </div>
+                        <div class="grid-2-col">
+                            <div>
+                                <label class="form-label">
+                                    <i class="fas fa-calendar-day"></i>
+                                    Fecha de la Cita
+                                </label>
+                                {{ form.fecha_cita }}
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i>
+                                    Selecciona una fecha futura (mínimo mañana)
+                                </div>
+                            </div>
+
+                            <div class="form-group-select">
+                                <label class="form-label">
+                                    <i class="fas fa-clock"></i>
+                                    Hora de la Cita
+                                </label>
+                                <div class="select-wrapper">
+                                    <select name="hora_cita" class="form-select" required id="id_hora_cita">
+                                        <option value="">Selecciona una hora</option>
+                                        <option value="08:00">8:00 AM</option>
+                                        <option value="08:30">8:30 AM</option>
+                                        <option value="09:00">9:00 AM</option>
+                                        <option value="09:30">9:30 AM</option>
+                                        <option value="10:00">10:00 AM</option>
+                                        <option value="10:30">10:30 AM</option>
+                                        <option value="11:00">11:00 AM</option>
+                                        <option value="11:30">11:30 AM</option>
+                                        <option value="12:00">12:00 PM</option>
+                                        <option value="12:30">12:30 PM</option>
+                                        <option value="13:00">1:00 PM</option>
+                                        <option value="13:30">1:30 PM</option>
+                                        <option value="14:00">2:00 PM</option>
+                                    </select>
+                                </div>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i>
+                                    Horario disponible: 8:00 AM - 2:00 PM (cada 30 minutos)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Servicio y Observaciones -->
+                    <div class="form-card">
+                        <h3 class="mb-4" style="font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--text-primary);">
+                            <i class="fas fa-tools me-2" style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                            Detalles del Servicio
+                        </h3>
+
+                        <div class="mb-4 form-group-select">
+                            <label class="form-label">
+                                <i class="fas fa-tools"></i>
+                                Tipo de Servicio
+                            </label>
+                            <div class="select-wrapper">
+                                {{ form.tipo_servicio }}
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i>
+                                Selecciona el tipo de servicio que requieres
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="form-label">
+                                <i class="fas fa-sticky-note"></i>
+                                Observaciones
+                                <span style="color: var(--text-muted); font-weight: 400;">(Opcional)</span>
+                            </label>
+                            {{ form.observaciones }}
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i>
+                                    Describe cualquier detalle adicional sobre tu dispositivo o problema
+                                </div>
+                                <span id="contador-observaciones" class="char-counter" style="color: var(--text-muted);">400 caracteres restantes</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="d-flex gap-3 pt-4 border-top" style="border-color: var(--border-color) !important; justify-content: center; flex-wrap;">
+                        <button type="submit" class="btn btn-primary-custom" id="btn-agendar-cita">
+                            <i class="fas fa-calendar-check me-2"></i>Agendar Cita
+                        </button>
+                        <a href="{% url 'inicio:home' %}" class="btn btn-secondary-custom">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
 <!-- Modal para nuevo dispositivo -->
-<div class="modal fade" id="modalDispositivo" tabindex="-1" aria-labelledby="modalDispositivoLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title" id="modalDispositivoLabel">
-          <i class="fas fa-plus-circle me-2"></i>
-          Registrar Nuevo Dispositivo
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <form id="form-dispositivo-modal" method="post" action="{% url 'citas:agregar_dispositivo' %}">
-        {% csrf_token %}
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label fw-bold">
-                  <i class="fas fa-tag text-primary me-2"></i>
-                  Marca
-                </label>
-                {{ dispositivo_form.marca }}
-                <div class="form-text">
-                  <i class="fas fa-info-circle me-1"></i>
-                  Selecciona la marca de tu dispositivo
+<div class="modal fade modal-custom" id="modalDispositivo" tabindex="-1" aria-labelledby="modalDispositivoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalDispositivoLabel">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Registrar Nuevo Dispositivo
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="form-dispositivo-modal" method="post" action="{% url 'citas:agregar_dispositivo' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="grid-2-col">
+                        <div class="form-group-select">
+                            <label class="form-label">
+                                <i class="fas fa-tag"></i>
+                                Marca
+                            </label>
+                            <div class="select-wrapper">
+                                {{ dispositivo_form.marca }}
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i>
+                                Selecciona la marca de tu dispositivo
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="form-label">
+                                <i class="fas fa-mobile"></i>
+                                Modelo
+                            </label>
+                            <input type="hidden" name="modelo" id="id_modelo_real" required>
+                            <select class="form-select" id="id_modelo_ui" disabled required>
+                                <option value="">Primero selecciona una marca</option>
+                            </select>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i>
+                                El modelo se habilita al seleccionar una marca
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="form-label">
+                            <i class="fas fa-barcode"></i>
+                            Número de Serie
+                            <span style="color: var(--text-muted); font-weight: 400;">(Opcional)</span>
+                        </label>
+                        {{ dispositivo_form.numero_serie }}
+                        <div class="form-text">
+                            <i class="fas fa-info-circle"></i>
+                            Ingresa el número de serie si lo conoces
+                        </div>
+                    </div>
+
+                    <div class="alert alert-custom mt-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle me-3 fa-lg"></i>
+                            <div>
+                                <strong style="color: var(--accent-green);">Información importante:</strong>
+                                <p class="mb-0 small" style="color: var(--accent-green);">La fecha de registro se asignará automáticamente al momento de guardar.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="invalid-feedback" id="error-marca"></div>
-              </div>
-            </div>
-
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label fw-bold">
-                  <i class="fas fa-mobile text-primary me-2"></i>
-                  Modelo
-                </label>
-                <!-- Input hidden para el valor real -->
-                <input type="hidden" name="modelo" id="id_modelo_real" required>
-                <!-- Select solo para la UI -->
-                <select class="form-select" id="id_modelo_ui" disabled required>
-                  <option value="">Primero selecciona una marca</option>
-                </select>
-                <div class="form-text">
-                  <i class="fas fa-info-circle me-1"></i>
-                  El modelo se habilita al seleccionar una marca
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary-custom" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary-custom" id="btn-guardar-dispositivo">
+                        <i class="fas fa-save me-2"></i>Guardar Dispositivo
+                    </button>
                 </div>
-                <div class="invalid-feedback" id="error-modelo"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label fw-bold">
-              <i class="fas fa-barcode text-primary me-2"></i>
-              Número de Serie
-              <span class="text-muted fw-normal">(Opcional)</span>
-            </label>
-            {{ dispositivo_form.numero_serie }}
-            <div class="form-text">
-              <i class="fas fa-info-circle me-1"></i>
-              Ingresa el número de serie si lo conoces
-            </div>
-            <div class="invalid-feedback" id="error-numero_serie"></div>
-          </div>
-
-          <div class="alert alert-info">
-            <div class="d-flex align-items-center">
-              <i class="fas fa-info-circle me-2 fa-lg"></i>
-              <div>
-                <strong>Información importante:</strong>
-                <p class="mb-0 small">La fecha de registro se asignará automáticamente al momento de guardar.</p>
-              </div>
-            </div>
-          </div>
+            </form>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            <i class="fas fa-times me-2"></i>Cancelar
-          </button>
-          <button type="submit" class="btn btn-primary" id="btn-guardar-dispositivo">
-            <i class="fas fa-save me-2"></i>Guardar Dispositivo
-          </button>
-        </div>
-      </form>
     </div>
-  </div>
 </div>
 
 <!-- Scripts mejorados con el mismo diseño -->
 <script>
+// Función para obtener estilos del tema actual
+function getThemeStyles() {
+    const styles = getComputedStyle(document.documentElement);
+    return {
+        background: styles.getPropertyValue('--bg-primary').trim(),
+        color: styles.getPropertyValue('--text-primary').trim(),
+        borderColor: styles.getPropertyValue('--border-color').trim()
+    };
+}
+
 // Evitar ejecución múltiple
 if (window.modalScriptEjecutado) {
     console.log('ℹ️ Script ya ejecutado, saliendo...');
@@ -242,6 +677,49 @@ if (window.modalScriptEjecutado) {
         'Google': ['Pixel 8 Pro', 'Pixel 8', 'Pixel 7a', 'Pixel 7 Pro', 'Pixel 7', 'Pixel 6a', 'Pixel Fold', 'Pixel Tablet']
     };
 
+    // Función para aplicar estilos a los selects
+    function aplicarEstilosSelects() {
+        console.log('🎨 Aplicando estilos a los selects...');
+
+        const allSelects = document.querySelectorAll('select');
+        allSelects.forEach(select => {
+            // Aplicar clase form-select si no la tiene
+            if (!select.classList.contains('form-select')) {
+                select.classList.add('form-select');
+            }
+
+            // Agregar opción por defecto si no existe
+            if (!select.querySelector('option[value=""]') && select.required) {
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = 'Selecciona una opción';
+                defaultOption.disabled = true;
+                defaultOption.selected = true;
+                select.insertBefore(defaultOption, select.firstChild);
+            }
+
+            // Mejorar la experiencia visual al cambiar opciones
+            select.addEventListener('change', function() {
+                if (this.value) {
+                    this.style.borderColor = 'var(--accent-green)';
+                    setTimeout(() => {
+                        this.style.borderColor = 'var(--border-color)';
+                    }, 1000);
+                }
+            });
+
+            // Agregar wrapper para mejor estilo
+            if (!select.parentElement.classList.contains('select-wrapper')) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'select-wrapper';
+                select.parentNode.insertBefore(wrapper, select);
+                wrapper.appendChild(select);
+            }
+        });
+
+        console.log(`✅ Estilos aplicados a ${allSelects.length} selects`);
+    }
+
     // Función para actualizar modelos
     function actualizarModelos(marca) {
         console.log('🔧 Actualizando modelos para:', marca);
@@ -268,6 +746,8 @@ if (window.modalScriptEjecutado) {
             const defaultOption = document.createElement('option');
             defaultOption.value = '';
             defaultOption.textContent = 'Selecciona un modelo';
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
             selectModeloUI.appendChild(defaultOption);
 
             // Agregar modelos
@@ -278,6 +758,8 @@ if (window.modalScriptEjecutado) {
                 selectModeloUI.appendChild(option);
             });
 
+            // Aplicar estilos al select actualizado
+            aplicarEstilosSelects();
             console.log('✅ Modelos actualizados correctamente');
         } else {
             selectModeloUI.disabled = true;
@@ -292,10 +774,16 @@ if (window.modalScriptEjecutado) {
     document.addEventListener('DOMContentLoaded', function() {
         console.log('🚀 DOM listo - configurando modal...');
 
+        // Aplicar estilos iniciales
+        aplicarEstilosSelects();
+
         const modal = document.getElementById('modalDispositivo');
         if (modal) {
             modal.addEventListener('shown.bs.modal', function() {
                 console.log('📋 Modal abierto - configurando event listeners...');
+
+                // Re-aplicar estilos en el modal
+                aplicarEstilosSelects();
 
                 const selectMarca = this.querySelector('select[name="marca"]');
                 if (selectMarca) {
@@ -316,6 +804,22 @@ if (window.modalScriptEjecutado) {
                     });
                 }
             });
+
+            // También aplicar estilos cuando el modal se cierra y se vuelve a abrir
+            modal.addEventListener('hidden.bs.modal', function() {
+                // Resetear el formulario del modal
+                const form = document.getElementById('form-dispositivo-modal');
+                if (form) {
+                    form.reset();
+                }
+
+                // Resetear el select de modelos
+                const selectModeloUI = document.getElementById('id_modelo_ui');
+                if (selectModeloUI) {
+                    selectModeloUI.innerHTML = '<option value="">Primero selecciona una marca</option>';
+                    selectModeloUI.disabled = true;
+                }
+            });
         }
 
         // Configurar el envío del formulario de dispositivo
@@ -330,34 +834,44 @@ if (window.modalScriptEjecutado) {
                 const modelo = document.getElementById('id_modelo_real')?.value;
 
                 if (!marca) {
+                    const theme = getThemeStyles();
                     Swal.fire({
                         icon: 'warning',
                         title: 'Marca Requerida',
                         text: 'Por favor selecciona una marca para tu dispositivo.',
                         confirmButtonText: 'Entendido',
-                        confirmButtonColor: '#ffc107'
+                        confirmButtonColor: '#ffc107',
+                        background: theme.background,
+                        color: theme.color
                     });
                     return;
                 }
 
                 if (!modelo) {
+                    const theme = getThemeStyles();
                     Swal.fire({
                         icon: 'warning',
                         title: 'Modelo Requerido',
                         text: 'Por favor selecciona un modelo para tu dispositivo.',
                         confirmButtonText: 'Entendido',
-                        confirmButtonColor: '#ffc107'
+                        confirmButtonColor: '#ffc107',
+                        background: theme.background,
+                        color: theme.color
                     });
                     return;
                 }
 
                 console.log('📦 Datos a enviar - Marca:', marca, 'Modelo:', modelo);
 
+                const theme = getThemeStyles();
+
                 // Mostrar loading
                 Swal.fire({
                     title: 'Registrando Dispositivo...',
                     text: 'Por favor espera un momento',
                     allowOutsideClick: false,
+                    background: theme.background,
+                    color: theme.color,
                     didOpen: () => {
                         Swal.showLoading();
                     }
@@ -390,11 +904,16 @@ if (window.modalScriptEjecutado) {
                             option.textContent = data.dispositivo_text;
                             option.selected = true;
                             selectPrincipal.appendChild(option);
+
+                            // Aplicar estilos al select actualizado
+                            aplicarEstilosSelects();
                         }
 
                         // Cerrar modal de dispositivo
                         const modalDispositivo = bootstrap.Modal.getInstance(document.getElementById('modalDispositivo'));
                         if (modalDispositivo) modalDispositivo.hide();
+
+                        const theme = getThemeStyles();
 
                         // Mostrar SweetAlert de éxito
                         Swal.fire({
@@ -409,19 +928,15 @@ if (window.modalScriptEjecutado) {
                             `,
                             showConfirmButton: false,
                             timer: 3000,
-                            timerProgressBar: true
+                            timerProgressBar: true,
+                            background: theme.background,
+                            color: theme.color
                         });
-
-                        // Resetear formulario
-                        this.reset();
-                        const selectModeloReset = document.querySelector('#modalDispositivo select[name="modelo"]');
-                        if (selectModeloReset) {
-                            selectModeloReset.innerHTML = '<option value="">Primero selecciona una marca</option>';
-                            selectModeloReset.disabled = true;
-                        }
 
                     } else {
                         console.error('❌ Error al guardar:', data.errors);
+
+                        const theme = getThemeStyles();
 
                         // SweetAlert para errores
                         Swal.fire({
@@ -429,19 +944,24 @@ if (window.modalScriptEjecutado) {
                             title: 'Error al Registrar',
                             text: 'Hubo un error al guardar el dispositivo. Por favor, verifica los datos.',
                             confirmButtonText: 'Entendido',
-                            confirmButtonColor: '#d33'
+                            confirmButtonColor: '#d33',
+                            background: theme.background,
+                            color: theme.color
                         });
                     }
                 })
                 .catch(error => {
                     Swal.close();
                     console.error('💥 Error en la solicitud:', error);
+                    const theme = getThemeStyles();
                     Swal.fire({
                         icon: 'error',
                         title: 'Error de Conexión',
                         text: 'No se pudo registrar el dispositivo. Intenta nuevamente.',
                         confirmButtonText: 'Reintentar',
-                        confirmButtonColor: '#d33'
+                        confirmButtonColor: '#d33',
+                        background: theme.background,
+                        color: theme.color
                     });
                 });
             });
@@ -470,13 +990,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Cambiar color según los caracteres restantes
         if (caracteresRestantes <= 0) {
-            contadorObservaciones.className = 'text-danger small fw-bold';
+            contadorObservaciones.style.color = '#FF7F7F';
+            contadorObservaciones.style.fontWeight = 'bold';
             textareaObservaciones.classList.add('is-invalid');
         } else if (caracteresRestantes <= 50) {
-            contadorObservaciones.className = 'text-warning small';
+            contadorObservaciones.style.color = '#FFA500';
             textareaObservaciones.classList.remove('is-invalid');
         } else {
-            contadorObservaciones.className = 'text-muted small';
+            contadorObservaciones.style.color = 'var(--text-muted)';
             textareaObservaciones.classList.remove('is-invalid');
         }
     }
@@ -497,7 +1018,29 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <!-- Scripts existentes mejorados (manteniendo la funcionalidad) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+// Función para obtener el token CSRF
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+// Variable global para el timeout
+let fechaTimeout = null;
+
 function configurarFormularioCita() {
     const formCita = document.getElementById('form-cita');
 
@@ -509,7 +1052,7 @@ function configurarFormularioCita() {
             const asesor = document.querySelector('select[name="asesor"]').value;
             const dispositivo = document.getElementById('id_dispositivo').value;
             const fecha = document.querySelector('input[name="fecha_cita"]').value;
-            const hora = document.querySelector('input[name="hora_cita"]').value;
+            const hora = document.querySelector('select[name="hora_cita"]').value;
             const tipoServicio = document.querySelector('select[name="tipo_servicio"]').value;
 
             let errores = [];
@@ -520,77 +1063,136 @@ function configurarFormularioCita() {
             if (!hora) errores.push('Debes seleccionar una hora.');
             if (!tipoServicio) errores.push('Debes seleccionar un tipo de servicio.');
 
+            // Agregar validaciones de formato y lógica
+            const erroresValidacion = validarFormularioCompleto();
+            errores = errores.concat(erroresValidacion);
+
             if (errores.length > 0) {
+                const theme = getThemeStyles();
                 Swal.fire({
                     icon: 'error',
-                    title: 'Campos Requeridos',
+                    title: 'Error en el Formulario',
                     html: `
                         <div class="text-start">
-                            <p>Por favor completa los siguientes campos:</p>
+                            <p>Por favor corrige los siguientes errores:</p>
                             <ul class="small">
                                 ${errores.map(error => `<li>${error}</li>`).join('')}
                             </ul>
                         </div>
                     `,
                     confirmButtonText: 'Entendido',
-                    confirmButtonColor: '#dc3545'
+                    confirmButtonColor: '#dc3545',
+                    background: theme.background,
+                    color: theme.color
                 });
                 return;
             }
 
-            // Obtener datos para el resumen
-            const asesorSelect = document.querySelector('select[name="asesor"]');
-            const asesorText = asesorSelect.options[asesorSelect.selectedIndex].text;
-            const dispositivoSelect = document.getElementById('id_dispositivo');
-            const dispositivoText = dispositivoSelect.options[dispositivoSelect.selectedIndex].text;
+            // Verificar disponibilidad de la fecha antes de mostrar confirmación
+            const fechaInput = document.querySelector('input[name="fecha_cita"]');
+            if (fechaInput && fechaInput.value) {
+                const theme = getThemeStyles();
 
-            // Mostrar confirmación con resumen
-            Swal.fire({
-                title: '¿Confirmar Cita?',
-                html: `
-                    <div class="text-start">
-                        <div class="row">
-                            <div class="col-6">
-                                <p><strong>Asesor:</strong></p>
-                                <p><strong>Dispositivo:</strong></p>
-                                <p><strong>Fecha:</strong></p>
-                                <p><strong>Hora:</strong></p>
-                                <p><strong>Servicio:</strong></p>
+                // Mostrar loading mientras verifica disponibilidad
+                Swal.fire({
+                    title: 'Verificando disponibilidad...',
+                    text: 'Por favor espera un momento',
+                    allowOutsideClick: false,
+                    background: theme.background,
+                    color: theme.color,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch(`/citas/verificar-fecha/?fecha=${fechaInput.value}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        Swal.close();
+
+                        if (!data.disponible) {
+                            mostrarError('Ya existe una cita agendada para esta fecha. Por favor selecciona otra fecha.');
+                            return;
+                        }
+
+                        // Si está disponible, mostrar confirmación
+                        mostrarConfirmacionCita();
+                    })
+                    .catch(error => {
+                        Swal.close();
+                        console.error('Error verificando fecha:', error);
+                        // Si hay error en la verificación, continuar con confirmación
+                        mostrarConfirmacionCita();
+                    });
+            } else {
+                mostrarConfirmacionCita();
+            }
+
+            function mostrarConfirmacionCita() {
+                // Obtener datos para el resumen
+                const asesorSelect = document.querySelector('select[name="asesor"]');
+                const asesorText = asesorSelect.options[asesorSelect.selectedIndex].text;
+                const dispositivoSelect = document.getElementById('id_dispositivo');
+                const dispositivoText = dispositivoSelect.options[dispositivoSelect.selectedIndex].text;
+                const horaSelect = document.querySelector('select[name="hora_cita"]');
+                const horaText = horaSelect.options[horaSelect.selectedIndex].text;
+
+                const theme = getThemeStyles();
+
+                // Mostrar confirmación con resumen
+                Swal.fire({
+                    title: '¿Confirmar Cita?',
+                    html: `
+                        <div class="text-start">
+                            <div class="row">
+                                <div class="col-6">
+                                    <p><strong>Asesor:</strong></p>
+                                    <p><strong>Dispositivo:</strong></p>
+                                    <p><strong>Fecha:</strong></p>
+                                    <p><strong>Hora:</strong></p>
+                                    <p><strong>Servicio:</strong></p>
+                                </div>
+                                <div class="col-6">
+                                    <p>${asesorText}</p>
+                                    <p>${dispositivoText}</p>
+                                    <p>${fecha}</p>
+                                    <p>${horaText}</p>
+                                    <p>${tipoServicio}</p>
+                                </div>
                             </div>
-                            <div class="col-6">
-                                <p>${asesorText}</p>
-                                <p>${dispositivoText}</p>
-                                <p>${fecha}</p>
-                                <p>${hora}</p>
-                                <p>${tipoServicio}</p>
-                            </div>
+                            <p class="mt-3 text-muted border-top pt-2">¿Estás seguro de que quieres agendar esta cita?</p>
                         </div>
-                        <p class="mt-3 text-muted border-top pt-2">¿Estás seguro de que quieres agendar esta cita?</p>
-                    </div>
-                `,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, Agendar Cita',
-                cancelButtonText: 'Revisar Datos',
-                confirmButtonColor: '#28a745',
-                cancelButtonColor: '#6c757d',
-                backdrop: true,
-                width: '600px'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    enviarFormularioCita(this);
-                }
-            });
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, Agendar Cita',
+                    cancelButtonText: 'Revisar Datos',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    backdrop: true,
+                    width: '600px',
+                    background: theme.background,
+                    color: theme.color
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        enviarFormularioCita(formCita);
+                    }
+                });
+            }
         });
     }
 }
 
 function enviarFormularioCita(form) {
+    const theme = getThemeStyles();
+
     // Mostrar loading
     Swal.fire({
         title: 'Agendando cita...',
         text: 'Por favor espera un momento',
         allowOutsideClick: false,
+        background: theme.background,
+        color: theme.color,
         didOpen: () => {
             Swal.showLoading();
         }
@@ -621,6 +1223,8 @@ function enviarFormularioCita(form) {
                 showConfirmButton: false,
                 timer: 2500,
                 timerProgressBar: true,
+                background: theme.background,
+                color: theme.color,
                 didClose: () => {
                     window.location.href = response.url;
                 }
@@ -632,19 +1236,24 @@ function enviarFormularioCita(form) {
                     title: 'Error de Validación',
                     text: 'Por favor verifica los datos del formulario',
                     confirmButtonText: 'Entendido',
-                    confirmButtonColor: '#dc3545'
+                    confirmButtonColor: '#dc3545',
+                    background: theme.background,
+                    color: theme.color
                 });
             });
         }
     })
     .catch(error => {
         console.error('Error:', error);
+        const theme = getThemeStyles();
         Swal.fire({
             icon: 'error',
             title: 'Error de Conexión',
             text: 'No se pudo agendar la cita. Intenta nuevamente.',
             confirmButtonText: 'Reintentar',
-            confirmButtonColor: '#dc3545'
+            confirmButtonColor: '#dc3545',
+            background: theme.background,
+            color: theme.color
         });
     });
 }
@@ -652,7 +1261,7 @@ function enviarFormularioCita(form) {
 // Configurar validaciones de fecha y hora
 function configurarValidacionesCita() {
     const fechaInput = document.querySelector('input[name="fecha_cita"]');
-    const horaInput = document.querySelector('input[name="hora_cita"]');
+    const horaInput = document.querySelector('select[name="hora_cita"]');
 
     if (fechaInput) {
         // Establecer fecha mínima (mañana)
@@ -662,89 +1271,145 @@ function configurarValidacionesCita() {
         const fechaMinima = manana.toISOString().split('T')[0];
         fechaInput.min = fechaMinima;
 
-        // Agregar validación en tiempo real
-        fechaInput.addEventListener('change', validarFecha);
-    }
+        // ELIMINAR validación en tiempo real del input
+        // Solo validar cuando el usuario termina de interactuar
 
-    if (horaInput) {
-        // Configurar horario restringido
-        horaInput.min = '08:00';
-        horaInput.max = '14:00';
-        horaInput.step = '1800';
-
-        // Agregar validación en tiempo real
-        horaInput.addEventListener('change', validarHora);
-
-        // Forzar horario dentro del rango
-        horaInput.addEventListener('input', function() {
-            if (this.value) {
-                const [horas, minutos] = this.value.split(':').map(Number);
-                const horaDecimal = horas + minutos / 60;
-
-                if (horaDecimal < 8) {
-                    this.value = '08:00';
-                } else if (horaDecimal > 14) {
-                    this.value = '14:00';
+        // Validación solo cuando se selecciona del datepicker
+        fechaInput.addEventListener('change', function() {
+            // Pequeño delay para asegurar que el valor esté estable
+            setTimeout(() => {
+                if (this.value && this.value.length === 10) {
+                    validarFechaCompleta();
                 }
+            }, 100);
+        });
+
+        // Validación cuando pierde el foco (solo si tiene valor completo)
+        fechaInput.addEventListener('blur', function() {
+            if (this.value && this.value.length === 10) {
+                validarFechaCompleta();
             }
         });
     }
+
+    if (horaInput) {
+        // Como es un select, no necesita validación en tiempo real
+        // Los minutos ya están limitados a 00 y 30 en las opciones
+    }
 }
 
-// Funciones de validación (mantener las existentes)
-function validarFecha() {
+// Función para validar fecha solo cuando está completa
+function validarFechaCompleta() {
     const fechaInput = document.querySelector('input[name="fecha_cita"]');
-    const fechaSeleccionada = new Date(fechaInput.value);
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
 
-    if (fechaInput.value) {
+    if (!fechaInput || !fechaInput.value || fechaInput.value.length !== 10) {
+        return true; // No validar si está vacía o incompleta
+    }
+
+    // Verificar que sea una fecha real (no "0002-01-01" o similares)
+    const fechaValue = fechaInput.value;
+    const [year, month, day] = fechaValue.split('-').map(Number);
+
+    // Si el año es menor a 1000, probablemente es un error de escritura
+    if (year < 1000) {
+        return true; // No validar años como 0002, 0025, etc.
+    }
+
+    try {
+        const fechaSeleccionada = new Date(fechaValue);
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
+        if (isNaN(fechaSeleccionada.getTime())) {
+            return true; // Fecha inválida, pero no mostrar error
+        }
+
         if (fechaSeleccionada < hoy) {
             mostrarError('No se pueden agendar citas en fechas pasadas.');
+            fechaInput.value = ''; // Limpiar el campo
             return false;
         } else if (fechaSeleccionada.getTime() === hoy.getTime()) {
             mostrarError('Las citas deben agendarse con al menos un día de anticipación.');
+            fechaInput.value = ''; // Limpiar el campo
             return false;
         } else {
+            // Verificar disponibilidad solo si la fecha es válida y futura
             verificarDisponibilidadFecha(fechaInput.value);
             return true;
         }
+    } catch (error) {
+        return true; // Si hay error, no validar
     }
-    return false;
 }
 
-function validarHora() {
-    const horaInput = document.querySelector('input[name="hora_cita"]');
-    if (horaInput.value) {
-        const [horas, minutos] = horaInput.value.split(':').map(Number);
-        const horaSeleccionada = horas + minutos / 60;
-        if (horaSeleccionada < 8 || horaSeleccionada > 14) {
-            mostrarError('El horario debe estar entre 8:00 AM y 2:00 PM.');
-            return false;
-        }
-        return true;
-    }
-    return false;
-}
-
+// Función para verificar disponibilidad
 function verificarDisponibilidadFecha(fecha) {
-    fetch(`/citas/verificar-fecha/?fecha=${fecha}`)
-        .then(response => response.json())
-        .then(data => {
-            if (!data.disponible) {
-                mostrarError('Ya existe una cita agendada para esta fecha. Por favor selecciona otra fecha.');
+    try {
+        const fechaObj = new Date(fecha);
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
+        if (fechaObj <= hoy || isNaN(fechaObj.getTime())) {
+            return;
+        }
+
+        fetch(`/citas/verificar-fecha/?fecha=${fecha}`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.disponible) {
+                    mostrarError('Ya existe una cita agendada para esta fecha. Por favor selecciona otra fecha.');
+                }
+            })
+            .catch(error => console.error('Error verificando fecha:', error));
+    } catch (error) {
+        console.error('Error en verificación de fecha:', error);
+    }
+}
+
+// Validación final antes de enviar el formulario
+function validarFormularioCompleto() {
+    const fechaInput = document.querySelector('input[name="fecha_cita"]');
+    const horaInput = document.querySelector('select[name="hora_cita"]');
+
+    let errores = [];
+
+    // Validar fecha
+    if (fechaInput && fechaInput.value) {
+        try {
+            const fechaSeleccionada = new Date(fechaInput.value);
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+
+            if (isNaN(fechaSeleccionada.getTime())) {
+                errores.push('La fecha ingresada no es válida.');
+            } else if (fechaSeleccionada < hoy) {
+                errores.push('No se pueden agendar citas en fechas pasadas.');
+            } else if (fechaSeleccionada.getTime() === hoy.getTime()) {
+                errores.push('Las citas deben agendarse con al menos un día de anticipación.');
             }
-        })
-        .catch(error => console.error('Error verificando fecha:', error));
+        } catch (error) {
+            errores.push('La fecha ingresada no es válida.');
+        }
+    }
+
+    // Validar hora (para select, ya está validado por las opciones)
+    if (horaInput && !horaInput.value) {
+        errores.push('Debes seleccionar una hora para la cita.');
+    }
+
+    return errores;
 }
 
 function mostrarError(mensaje) {
+    const theme = getThemeStyles();
     Swal.fire({
         icon: 'warning',
         title: 'Validación',
         text: mensaje,
         confirmButtonText: 'Entendido',
-        confirmButtonColor: '#ffc107'
+        confirmButtonColor: '#ffc107',
+        background: theme.background,
+        color: theme.color
     });
 }
 
@@ -758,6 +1423,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function mostrarMensajes() {
     {% if messages %}
         {% for message in messages %}
+            const theme = getThemeStyles();
             {% if message.tags == 'error' %}
                 Swal.fire({
                     icon: 'error',
@@ -767,7 +1433,9 @@ function mostrarMensajes() {
                     confirmButtonColor: '#dc3545',
                     backdrop: true,
                     allowOutsideClick: false,
-                    allowEscapeKey: false
+                    allowEscapeKey: false,
+                    background: theme.background,
+                    color: theme.color
                 });
             {% elif message.tags == 'success' %}
                 Swal.fire({
@@ -777,7 +1445,9 @@ function mostrarMensajes() {
                     confirmButtonText: 'Aceptar',
                     confirmButtonColor: '#28a745',
                     timer: 3000,
-                    timerProgressBar: true
+                    timerProgressBar: true,
+                    background: theme.background,
+                    color: theme.color
                 });
             {% endif %}
         {% endfor %}
@@ -788,19 +1458,18 @@ document.addEventListener('DOMContentLoaded', mostrarMensajes);
 </script>
 
 {% else %}
+<!-- Mensaje de acceso denegado con nuevo estilo -->
 <div class="row justify-content-center">
-  <div class="col-12 col-md-8 col-lg-6">
-    <div class="card">
-      <div class="card-body text-center py-5">
-        <i class="fas fa-ban text-danger mb-3" style="font-size: 4rem;"></i>
-        <h3 class="text-danger">Acceso Denegado</h3>
-        <p class="text-muted">No tienes permisos para acceder a esta página. Solo usuarios con rol de Admin o Cliente pueden agendar citas.</p>
-        <a href="{% url 'inicio:home' %}" class="btn btn-primary mt-3">
-          <i class="fas fa-home me-2"></i>Volver al Inicio
-        </a>
-      </div>
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="form-container text-center">
+            <i class="fas fa-ban mb-4" style="font-size: 4rem; background: linear-gradient(135deg, #FF7F7F, var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+            <h3 class="form-title">Acceso Denegado</h3>
+            <p class="form-subtitle">No tienes permisos para acceder a esta página. Solo usuarios con rol de Admin o Cliente pueden agendar citas.</p>
+            <a href="{% url 'inicio:home' %}" class="btn btn-primary-custom mt-3">
+                <i class="fas fa-home me-2"></i>Volver al Inicio
+            </a>
+        </div>
     </div>
-  </div>
 </div>
 {% endif %}
 {% endblock %}

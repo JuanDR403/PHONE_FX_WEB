@@ -5,377 +5,908 @@
 
 {% block content %}
 <style>
-  /* Posicionar flechas por fuera del carrusel, a izquierda/derecha */
-  .carousel-outer-controls { position: relative; }
-  .carousel-outer-controls .carousel-control-prev,
-  .carousel-outer-controls .carousel-control-next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 2.75rem; /* botón un poco más pequeño */
-    height: 2.75rem;
-    opacity: 0.9;
-  }
-  .carousel-outer-controls .carousel-control-prev { left: -2.5rem; }
-  .carousel-outer-controls .carousel-control-next { right: -2.5rem; }
-  /* Asegurar que no cubran las tarjetas */
-  .carousel-outer-controls .carousel-control-prev,
-  .carousel-outer-controls .carousel-control-next { pointer-events: auto; z-index: 3; }
-  /* En pantallas pequeñas, traer las flechas un poco hacia adentro para que no se corten */
-  @media (max-width: 576px) {
-    .carousel-outer-controls .carousel-control-prev { left: -1rem; }
-    .carousel-outer-controls .carousel-control-next { right: -1rem; }
-  }
+    .form-container {
+        background: var(--bg-card);
+        border-radius: 20px;
+        padding: 40px;
+        margin: 20px 0;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 20px 40px var(--shadow-color);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .form-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent-purple) 0%, var(--accent-green) 50%, var(--accent-yellow) 100%);
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 40px;
+        position: relative;
+    }
+
+    .form-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        font-size: 2.5rem;
+        background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-green) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+    }
+
+    .form-subtitle {
+        color: var(--text-secondary);
+        font-family: 'Poppins', sans-serif;
+        font-weight: 300;
+        font-size: 1.1rem;
+    }
+
+    /* ESTILOS PARA LAS TARJETAS DE PRODUCTO */
+    .product-card {
+        background: var(--bg-card);
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .product-card:hover {
+        background: var(--bg-secondary);
+        border-color: var(--accent-purple);
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px var(--shadow-color);
+    }
+
+    .product-image-container {
+        position: relative;
+        overflow: hidden;
+        background: var(--search-bg);
+    }
+
+    .product-image {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .product-card:hover .product-image {
+        transform: scale(1.05);
+    }
+
+    .product-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 2;
+    }
+
+    .product-content {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        height: calc(100% - 250px);
+    }
+
+    .product-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 1.2rem;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+        line-height: 1.3;
+    }
+
+    .product-category {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.85rem;
+        color: var(--accent-green);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+    }
+
+    .product-category i {
+        margin-right: 6px;
+    }
+
+    .product-price {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        font-size: 1.4rem;
+        color: var(--accent-purple);
+        margin-bottom: 12px;
+    }
+
+    .product-stock-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: var(--search-bg);
+    }
+
+    .stock-icon {
+        font-size: 1rem;
+    }
+
+    .stock-text {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .stock-available {
+        color: var(--accent-green);
+    }
+
+    .stock-low {
+        color: var(--accent-yellow);
+    }
+
+    .stock-unavailable {
+        color: #FF7F7F;
+    }
+
+    .stock-quantity {
+        font-weight: 600;
+        margin-left: auto;
+    }
+
+    .product-description {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        margin-bottom: 15px;
+        flex-grow: 1;
+    }
+
+    .product-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: auto;
+    }
+
+    .btn-product-primary {
+        background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-green) 100%);
+        border: none;
+        border-radius: 10px;
+        padding: 10px 16px;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #000000;
+        transition: all 0.3s ease;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .btn-product-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(224, 64, 251, 0.4);
+        color: #000000;
+    }
+
+    .btn-product-primary:disabled {
+        background: var(--search-bg);
+        color: var(--text-muted);
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .btn-product-secondary {
+        background: var(--search-bg);
+        border: 2px solid var(--border-color);
+        border-radius: 10px;
+        padding: 10px 16px;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 500;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .btn-product-secondary:hover {
+        background: var(--bg-card);
+        border-color: var(--accent-purple);
+        color: var(--text-primary);
+        transform: translateY(-2px);
+    }
+
+    .btn-product-secondary:disabled {
+        background: var(--search-bg);
+        border-color: var(--border-color);
+        color: var(--text-muted);
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-product-danger {
+        background: rgba(220, 53, 69, 0.1);
+        border: 2px solid rgba(220, 53, 69, 0.3);
+        border-radius: 10px;
+        padding: 10px 16px;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 500;
+        font-size: 0.9rem;
+        color: #FF7F7F;
+        transition: all 0.3s ease;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .btn-product-danger:hover {
+        background: rgba(220, 53, 69, 0.2);
+        border-color: rgba(220, 53, 69, 0.5);
+        color: #FF7F7F;
+        transform: translateY(-2px);
+    }
+
+    .stock-badge {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 20px;
+    }
+
+    .stock-available-badge {
+        background: var(--success-bg);
+        color: var(--accent-green);
+        border: 1px solid var(--accent-green);
+    }
+
+    .stock-low-badge {
+        background: var(--warning-bg);
+        color: var(--accent-yellow);
+        border: 1px solid var(--accent-yellow);
+    }
+
+    .stock-unavailable-badge {
+        background: var(--error-bg);
+        color: #FF7F7F;
+        border: 1px solid #FF7F7F;
+    }
+
+    .category-header {
+        background: var(--bg-card);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+        border: 1px solid var(--border-color);
+    }
+
+    .category-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 1.4rem;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .btn-view-more {
+        background: transparent;
+        border: 2px solid var(--accent-purple);
+        border-radius: 10px;
+        padding: 8px 20px;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 500;
+        font-size: 0.9rem;
+        color: var(--accent-purple);
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-view-more:hover {
+        background: rgba(224, 64, 251, 0.1);
+        border-color: var(--accent-green);
+        color: var(--accent-green);
+        transform: translateY(-2px);
+    }
+
+    /* Estilos para el carrusel */
+    .carousel-outer-controls {
+        position: relative;
+        margin-bottom: 40px;
+    }
+
+    .carousel-outer-controls .carousel-control-prev,
+    .carousel-outer-controls .carousel-control-next {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 50px;
+        height: 50px;
+        background: var(--search-bg);
+        border-radius: 50%;
+        border: 2px solid var(--border-color);
+        opacity: 0.9;
+        transition: all 0.3s ease;
+    }
+
+    .carousel-outer-controls .carousel-control-prev {
+        left: -25px;
+    }
+    .carousel-outer-controls .carousel-control-next {
+        right: -25px;
+    }
+
+    .carousel-outer-controls .carousel-control-prev:hover,
+    .carousel-outer-controls .carousel-control-next:hover {
+        background: rgba(224, 64, 251, 0.2);
+        border-color: var(--accent-purple);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .carousel-indicators [data-bs-target] {
+        background-color: var(--border-color);
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin: 0 4px;
+    }
+
+    .carousel-indicators .active {
+        background-color: var(--accent-purple);
+    }
+
+    .form-select {
+        background: var(--search-bg) !important;
+        border: 2px solid var(--border-color) !important;
+        border-radius: 12px !important;
+        color: var(--text-primary) !important;
+        font-family: 'Poppins', sans-serif;
+        font-size: 1rem;
+        padding: 12px 16px !important;
+        transition: all 0.3s ease;
+    }
+
+    .form-select:focus {
+        background: var(--bg-card) !important;
+        border-color: var(--accent-purple) !important;
+        box-shadow: 0 0 0 3px rgba(224, 64, 251, 0.1) !important;
+        color: var(--text-primary) !important;
+        outline: none;
+    }
+
+    .btn-success-custom {
+        background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-purple) 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #000000;
+        transition: all 0.3s ease;
+    }
+
+    .btn-success-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(145, 255, 182, 0.4);
+        color: #000000;
+    }
+
+    /* Estilos específicos para modo claro */
+    [data-theme="light"] .product-card:hover {
+        box-shadow: 0 10px 25px var(--shadow-color);
+    }
+
+    [data-theme="light"] .category-header {
+        box-shadow: 0 4px 15px var(--shadow-color);
+    }
+
+    [data-theme="light"] .form-container {
+        box-shadow: 0 10px 30px var(--shadow-color);
+    }
+
+    [data-theme="light"] .btn-product-primary,
+    [data-theme="light"] .btn-success-custom {
+        color: #000000;
+    }
+
+    [data-theme="light"] .btn-product-primary:hover,
+    [data-theme="light"] .btn-success-custom:hover {
+        color: #000000;
+    }
+
+    /* En pantallas pequeñas, traer las flechas un poco hacia adentro */
+    @media (max-width: 768px) {
+        .carousel-outer-controls .carousel-control-prev {
+            left: -15px;
+        }
+        .carousel-outer-controls .carousel-control-next {
+            right: -15px;
+        }
+
+        .carousel-outer-controls .carousel-control-prev,
+        .carousel-outer-controls .carousel-control-next {
+            width: 40px;
+            height: 40px;
+        }
+
+        .product-image {
+            height: 200px;
+        }
+
+        .product-content {
+            height: calc(100% - 200px);
+        }
+    }
 </style>
-<div class="row mb-4">
-  <div class="col-12">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-      <div class="d-flex align-items-center gap-2">
-        <h2 class="h4 mb-0">Productos</h2>
-        {% if categoria_seleccionada %}
-          {% for c in categorias %}
-            {% if c.idcategoria == categoria_seleccionada %}
-              <span class="badge text-bg-primary ms-2">Categoría: {{ c.nombre }}</span>
-            {% endif %}
-          {% endfor %}
-        {% endif %}
-      </div>
-      <div class="d-flex align-items-center gap-2">
-        <form method="get" class="d-flex align-items-center gap-2">
-          <label for="categoria" class="form-label mb-0">Categoría:</label>
-          <select id="categoria" name="categoria" class="form-select" onchange="this.form.submit()">
-            <option value="" {% if not categoria_seleccionada %}selected{% endif %}>Todas</option>
-            {% for cat in categorias %}
-              <option value="{{ cat.idcategoria }}" {% if categoria_seleccionada == cat.idcategoria %}selected{% endif %}>{{ cat.nombre }}</option>
-            {% empty %}
-              <option disabled>No hay categorías</option>
-            {% endfor %}
-          </select>
-        </form>
-      {% if rol|lower == "admin" or rol|lower == "asesor" %}
-        <a href="{% url 'tienda:crear_producto' %}" class="btn btn-success">Agregar producto</a>
-      {% endif %}
-      </div>
+
+<div class="form-container">
+    <div class="form-header">
+        <h1 class="form-title">
+            <i class="fas fa-shopping-bag me-3"></i>
+            Nuestros Productos
+        </h1>
+        <p class="form-subtitle">Descubre nuestra amplia gama de productos de alta calidad</p>
     </div>
-  </div>
+
+    <!-- Filtros y Controles -->
+    <div class="category-header">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <h2 class="category-title mb-0">
+                    <i class="fas fa-filter me-2"></i>
+                    Productos
+                </h2>
+                {% if categoria_seleccionada %}
+                    {% for c in categorias %}
+                        {% if c.idcategoria == categoria_seleccionada %}
+                            <span class="stock-badge stock-available-badge ms-2">
+                                <i class="fas fa-tag me-1"></i>{{ c.nombre }}
+                            </span>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <form method="get" class="d-flex align-items-center gap-2">
+                    <label for="categoria" class="form-label mb-0" style="color: var(--text-primary);">Categoría:</label>
+                    <select id="categoria" name="categoria" class="form-select" onchange="this.form.submit()" style="min-width: 200px;">
+                        <option value="" {% if not categoria_seleccionada %}selected{% endif %}>Todas las categorías</option>
+                        {% for cat in categorias %}
+                            <option value="{{ cat.idcategoria }}" {% if categoria_seleccionada == cat.idcategoria %}selected{% endif %}>{{ cat.nombre }}</option>
+                        {% empty %}
+                            <option disabled>No hay categorías disponibles</option>
+                        {% endfor %}
+                    </select>
+                </form>
+                {% if rol|lower == "admin" or rol|lower == "asesor" %}
+                    <a href="{% url 'tienda:crear_producto' %}" class="btn btn-success-custom">
+                        <i class="fas fa-plus me-2"></i>Agregar Producto
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if not categoria_seleccionada %}
+        <!-- Vista por categorías en carruseles -->
+        {% for c in categorias %}
+            {% with prods=c.productos.all %}
+                {% if prods %}
+                <div class="mb-5 position-relative carousel-outer-controls">
+                    <div class="category-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h3 class="category-title mb-0">
+                                <i class="fas fa-{{ c.nombre|lower }} me-2"></i>
+                                {{ c.nombre }}
+                            </h3>
+                            <a class="btn-view-more" href="?categoria={{ c.idcategoria }}">
+                                <i class="fas fa-arrow-right me-2"></i>Ver Más
+                            </a>
+                        </div>
+                    </div>
+
+                    <div id="carousel-{{ c.idcategoria }}" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            {% for p in prods %}
+                                {% if forloop.first or forloop.counter0|divisibleby:'3' %}
+                                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                        <div class="row g-4">
+                                {% endif %}
+
+                                <div class="col-12 col-sm-6 col-lg-4">
+                                    <div class="product-card">
+                                        <div class="product-image-container">
+                                            {% if p.imagen %}
+                                                <img src="{{ p.imagen }}" class="product-image" alt="{{ p.nombre }}">
+                                            {% else %}
+                                                <div class="product-image d-flex align-items-center justify-content-center" style="background: var(--search-bg);">
+                                                    <i class="fas fa-image fa-3x" style="color: var(--text-muted);"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div class="product-badge">
+                                                {% if p.stock > 10 %}
+                                                    <span class="stock-badge stock-available-badge">
+                                                        <i class="fas fa-check me-1"></i>Disponible
+                                                    </span>
+                                                {% elif p.stock > 0 and p.stock <= 10 %}
+                                                    <span class="stock-badge stock-low-badge">
+                                                        <i class="fas fa-exclamation me-1"></i>Últimas unidades
+                                                    </span>
+                                                {% else %}
+                                                    <span class="stock-badge stock-unavailable-badge">
+                                                        <i class="fas fa-times me-1"></i>Agotado
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="product-content">
+                                            <h5 class="product-title">{{ p.nombre }}</h5>
+                                            <div class="product-category">
+                                                <i class="fas fa-tag"></i>
+                                                {% if p.categoria and p.categoria.nombre %}
+                                                    {{ p.categoria.nombre }}
+                                                {% else %}
+                                                    Sin categoría
+                                                {% endif %}
+                                            </div>
+                                            <div class="product-price">${{ p.precio }} COP</div>
+
+                                            <!-- Información de Stock Mejorada -->
+                                            <div class="product-stock-info">
+                                                <i class="fas fa-boxes stock-icon
+                                                    {% if p.stock > 10 %}stock-available
+                                                    {% elif p.stock > 0 %}stock-low
+                                                    {% else %}stock-unavailable{% endif %}"></i>
+                                                <span class="stock-text
+                                                    {% if p.stock > 10 %}stock-available
+                                                    {% elif p.stock > 0 %}stock-low
+                                                    {% else %}stock-unavailable{% endif %}">
+                                                    {% if p.stock > 10 %}
+                                                        En stock
+                                                    {% elif p.stock > 0 %}
+                                                        Stock bajo
+                                                    {% else %}
+                                                        Sin stock
+                                                    {% endif %}
+                                                </span>
+                                                <span class="stock-quantity
+                                                    {% if p.stock > 10 %}stock-available
+                                                    {% elif p.stock > 0 %}stock-low
+                                                    {% else %}stock-unavailable{% endif %}">
+                                                    {{ p.stock }} unidades
+                                                </span>
+                                            </div>
+
+                                            {% if p.descripcion %}
+                                                <div class="product-description">
+                                                    {{ p.descripcion|truncatewords:20 }}
+                                                </div>
+                                                {% if p.descripcion|length > 100 %}
+                                                    <button type="button" class="btn btn-link p-0" style="color: var(--accent-purple);"
+                                                            onclick="toggleDescripcion('desc-{{ p.idproducto }}', this)">
+                                                        Ver más
+                                                    </button>
+                                                {% endif %}
+                                            {% endif %}
+
+                                            <div class="product-actions">
+                                                {% if rol|lower == "admin" or rol|lower == "cliente" %}
+                                                    <div class="d-flex gap-2">
+                                                        <form method="post" action="{% url 'carrito:agregar_al_carrito' %}" class="w-50">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="producto_id" value="{{ p.idproducto }}">
+                                                            <button type="submit" class="btn-product-primary w-100" {% if p.stock == 0 %}disabled{% endif %}>
+                                                                <i class="fas fa-cart-plus me-2"></i>Carrito
+                                                            </button>
+                                                        </form>
+                                                        <form method="post" action="{% url 'carrito:agregar_al_carrito' %}" class="w-50">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="producto_id" value="{{ p.idproducto }}">
+                                                            <input type="hidden" name="comprar_ahora" value="1">
+                                                            <button type="submit" class="btn-product-secondary w-100" {% if p.stock == 0 %}disabled{% endif %}>
+                                                                <i class="fas fa-bolt me-2"></i>Comprar
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if rol|lower == "admin" or rol|lower == "asesor" %}
+                                                    <div class="d-flex gap-2">
+                                                        <a href="{% url 'tienda:editar_producto' p.idproducto %}" class="btn-product-secondary w-50 text-center">
+                                                            <i class="fas fa-edit me-2"></i>Editar
+                                                        </a>
+                                                        <!-- BOTÓN ELIMINAR CORREGIDO -->
+                                                        <button type="button" class="btn-product-danger w-50"
+                                                                onclick="confirmarEliminacion('{{ p.idproducto }}', '{{ p.nombre|escapejs }}', '{% url 'tienda:eliminar_producto' p.idproducto %}')">
+                                                            <i class="fas fa-trash me-2"></i>Eliminar
+                                                        </button>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {% if forloop.counter|divisibleby:'3' or forloop.last %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <!-- Controles del carrusel -->
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carousel-{{ c.idcategoria }}" data-bs-slide="prev">
+                            <i class="fas fa-chevron-left" style="color: var(--text-primary);"></i>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carousel-{{ c.idcategoria }}" data-bs-slide="next">
+                            <i class="fas fa-chevron-right" style="color: var(--text-primary);"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+            {% endwith %}
+        {% endfor %}
+    {% else %}
+        <!-- Vista de productos por categoría seleccionada -->
+        <div class="row g-4">
+            {% for p in productos %}
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="product-card">
+                    <div class="product-image-container">
+                        {% if p.imagen %}
+                            <img src="{{ p.imagen }}" class="product-image" alt="{{ p.nombre }}">
+                        {% else %}
+                            <div class="product-image d-flex align-items-center justify-content-center" style="background: var(--search-bg);">
+                                <i class="fas fa-image fa-3x" style="color: var(--text-muted);"></i>
+                            </div>
+                        {% endif %}
+                        <div class="product-badge">
+                            {% if p.stock > 10 %}
+                                <span class="stock-badge stock-available-badge">
+                                    <i class="fas fa-check me-1"></i>Disponible
+                                </span>
+                            {% elif p.stock > 0 and p.stock <= 10 %}
+                                <span class="stock-badge stock-low-badge">
+                                    <i class="fas fa-exclamation me-1"></i>Últimas unidades
+                                </span>
+                            {% else %}
+                                <span class="stock-badge stock-unavailable-badge">
+                                    <i class="fas fa-times me-1"></i>Agotado
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="product-content">
+                        <h5 class="product-title">{{ p.nombre }}</h5>
+                        <div class="product-category">
+                            <i class="fas fa-tag"></i>
+                            {% if p.categoria and p.categoria.nombre %}
+                                {{ p.categoria.nombre }}
+                            {% else %}
+                                Sin categoría
+                            {% endif %}
+                        </div>
+                        <div class="product-price">${{ p.precio }} COP</div>
+
+                        <!-- Información de Stock Mejorada -->
+                        <div class="product-stock-info">
+                            <i class="fas fa-boxes stock-icon
+                                {% if p.stock > 10 %}stock-available
+                                {% elif p.stock > 0 %}stock-low
+                                {% else %}stock-unavailable{% endif %}"></i>
+                            <span class="stock-text
+                                {% if p.stock > 10 %}stock-available
+                                {% elif p.stock > 0 %}stock-low
+                                {% else %}stock-unavailable{% endif %}">
+                                {% if p.stock > 10 %}
+                                    En stock
+                                {% elif p.stock > 0 %}
+                                    Stock bajo
+                                {% else %}
+                                    Sin stock
+                                {% endif %}
+                            </span>
+                            <span class="stock-quantity
+                                {% if p.stock > 10 %}stock-available
+                                {% elif p.stock > 0 %}stock-low
+                                {% else %}stock-unavailable{% endif %}">
+                                {{ p.stock }} unidades
+                            </span>
+                        </div>
+
+                        {% if p.descripcion %}
+                            <div id="desc-{{ p.idproducto }}" class="product-description" style="max-height: 4.5em; overflow: hidden;">
+                                {{ p.descripcion }}
+                            </div>
+                            {% if p.descripcion|length > 100 %}
+                                <button type="button" class="btn btn-link p-0" style="color: var(--accent-purple);"
+                                        onclick="toggleDescripcion('desc-{{ p.idproducto }}', this)">
+                                    Ver más
+                                </button>
+                            {% endif %}
+                        {% endif %}
+
+                        <div class="product-actions">
+                            {% if rol|lower == "admin" or rol|lower == "cliente" %}
+                                <div class="d-flex gap-2">
+                                    <form method="post" action="{% url 'carrito:agregar_al_carrito' %}" class="w-50">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="producto_id" value="{{ p.idproducto }}">
+                                        <button type="submit" class="btn-product-primary w-100" {% if p.stock == 0 %}disabled{% endif %}>
+                                            <i class="fas fa-cart-plus me-2"></i>Carrito
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{% url 'carrito:agregar_al_carrito' %}" class="w-50">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="producto_id" value="{{ p.idproducto }}">
+                                        <input type="hidden" name="comprar_ahora" value="1">
+                                        <button type="submit" class="btn-product-secondary w-100" {% if p.stock == 0 %}disabled{% endif %}>
+                                            <i class="fas fa-bolt me-2"></i>Comprar
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endif %}
+
+                            {% if rol|lower == "admin" or rol|lower == "asesor" %}
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'tienda:editar_producto' p.idproducto %}" class="btn-product-secondary w-50 text-center">
+                                        <i class="fas fa-edit me-2"></i>Editar
+                                    </a>
+                                    <!-- BOTÓN ELIMINAR CORREGIDO -->
+                                    <button type="button" class="btn-product-danger w-50"
+                                            onclick="confirmarEliminacion('{{ p.idproducto }}', '{{ p.nombre|escapejs }}', '{% url 'tienda:eliminar_producto' p.idproducto %}')">
+                                        <i class="fas fa-trash me-2"></i>Eliminar
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-box-open fa-3x mb-3" style="color: var(--text-muted);"></i>
+                    <h4 style="color: var(--text-primary);">No se encontraron productos</h4>
+                    <p style="color: var(--text-muted);">No hay productos disponibles para esta categoría.</p>
+                    <a href="?" class="btn-view-more">
+                        <i class="fas fa-arrow-left me-2"></i>Ver Todas las Categorías
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 </div>
 
-{% if not categoria_seleccionada %}
-  {# Vista por categorías en carruseles cuando el filtro está en "Todas" #}
-  {% for c in categorias %}
-    {% with prods=c.productos.all %}
-      {% if prods %}
-      <div class="mb-5 position-relative carousel-outer-controls">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h3 class="h5 mb-0">{{ c.nombre }}</h3>
-          <a class="btn btn-outline-primary btn-sm" href="?categoria={{ c.idcategoria }}">Ver Mas...</a>
-        </div>
-
-        <div id="carousel-{{ c.idcategoria }}" class="carousel slide" data-bs-ride="carousel">
-          <div class="carousel-inner">
-            {% for p in prods %}
-              {% if forloop.first or forloop.counter0|divisibleby:'3' %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                  <div class="row g-3">
-              {% endif %}
-
-              <div class="col-12 col-sm-6 col-lg-4">
-                <div class="card h-100">
-                  {% if p.imagen %}
-                    <img src="{{ p.imagen }}" class="card-img-top" alt="{{ p.nombre }}" style="width: 250px; height: 250px; object-fit: cover; display: block; margin-left: auto; margin-right: auto;">
-                  {% else %}
-                    <svg class="bd-placeholder-img card-img-top" width="250" height="250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Sin imagen</title><rect width="100%" height="100%" fill="#868e96"></rect><text x="50%" y="50%" fill="#dee2e6" dy=".3em" text-anchor="middle">Sin imagen</text></svg>
-                  {% endif %}
-                  <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">{{ p.nombre }}</h5>
-                    <p class="card-text small text-muted mb-1">{% if p.categoria and p.categoria.nombre %}{{ p.categoria.nombre }}{% else %}Sin categoría{% endif %}</p>
-                    <p class="card-text fw-bold">{{ p.precio }}</p>
-                    {% if p.descripcion %}
-                    <div id="desc-{{ p.idproducto }}" class="card-text" style="overflow: hidden; max-height: 4.5em;">{{ p.descripcion }}</div>
-                    {% if p.descripcion|length > 140 %}
-                    <button type="button" class="btn btn-link p-0 mt-1" onclick="(function(btn){var el=document.getElementById('desc-{{ p.idproducto }}');if(el.style.maxHeight && el.style.maxHeight!=='none'){el.style.maxHeight='none';btn.textContent='Ver menos';}else{el.style.maxHeight='4.5em';btn.textContent='Ver más';}})(this)">Ver más</button>
-                    {% endif %}
-                    {% endif %}
-                    <div class="mt-auto">
-                      {% if p.stock %}
-                        <span class="badge text-bg-success">En stock: {{ p.stock }}</span>
-                      {% else %}
-                        <span class="badge text-bg-secondary">Sin stock</span>
-                      {% endif %}
-
-                      <!-- Acciones de compra -->
-                    {% if rol|lower == "admin" or rol|lower == "cliente" %}
-
-                      <div class="d-flex flex-wrap gap-2 mt-3">
-                        <form method="post" action="{% url 'carrito:agregar_al_carrito' %}">
-                          {% csrf_token %}
-                          <input type="hidden" name="producto_id" value="{{ p.idproducto }}">
-                          <button type="submit" class="btn btn-sm btn-primary" {% if not p.stock %}disabled{% endif %}>Agregar a Carrito</button>
-                        </form>
-                        <form method="post" action="{% url 'carrito:agregar_al_carrito' %}">
-                          {% csrf_token %}
-                          <input type="hidden" name="producto_id" value="{{ p.idproducto }}">
-                          <input type="hidden" name="comprar_ahora" value="1">
-                          <button type="submit" class="btn btn-sm btn-success" {% if not p.stock %}disabled{% endif %}>Comprar Ahora</button>
-                        </form>
-                      </div>
-                    {% endif %}
-                    {% if rol|lower == "admin" or rol|lower == "asesor" %}
-                      <div class="d-flex gap-2 mt-3">
-                        <a href="{% url 'tienda:editar_producto' p.idproducto %}" class="btn btn-sm btn-outline-primary">Editar</a>
-                        <form method="post" action="{% url 'tienda:eliminar_producto' p.idproducto %}" onsubmit="return confirm('¿Seguro que deseas eliminar este producto?');">
-                          {% csrf_token %}
-                          <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
-                        </form>
-                      </div>
-                    {% endif %}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {% if forloop.counter|divisibleby:'3' or forloop.last %}
-                  </div>
-                </div>
-              {% endif %}
-            {% endfor %}
-          </div>
-
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carousel-{{ c.idcategoria }}" data-bs-slide="prev" aria-label="Anterior">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#89259C" viewBox="0 0 16 16" aria-hidden="true">
-            <path d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
-          </svg>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carousel-{{ c.idcategoria }}" data-bs-slide="next" aria-label="Siguiente">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#89259C" viewBox="0 0 16 16" aria-hidden="true">
-            <path d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
-          </svg>
-        </button>
-      </div>
-      {% endif %}
-    {% endwith %}
-  {% endfor %}
-{% else %}
-  <div class="row g-3">
-    {% for p in productos %}
-    <div class="col-12 col-sm-6 col-lg-4">
-      <div class="card h-100">
-        {% if p.imagen %}
-          <img src="{{ p.imagen }}" class="card-img-top" alt="{{ p.nombre }}" style="width: 250px; height: 250px; object-fit: cover; display: block; margin-left: auto; margin-right: auto;">
-        {% else %}
-          <svg class="bd-placeholder-img card-img-top" width="250" height="250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Sin imagen</title><rect width="100%" height="100%" fill="#868e96"></rect><text x="50%" y="50%" fill="#dee2e6" dy=".3em" text-anchor="middle">Sin imagen</text></svg>
-        {% endif %}
-        <div class="card-body d-flex flex-column">
-          <h5 class="card-title">{{ p.nombre }}</h5>
-          <p class="card-text small text-muted mb-1">{% if p.categoria and p.categoria.nombre %}{{ p.categoria.nombre }}{% else %}Sin categoría{% endif %}</p>
-          <p class="card-text fw-bold">{{ p.precio }}</p>
-          {% if p.descripcion %}
-          <div id="desc-{{ p.idproducto }}" class="card-text" style="overflow: hidden; max-height: 4.5em;">{{ p.descripcion }}</div>
-          {% if p.descripcion|length > 140 %}
-          <button type="button" class="btn btn-link p-0 mt-1" onclick="(function(btn){var el=document.getElementById('desc-{{ p.idproducto }}');if(el.style.maxHeight && el.style.maxHeight!=='none'){el.style.maxHeight='none';btn.textContent='Ver menos';}else{el.style.maxHeight='4.5em';btn.textContent='Ver más';}})(this)">Ver más</button>
-          {% endif %}
-          {% endif %}
-          <div class="mt-auto">
-            {% if p.stock %}
-              <span class="badge text-bg-success">En stock: {{ p.stock }}</span>
-            {% else %}
-              <span class="badge text-bg-secondary">Sin stock</span>
-            {% endif %}
-
-            <!-- Acciones de compra -->
-            <div class="d-flex flex-wrap gap-2 mt-3">
-              <form method="post" action="{% url 'carrito:agregar_al_carrito' %}">
-                {% csrf_token %}
-                <input type="hidden" name="producto_id" value="{{ p.idproducto }}">
-                <button type="submit" class="btn btn-sm btn-primary" {% if not p.stock %}disabled{% endif %}>Agregar a Carrito</button>
-              </form>
-              <form method="post" action="{% url 'carrito:agregar_al_carrito' %}">
-                {% csrf_token %}
-                <input type="hidden" name="producto_id" value="{{ p.idproducto }}">
-                <input type="hidden" name="comprar_ahora" value="1">
-                <button type="submit" class="btn btn-sm btn-success" {% if not p.stock %}disabled{% endif %}>Comprar Ahora</button>
-              </form>
-            </div>
-
-            <div class="d-flex gap-2 mt-3">
-              <a href="{% url 'tienda:editar_producto' p.idproducto %}" class="btn btn-sm btn-outline-primary">Editar</a>
-              <form method="post" action="{% url 'tienda:eliminar_producto' p.idproducto %}" onsubmit="return confirm('¿Seguro que deseas eliminar este producto?');">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    {% empty %}
-    <div class="col-12">
-      <div class="alert alert-info">No se encontraron productos para esta categoría.</div>
-    </div>
-    {% endfor %}
-  </div>
-{% endif %}
-    <!-- Scripts para SweetAlert y funcionalidades -->
+<!-- Scripts para SweetAlert y funcionalidades -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+// Función para obtener estilos del tema actual
+function getThemeStyles() {
+    const styles = getComputedStyle(document.documentElement);
+    return {
+        background: styles.getPropertyValue('--bg-primary').trim(),
+        color: styles.getPropertyValue('--text-primary').trim(),
+        borderColor: styles.getPropertyValue('--border-color').trim()
+    };
+}
+
 // Función para toggle de descripción
 function toggleDescripcion(elementId, button) {
-  const element = document.getElementById(elementId);
-  if (element.style.maxHeight && element.style.maxHeight !== 'none') {
-    element.style.maxHeight = 'none';
-    button.textContent = 'Ver menos';
-  } else {
-    element.style.maxHeight = '4.5em';
-    button.textContent = 'Ver más';
-  }
+    const element = document.getElementById(elementId);
+    if (element.style.maxHeight && element.style.maxHeight !== 'none') {
+        element.style.maxHeight = '4.5em';
+        button.textContent = 'Ver más';
+    } else {
+        element.style.maxHeight = 'none';
+        button.textContent = 'Ver menos';
+    }
 }
 
 // Función para eliminar producto con SweetAlert
-function confirmarEliminacion(productoId, productoNombre) {
-  Swal.fire({
-    title: '¿Eliminar Producto?',
-    html: `
-      <div class="text-center">
-        <i class="fas fa-trash-alt text-danger mb-3" style="font-size: 3rem;"></i>
-        <p>¿Estás seguro de que quieres eliminar el producto?</p>
-        <p><strong>"${productoNombre}"</strong></p>
-        <p class="text-muted small">Esta acción no se puede deshacer.</p>
-      </div>
-    `,
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Sí, Eliminar',
-    cancelButtonText: 'Cancelar',
-    confirmButtonColor: '#dc3545',
-    cancelButtonColor: '#6c757d',
-    backdrop: true,
-    width: '500px'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      // Crear formulario dinámico para enviar la solicitud POST
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = `/tienda/eliminar/${productoId}/`;
+function confirmarEliminacion(productoId, productoNombre, deleteUrl) {
+    const theme = getThemeStyles();
 
-      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-      const csrfInput = document.createElement('input');
-      csrfInput.type = 'hidden';
-      csrfInput.name = 'csrfmiddlewaretoken';
-      csrfInput.value = csrfToken;
-
-      form.appendChild(csrfInput);
-      document.body.appendChild(form);
-
-      // Mostrar loading
-      Swal.fire({
-        title: 'Eliminando Producto...',
-        text: 'Por favor espera un momento',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
-      });
-
-      form.submit();
-    }
-  });
-}
-
-// Event listeners para formularios de compra
-document.addEventListener('DOMContentLoaded', function() {
-  // Eliminar producto
-  document.querySelectorAll('.eliminar-producto-btn').forEach(button => {
-    button.addEventListener('click', function() {
-      const productoId = this.getAttribute('data-producto-id');
-      const productoNombre = this.getAttribute('data-producto-nombre');
-      confirmarEliminacion(productoId, productoNombre);
-    });
-  });
-
-  // Agregar al carrito con confirmación
-  document.querySelectorAll('.agregar-carrito-form').forEach(form => {
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const productoNombre = this.closest('.card').querySelector('.card-title').textContent;
-
-      Swal.fire({
-        title: 'Agregar al Carrito',
+    Swal.fire({
+        title: '¿Eliminar Producto?',
         html: `
-          <div class="text-center">
-            <i class="fas fa-cart-plus text-primary mb-3" style="font-size: 3rem;"></i>
-            <p>¿Agregar <strong>${productoNombre}</strong> al carrito?</p>
-          </div>
-        `,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, Agregar',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#28a745',
-        cancelButtonColor: '#6c757d'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          this.submit();
-        }
-      });
-    });
-  });
-
-  // Comprar ahora con confirmación
-  document.querySelectorAll('.comprar-ahora-form').forEach(form => {
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const productoNombre = this.closest('.card').querySelector('.card-title').textContent;
-
-      Swal.fire({
-        title: 'Comprar Ahora',
-        html: `
-          <div class="text-center">
-            <i class="fas fa-bolt text-warning mb-3" style="font-size: 3rem;"></i>
-            <p>¿Proceder con la compra de <strong>${productoNombre}</strong>?</p>
-            <p class="text-muted small">Serás redirigido al proceso de pago.</p>
-          </div>
+            <div class="text-center">
+                <i class="fas fa-trash-alt text-danger mb-3" style="font-size: 3rem;"></i>
+                <p>¿Estás seguro de que quieres eliminar el producto?</p>
+                <p><strong>"${productoNombre}"</strong></p>
+                <p class="text-muted small">Esta acción no se puede deshacer.</p>
+            </div>
         `,
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonText: 'Sí, Comprar',
-        cancelButtonText: 'Seguir Viendo',
-        confirmButtonColor: '#ffc107',
-        cancelButtonColor: '#6c757d'
-      }).then((result) => {
+        confirmButtonText: 'Sí, Eliminar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        backdrop: true,
+        background: theme.background,
+        color: theme.color,
+        width: '500px'
+    }).then((result) => {
         if (result.isConfirmed) {
-          this.submit();
+            // Crear formulario dinámico para enviar la solicitud POST
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = deleteUrl; // ← USA LA URL CORRECTA
+
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = csrfToken;
+
+            form.appendChild(csrfInput);
+            document.body.appendChild(form);
+
+            const theme = getThemeStyles();
+
+            // Mostrar loading
+            Swal.fire({
+                title: 'Eliminando Producto...',
+                text: 'Por favor espera un momento',
+                allowOutsideClick: false,
+                background: theme.background,
+                color: theme.color,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            form.submit();
         }
-      });
     });
-  });
-});
+}
 
 // Mostrar mensajes de Django
 function mostrarMensajes() {
-  {% if messages %}
-    {% for message in messages %}
-      {% if message.tags == 'success' %}
-        Swal.fire({
-          icon: 'success',
-          title: '¡Éxito!',
-          text: '{{ message }}',
-          confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#28a745',
-          timer: 3000,
-          timerProgressBar: true
-        });
-      {% elif message.tags == 'error' %}
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: '{{ message }}',
-          confirmButtonText: 'Entendido',
-          confirmButtonColor: '#dc3545'
-        });
-      {% endif %}
-    {% endfor %}
-  {% endif %}
+    {% if messages %}
+        {% for message in messages %}
+            const theme = getThemeStyles();
+            {% if message.tags == 'success' %}
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: '{{ message }}',
+                    confirmButtonText: 'Aceptar',
+                    confirmButtonColor: '#28a745',
+                    timer: 3000,
+                    timerProgressBar: true,
+                    background: theme.background,
+                    color: theme.color
+                });
+            {% elif message.tags == 'error' %}
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: '{{ message }}',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#dc3545',
+                    background: theme.background,
+                    color: theme.color
+                });
+            {% endif %}
+        {% endfor %}
+    {% endif %}
 }
 
 document.addEventListener('DOMContentLoaded', mostrarMensajes);

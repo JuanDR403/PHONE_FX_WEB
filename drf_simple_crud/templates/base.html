@@ -11,52 +11,412 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <!-- SweetAlert2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts - Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Colores base - Modo Oscuro (default) */
+            --bg-primary: #313131;
+            --bg-secondary: #292929;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --bg-header: #292929;
+            --text-primary: #FFFFFF;
+            --text-secondary: #CFD1D4;
+            --text-muted: #8B8B8B;
+            --accent-purple: rgba(224, 64, 251, 0.9);
+            --accent-green: rgba(145, 255, 182, 0.9);
+            --accent-yellow: rgba(255, 218, 145, 0.9);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --search-bg: rgba(255, 255, 255, 0.1);
+            --success-bg: rgba(145, 255, 182, 0.1);
+            --warning-bg: rgba(255, 218, 145, 0.1);
+            --error-bg: rgba(255, 127, 127, 0.1);
+        }
+
+        [data-theme="light"] {
+            /* Colores base - Modo Claro */
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F8F9FA;
+            --bg-card: rgba(0, 0, 0, 0.03);
+            --bg-header: #FFFFFF;
+            --text-primary: #2C3E50;
+            --text-secondary: #5A6C7D;
+            --text-muted: #7E8C9A;
+            --accent-purple: #8B5CF6;
+            --accent-green: #10B981;
+            --accent-yellow: #F59E0B;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --search-bg: rgba(0, 0, 0, 0.05);
+            --success-bg: rgba(16, 185, 129, 0.1);
+            --warning-bg: rgba(245, 158, 11, 0.1);
+            --error-bg: rgba(239, 68, 68, 0.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .custom-navbar {
+            background: var(--bg-header) !important;
+            height: 80px;
+            backdrop-filter: blur(7.5px);
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand-custom {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .phone-text {
+            font-family: 'Poppins';
+            font-style: normal;
+            font-weight: 600;
+            font-size: 30px;
+            color: var(--text-primary);
+        }
+
+        .fx-text {
+            font-family: 'Poppins';
+            font-style: normal;
+            font-weight: 600;
+            font-size: 30px;
+            color: var(--accent-purple);
+            filter: drop-shadow(0px 0px 20px var(--accent-purple));
+        }
+
+        [data-theme="light"] .fx-text {
+            filter: drop-shadow(0px 0px 10px var(--accent-purple));
+        }
+
+        .search-bar-custom {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            padding: 8px 8px 8px 16px;
+            gap: 12px;
+            width: 450px;
+            height: 36px;
+            background: var(--search-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .search-bar-custom input {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-family: 'Poppins';
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .search-bar-custom input:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .search-bar-custom input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .user-section {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .theme-toggle {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 24px;
+        }
+
+        .theme-toggle i, .notification-icon i {
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+        }
+
+        /* ESTILOS MEJORADOS PARA EL AVATAR DEL USUARIO */
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            background: var(--bg-card);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .user-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .user-avatar:hover {
+            border-color: var(--accent-purple);
+            transform: scale(1.05);
+        }
+
+        .user-avatar i {
+            font-size: 18px;
+            color: var(--text-secondary);
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-family: 'Poppins';
+            font-style: normal;
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .user-email {
+            font-family: 'Poppins';
+            font-style: normal;
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .nav-link-custom {
+            color: var(--text-secondary) !important;
+            font-family: 'Poppins';
+            font-weight: 400;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link-custom:hover {
+            color: var(--text-primary) !important;
+        }
+
+        .dropdown-menu-custom {
+            background: var(--bg-header);
+            border: 1px solid var(--border-color);
+            min-width: 200px;
+            z-index: 1050;
+            box-shadow: 0 10px 25px var(--shadow-color);
+        }
+
+        .user-info.dropdown-toggle {
+            z-index: 1040;
+        }
+
+        /* Asegurar que el navbar tenga un z-index adecuado */
+        .custom-navbar {
+            background: var(--bg-header) !important;
+            height: 80px;
+            backdrop-filter: blur(7.5px);
+            position: relative;
+            z-index: 1030;
+        }
+
+        /* Si persiste el problema, forzar un z-index más alto */
+        .navbar-nav .dropdown {
+            position: relative;
+            z-index: 1060;
+        }
+
+        /* Asegurar que los filtros no interfieran */
+        .filters-container {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .dropdown-item-custom {
+            color: var(--text-secondary);
+            font-family: 'Poppins';
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-item-custom:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            transform: translateX(5px);
+        }
+
+        .dropdown-item-custom i {
+            margin-right: 8px;
+            width: 16px;
+            text-align: center;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            margin-right: 20px;
+        }
+
+        .nav-menu .nav-link {
+            color: var(--text-secondary);
+            font-family: 'Poppins';
+            font-weight: 400;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-menu .nav-link:hover {
+            color: var(--text-primary);
+            background: var(--bg-card);
+        }
+
+        /* Responsive para el avatar en móviles */
+        @media (max-width: 768px) {
+            .user-avatar {
+                width: 40px;
+                height: 40px;
+            }
+
+            .user-details {
+                display: none;
+            }
+
+            .user-info {
+                gap: 10px;
+            }
+        }
+
+        /* Estilos para el tema claro en elementos específicos */
+        [data-theme="light"] .custom-navbar {
+            box-shadow: 0 2px 10px var(--shadow-color);
+        }
+
+        [data-theme="light"] .dropdown-menu-custom {
+            box-shadow: 0 5px 15px var(--shadow-color);
+        }
+    </style>
 </head>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<body data-theme="dark">
+    <!-- Navbar Rediseñado -->
+    <nav class="navbar navbar-expand-lg custom-navbar">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'inicio:home' %}">PHONE_FX</a>
+            <!-- Logo PHONE F-X -->
+            <a class="navbar-brand navbar-brand-custom" href="{% url 'inicio:home' %}">
+                <span class="phone-text">PHONE</span>
+                <span class="fx-text">F-X</span>
+            </a>
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
+
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'inicio:home' %}">Inicio</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'tienda:lista_productos' %}">Tienda</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
-                    <!-- Cart icon button near the dropdown -->
-                    <li class="nav-item me-2">
-                        <a class="nav-link" href="{% url 'carrito:ver_carrito' %}" title="Mi carrito">
+                <!-- Menú de navegación -->
+                <div class="nav-menu">
+                    <a class="nav-link" href="{% url 'inicio:home' %}">Inicio</a>
+                    <a class="nav-link" href="{% url 'tienda:lista_productos' %}">Productos</a>
+                </div>
+
+                <ul class="navbar-nav ms-auto">
+                    <!-- Carrito -->
+                    <li class="nav-item me-3">
+                        <a class="nav-link nav-link-custom" href="{% url 'carrito:ver_carrito' %}" title="Mi carrito">
                             <i class="bi bi-cart3"></i>
                         </a>
                     </li>
+
                     {% if user.is_authenticated %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            Hola, {% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{% url 'usuarios:edit_profile' %}">Perfil</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'logueo:logout' %}">Cerrar Sesión</a>
-                            </li>
-                        </ul>
+                    <!-- Iconos de tema y notificaciones -->
+                    <li class="nav-item user-section">
+                        <div class="theme-toggle me-3">
+                            <i class="bi bi-sun-fill theme-icon" id="themeToggle" title="Cambiar tema"></i>
+
+                        </div>
+
+                        <!-- Información de usuario con dropdown -->
+                        <div class="dropdown">
+                            <div class="user-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="user-avatar">
+                                    {% if user.perfil_usuarios.foto_perfil %}
+                                        <img src="{{ user.perfil_usuarios.foto_perfil.url }}" alt="Foto de perfil" class="user-avatar-img">
+                                    {% else %}
+                                        <i class="bi bi-person-fill"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="user-details">
+                                    <span class="user-name">
+                                        {% if user.perfil_usuarios.nombre %}
+                                            {{ user.perfil_usuarios.nombre }} {{ user.perfil_usuarios.apellido }}
+                                        {% elif user.first_name %}
+                                            {{ user.first_name }} {{ user.last_name }}
+                                        {% else %}
+                                            {{ user.username }}
+                                        {% endif %}
+                                    </span>
+                                    <span class="user-email">{{ user.email }}</span>
+                                </div>
+
+                            </div>
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom">
+                                <li>
+                                    <a class="dropdown-item dropdown-item-custom" href="{% url 'usuarios:edit_profile' %}">
+                                        <i class="bi bi-person"></i>Perfil
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item dropdown-item-custom" href="{% url 'logueo:logout' %}">
+                                        <i class="bi bi-box-arrow-right"></i>Cerrar Sesión
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
                     {% else %}
+                    <!-- Enlaces para usuarios no autenticados -->
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logueo:login' %}">Iniciar Sesión</a>
+                        <a class="nav-link nav-link-custom" href="{% url 'logueo:login' %}">Iniciar Sesión</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logueo:registro' %}">Registrarse</a>
+                        <a class="nav-link nav-link-custom" href="{% url 'logueo:registro' %}">Registrarse</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -73,20 +433,267 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
-    <!-- Render Django messages as SweetAlerts -->
-    <!-- jQuery (si lo necesitas) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    {% if messages %}
+
     <script>
-      {% for message in messages %}
-      Swal.fire({
-        icon: '{% if "error" in message.tags %}error{% elif "warning" in message.tags %}warning{% elif "success" in message.tags %}success{% else %}info{% endif %}',
-        title: '{{ message|escapejs }}',
-        timer: 2500,
-        showConfirmButton: false
-      });
-      {% endfor %}
+        // Sistema de temas
+        class ThemeManager {
+            constructor() {
+                this.currentTheme = localStorage.getItem('theme') || 'dark';
+                this.init();
+            }
+
+            init() {
+                this.applyTheme(this.currentTheme);
+                this.setupEventListeners();
+            }
+
+            applyTheme(theme) {
+                document.body.setAttribute('data-theme', theme);
+                this.updateThemeIcon(theme);
+                localStorage.setItem('theme', theme);
+            }
+
+            updateThemeIcon(theme) {
+                const themeIcon = document.getElementById('themeToggle');
+                if (themeIcon) {
+                    if (theme === 'light') {
+                        themeIcon.className = 'bi bi-moon-fill theme-icon';
+                        themeIcon.title = 'Cambiar a modo oscuro';
+                    } else {
+                        themeIcon.className = 'bi bi-sun-fill theme-icon';
+                        themeIcon.title = 'Cambiar a modo claro';
+                    }
+                }
+            }
+
+            toggleTheme() {
+                this.currentTheme = this.currentTheme === 'dark' ? 'light' : 'dark';
+                this.applyTheme(this.currentTheme);
+            }
+
+            setupEventListeners() {
+                const themeToggle = document.getElementById('themeToggle');
+                if (themeToggle) {
+                    themeToggle.addEventListener('click', () => {
+                        this.toggleTheme();
+                    });
+                }
+            }
+        }
+
+        // Inicializar el gestor de temas
+        document.addEventListener('DOMContentLoaded', function() {
+            window.themeManager = new ThemeManager();
+        });
+
+        // Función para actualizar la foto de perfil en el navbar
+        window.actualizarFotoPerfil = function(urlFoto) {
+            const userAvatar = document.querySelector('.user-avatar');
+            if (userAvatar && urlFoto) {
+                userAvatar.innerHTML = `<img src="${urlFoto}" alt="Foto de perfil" class="user-avatar-img">`;
+            }
+        };
+
+        // Función para actualizar el nombre del usuario en el navbar
+        window.actualizarNombreUsuario = function(nombre, apellido) {
+            const userNameElement = document.querySelector('.user-name');
+            if (userNameElement && nombre) {
+                const nombreCompleto = apellido ? `${nombre} ${apellido}` : nombre;
+                userNameElement.textContent = nombreCompleto;
+            }
+        };
     </script>
+
+        {% if messages %}
+    <script>
+        // Función para obtener estilos del tema actual
+        function getThemeStyles() {
+            const styles = getComputedStyle(document.documentElement);
+            return {
+                background: styles.getPropertyValue('--bg-primary').trim(),
+                color: styles.getPropertyValue('--text-primary').trim(),
+                borderColor: styles.getPropertyValue('--border-color').trim(),
+                accentGreen: styles.getPropertyValue('--accent-green').trim(),
+                accentPurple: styles.getPropertyValue('--accent-purple').trim()
+            };
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            {% for message in messages %}
+            const theme = getThemeStyles();
+
+            // Determinar el tipo de mensaje y configurar la alerta
+            let icon = 'info';
+            let title = '{{ message.tags|title }}';
+            let timer = null;
+            let showConfirmButton = true;
+
+            if ('{{ message.tags }}'.includes('success')) {
+                icon = 'success';
+                timer = 2500;
+                showConfirmButton = false;
+            } else if ('{{ message.tags }}'.includes('error')) {
+                icon = 'error';
+            } else if ('{{ message.tags }}'.includes('warning')) {
+                icon = 'warning';
+            }
+
+            Swal.fire({
+                title: title,
+                text: '{{ message|escapejs }}',
+                icon: icon,
+                timer: timer,
+                showConfirmButton: showConfirmButton,
+                background: theme.background,
+                color: theme.color,
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    htmlContainer: 'custom-swal-content',
+                    confirmButton: 'custom-swal-confirm',
+                    icon: 'custom-swal-icon'
+                },
+                didOpen: () => {
+                    // Aplicar estilos adicionales cuando se abre
+                    const popup = document.querySelector('.swal2-popup');
+                    if (popup) {
+                        popup.style.border = `1px solid ${theme.borderColor}`;
+                        popup.style.borderRadius = '16px';
+                        popup.style.boxShadow = `0 20px 40px ${theme.borderColor}30`;
+                    }
+
+                    // Mejorar la animación del icono de éxito
+                    if (icon === 'success') {
+                        const successIcon = document.querySelector('.swal2-success');
+                        if (successIcon) {
+                            successIcon.style.animation = 'swal2-success-animate 0.5s ease-in-out';
+                        }
+                    }
+                }
+            });
+            {% endfor %}
+        });
+    </script>
+
+    <style>
+        /* Estilos personalizados para SweetAlert */
+        .custom-swal-popup {
+            border-radius: 16px !important;
+            backdrop-filter: blur(10px) !important;
+        }
+
+        .custom-swal-title {
+            color: var(--text-primary) !important;
+            font-family: 'Poppins', sans-serif !important;
+            font-weight: 600 !important;
+            font-size: 1.5rem !important;
+        }
+
+        .custom-swal-content {
+            color: var(--text-secondary) !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 1rem !important;
+            line-height: 1.5 !important;
+        }
+
+        .custom-swal-confirm {
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-green) 100%) !important;
+            border: none !important;
+            border-radius: 12px !important;
+            font-family: 'Inter', sans-serif !important;
+            font-weight: 500 !important;
+            padding: 12px 24px !important;
+            transition: all 0.3s ease !important;
+            color: #000000 !important;
+            font-size: 1rem !important;
+        }
+
+        .custom-swal-confirm:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 25px rgba(224, 64, 251, 0.3) !important;
+            color: #000000 !important;
+        }
+
+        /* Mejoras para el icono de éxito */
+        .custom-swal-icon {
+            border-color: var(--accent-green) !important;
+        }
+
+        .swal2-success [class^='swal2-success-line'] {
+            background-color: var(--accent-green) !important;
+        }
+
+        .swal2-success .swal2-success-ring {
+            border-color: var(--accent-green) !important;
+        }
+
+        /* Animación mejorada para el icono de éxito */
+        @keyframes swal2-success-animate {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .swal2-success .swal2-success-circular-line-right,
+        .swal2-success .swal2-success-circular-line-left,
+        .swal2-success .swal2-success-fix,
+        .swal2-success .swal2-success-line-tip,
+        .swal2-success .swal2-success-line-long {
+            animation: swal2-success-animate-line 0.75s !important;
+        }
+
+        @keyframes swal2-success-animate-line {
+            0% {
+                stroke-dashoffset: 82;
+            }
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        /* Estilos específicos para el icono de error */
+        .swal2-error [class^='swal2-x-mark-line'] {
+            background-color: #FF7F7F !important;
+        }
+
+        .swal2-error .swal2-x-mark {
+            border-color: #FF7F7F !important;
+        }
+
+        /* Estilos para el icono de advertencia */
+        .swal2-warning {
+            border-color: var(--accent-yellow) !important;
+            color: var(--accent-yellow) !important;
+        }
+
+        .swal2-warning .swal2-icon-content {
+            color: var(--accent-yellow) !important;
+        }
+
+        /* Estilos para el icono de información */
+        .swal2-info {
+            border-color: var(--accent-purple) !important;
+            color: var(--accent-purple) !important;
+        }
+
+        .swal2-info .swal2-icon-content {
+            color: var(--accent-purple) !important;
+        }
+
+        /* Asegurar que el progres bar se vea bien en ambos temas */
+        .swal2-timer-progress-bar {
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-green) 100%) !important;
+        }
+    </style>
     {% endif %}
 </body>
 </html>

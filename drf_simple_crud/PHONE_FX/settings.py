@@ -126,10 +126,14 @@ USE_TZ = True
 # ==============================================================================
 
 STATIC_URL = '/static/'
+
+# Para desarrollo
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-    os.path.join(BASE_DIR, 'logueo/static'),
+    os.path.join(BASE_DIR, 'static'),  # Solo esta línea
 ]
+
+# Para producción (se genera con collectstatic)
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

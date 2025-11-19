@@ -4,589 +4,1295 @@
 {% block title %}{{ titulo }}{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card">
-                <div class="card-body">
-                <div class="d-flex justify-content-end mb-3">
-                    {% if rol == "admin" or rol == "cliente" %}
-                            <div class="d-flex justify-content-end mb-3">
-                                <a href="{% url 'citas:agendar_cita' %}" class="btn btn-success">
-                                    + Nueva Cita
-                                </a>
-                            </div>
+<style>
+    .main-container {
+        position: relative;
+        background: var(--bg-primary);
+        min-height: 100vh;
+        padding: 20px;
+        transition: all 0.3s ease;
+    }
 
-                    {% endif %}
+    .table-container {
+        position: relative;
+        background: transparent;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .table-title {
+        font-family: 'Poppins', sans-serif;
+        font-style: normal;
+        font-weight: 600;
+        font-size: 24px;
+        color: var(--text-primary);
+    }
+
+    .filters-container {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .filter-label {
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .filter-select {
+        background: var(--search-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 10px 15px;
+        color: var(--text-primary);
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        min-width: 180px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--accent-purple);
+    }
+
+    .filter-select option {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        padding: 10px;
+    }
+
+    .clear-filters-btn {
+        background: transparent;
+        border: 1px solid var(--text-secondary);
+        color: var(--text-secondary);
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        align-self: flex-end;
+        margin-bottom: 8px;
+    }
+
+    .clear-filters-btn:hover {
+        border-color: var(--text-primary);
+        color: var(--text-primary);
+    }
+
+    .new-appointment-btn {
+        background: var(--accent-green);
+        color: #000;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 500;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .new-appointment-btn:hover {
+        background: rgba(145, 255, 182, 0.8);
+        transform: translateY(-2px);
+        color: #000;
+        text-decoration: none;
+    }
+
+    .results-info {
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-bottom: 20px;
+        padding: 10px 0;
+    }
+
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .table-header-row {
+        background: transparent;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .table-header-cell {
+        padding: 20px 15px;
+        font-family: 'Poppins', sans-serif;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 25px;
+        line-height: 38px;
+        color: var(--text-primary);
+        text-align: left;
+        position: relative;
+    }
+
+    .table-header-cell::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -1px;
+        width: 100%;
+        height: 1px;
+        background: var(--border-color);
+    }
+
+    .table-row {
+        background: transparent;
+        border-bottom: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+    }
+
+    .table-row:hover {
+        background: var(--bg-card);
+    }
+
+    .table-cell {
+        padding: 20px 15px;
+        font-family: 'Poppins', sans-serif;
+        font-style: normal;
+        font-weight: 300;
+        font-size: 20px;
+        line-height: 30px;
+        color: var(--text-primary);
+        vertical-align: middle;
+    }
+
+    .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .status-dot {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 3px solid var(--text-muted);
+    }
+
+    .status-dot.finalizado {
+        background: var(--accent-green);
+        border-color: var(--accent-green);
+    }
+
+    .status-dot.en-proceso {
+        background: var(--accent-yellow);
+        border-color: var(--accent-yellow);
+    }
+
+    .status-dot.solicitud {
+        background: var(--accent-purple);
+        border-color: var(--accent-purple);
+    }
+
+    .status-dot.olvidado {
+        background: #FF7F7F;
+        border-color: #FF7F7F;
+    }
+
+    .status-text {
+        font-family: 'Poppins', sans-serif;
+        font-style: normal;
+        font-weight: 300;
+        font-size: 20px;
+        line-height: 30px;
+        color: var(--text-primary);
+    }
+
+    .expand-btn {
+        background: transparent;
+        border: 2px solid var(--text-primary);
+        color: var(--text-primary);
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .expand-btn:hover {
+        background: var(--search-bg);
+    }
+
+    .expandable-content {
+        background: var(--bg-card);
+        padding: 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .expandable-row {
+        display: none;
+    }
+
+    .expandable-row.show {
+        display: table-row;
+    }
+
+    .detail-panel {
+        padding: 30px;
+    }
+
+    .detail-section {
+        margin-bottom: 25px;
+    }
+
+    .detail-title {
+        font-family: 'Poppins', sans-serif;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 18px;
+        color: var(--text-primary);
+        margin-bottom: 15px;
+    }
+
+    .description-textarea {
+        width: 100%;
+        background: var(--search-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 12px;
+        color: var(--text-primary);
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        resize: vertical;
+        min-height: 100px;
+        transition: all 0.3s ease;
+    }
+
+    .description-textarea:focus {
+        outline: none;
+        border-color: var(--accent-purple);
+        background: var(--bg-card);
+    }
+
+    .description-textarea:disabled {
+        background: var(--bg-secondary);
+        color: var(--text-secondary);
+    }
+
+    .save-btn {
+        background: var(--accent-green);
+        color: #000;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .save-btn:disabled {
+        background: var(--search-bg);
+        color: var(--text-secondary);
+        cursor: not-allowed;
+    }
+
+    .save-btn:not(:disabled):hover {
+        background: rgba(145, 255, 182, 0.8);
+    }
+
+    .char-counter {
+        font-family: 'Poppins', sans-serif;
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-left: 10px;
+    }
+
+    .state-radio-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .state-radio {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+    }
+
+    .state-radio input[type="radio"] {
+        display: none;
+    }
+
+    .custom-radio {
+        width: 20px;
+        height: 20px;
+        border: 3px solid var(--text-muted);
+        border-radius: 50%;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .state-radio input[type="radio"]:checked + .custom-radio {
+        border-color: var(--text-primary);
+    }
+
+    .state-radio input[type="radio"]:checked + .custom-radio::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--text-primary);
+    }
+
+    .state-radio.finalizado input[type="radio"]:checked + .custom-radio::after {
+        background: var(--accent-green);
+    }
+
+    .state-radio.en-proceso input[type="radio"]:checked + .custom-radio::after {
+        background: var(--accent-yellow);
+    }
+
+    .state-radio.solicitud input[type="radio"]:checked + .custom-radio::after {
+        background: var(--accent-purple);
+    }
+
+    .state-radio.olvidado input[type="radio"]:checked + .custom-radio::after {
+        background: #FF7F7F;
+    }
+
+    .state-label {
+        font-family: 'Poppins', sans-serif;
+        font-size: 16px;
+        color: var(--text-primary);
+    }
+
+    .history-list {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .history-item {
+        background: var(--search-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 8px;
+    }
+
+    .history-state-change {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 500;
+        font-size: 14px;
+        color: var(--text-primary);
+        margin-bottom: 5px;
+    }
+
+    .history-date {
+        font-family: 'Poppins', sans-serif;
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 40px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 18px;
+        color: var(--text-secondary);
+    }
+
+    .grid-2-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    /* Estilos específicos para modo claro */
+    [data-theme="light"] .table-row:hover {
+        background: var(--bg-secondary);
+    }
+
+    [data-theme="light"] .expand-btn:hover {
+        background: var(--bg-secondary);
+    }
+
+    [data-theme="light"] .history-item {
+        background: var(--bg-secondary);
+    }
+
+    [data-theme="light"] .new-appointment-btn,
+    [data-theme="light"] .save-btn {
+        color: #000000;
+    }
+
+    [data-theme="light"] .new-appointment-btn:hover,
+    [data-theme="light"] .save-btn:hover {
+        color: #000000;
+    }
+
+    @media (max-width: 768px) {
+        .grid-2-col {
+            grid-template-columns: 1fr;
+        }
+
+        .table-header-cell {
+            font-size: 18px;
+            padding: 15px 10px;
+        }
+
+        .table-cell {
+            font-size: 16px;
+            padding: 15px 10px;
+        }
+
+        .filters-container {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-select {
+            min-width: 100%;
+        }
+    }
+</style>
+
+<div class="main-container">
+    <div class="table-container">
+        <div class="table-header">
+            <h1 class="table-title">CITAS</h1>
+            <div class="filters-container">
+                <!-- Filtro por Mes -->
+                <div class="filter-group">
+                    <label class="filter-label">Filtrar por Mes</label>
+                    <select class="filter-select" id="filter-month">
+                        <option value="">Todos los meses</option>
+                        <option value="1">Enero</option>
+                        <option value="2">Febrero</option>
+                        <option value="3">Marzo</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Mayo</option>
+                        <option value="6">Junio</option>
+                        <option value="7">Julio</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Septiembre</option>
+                        <option value="10">Octubre</option>
+                        <option value="11">Noviembre</option>
+                        <option value="12">Diciembre</option>
+                    </select>
                 </div>
-                    <table class="table table-hover">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th>ID</th>
-                                <th>Cliente</th>
-                                <th>Correo</th>
-                                <th>Fecha Cita</th>
-                                <th>Estado</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for c in citas %}
-                            <tr class="main-row">
-                                <td>{{ c.idcita }}</td>
-                                <td>{{ c.cliente.nombre }} {{ c.cliente.apellido }}</td>
-                                <td>
-                                    {% if c.cliente.correo %}
-                                        {{ c.cliente.correo }}
-                                    {% elif c.cliente.user %}
-                                        {{ c.cliente.user.username }}
-                                    {% else %}
-                                        N/A
-                                    {% endif %}
-                                </td>
-                                <td class="fecha-display">{{ c.fecha_cita_str }} {{ c.hora_cita_str }}</td>
 
-                                <td class="estado-display">
-                                    {% if c.estado == 'finalizado' %}
-                                        <span class="badge bg-success">Finalizado</span>
-                                    {% elif c.estado == 'en proceso' %}
-                                        <span class="badge bg-info text-dark">En Proceso</span>
-                                    {% elif c.estado == 'pendiente' %}
-                                        <span class="badge bg-warning text-dark">Solicitud</span>
-                                    {% elif c.estado == 'olvidado' %}
-                                        <span class="badge bg-danger">Olvidado</span>
+                <!-- Filtro por Estado -->
+                <div class="filter-group">
+                    <label class="filter-label">Filtrar por Estado</label>
+                    <select class="filter-select" id="filter-status">
+                        <option value="">Todos los estados</option>
+                        <option value="pendiente">Solicitud</option>
+                        <option value="en proceso">En Proceso</option>
+                        <option value="finalizado">Finalizado</option>
+                        <option value="olvidado">Olvidado</option>
+                    </select>
+                </div>
+
+                <!-- Botón Limpiar Filtros -->
+                <button class="clear-filters-btn" id="clear-filters">
+                    <i class="fas fa-times"></i> Limpiar
+                </button>
+
+                <!-- Botón Nueva Cita -->
+                {% if rol == "admin" or rol == "cliente" %}
+                    <a href="{% url 'citas:agendar_cita' %}" class="new-appointment-btn">
+                        + Nueva Cita
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Información de resultados -->
+        <div class="results-info" id="results-info">
+            Mostrando todas las citas
+        </div>
+
+        <table class="custom-table">
+            <thead>
+                <tr class="table-header-row">
+                    <th class="table-header-cell">ID</th>
+                    <th class="table-header-cell">Cliente</th>
+                    <th class="table-header-cell">Correo</th>
+                    <th class="table-header-cell">Fecha Cita</th>
+                    <th class="table-header-cell">Estado</th>
+                    <th class="table-header-cell"></th>
+                </tr>
+            </thead>
+            <tbody id="citas-table-body">
+                {% for c in citas %}
+                <tr class="table-row main-row"
+                    data-cita-id="{{ c.idcita }}"
+                    data-month="{{ c.fecha_cita|date:'n' }}"
+                    data-status="{{ c.estado }}"
+                    data-fecha="{{ c.fecha_cita|date:'Y-m-d' }}">
+                    <td class="table-cell">{{ c.idcita }}</td>
+                    <td class="table-cell">{{ c.cliente.nombre }} {{ c.cliente.apellido }}</td>
+                    <td class="table-cell">
+                        {% if c.cliente.correo %}
+                            {{ c.cliente.correo }}
+                        {% elif c.cliente.user %}
+                            {{ c.cliente.user.username }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td class="table-cell fecha-display">{{ c.fecha_cita_str }} {{ c.hora_cita_str }}</td>
+                    <td class="table-cell">
+                        <div class="status-indicator">
+                            <div class="status-dot {{ c.estado|slugify }}"></div>
+                            <span class="status-text">
+                                {% if c.estado == 'finalizado' %}
+                                    Finalizado
+                                {% elif c.estado == 'en proceso' %}
+                                    En Proceso
+                                {% elif c.estado == 'pendiente' %}
+                                    Solicitud
+                                {% elif c.estado == 'olvidado' %}
+                                    Olvidado
+                                {% else %}
+                                    {{ c.estado }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </td>
+                    <td class="table-cell">
+                        <button class="expand-btn toggle-row" data-cita-id="{{ c.idcita }}">
+                            <i class="fas fa-chevron-down"></i> Expandir
+                        </button>
+                    </td>
+                </tr>
+                <tr class="expandable-row" id="expandable-{{ c.idcita }}"
+                    data-month="{{ c.fecha_cita|date:'n' }}"
+                    data-status="{{ c.estado }}"
+                    data-fecha="{{ c.fecha_cita|date:'Y-m-d' }}">
+                    <td colspan="6" class="expandable-content">
+                        <div class="detail-panel">
+                            <div class="grid-2-col">
+                                <!-- Columna Izquierda: Descripción -->
+                                <div class="detail-section">
+                                    <h3 class="detail-title">Descripción de {{ c.cliente.nombre }} {{ c.cliente.apellido }}</h3>
+                                    {% if rol == "admin" or rol == "cliente" %}
+                                    <textarea class="description-textarea descripcion-cliente"
+                                              rows="3"
+                                              data-cita-id="{{ c.idcita }}"
+                                              data-original="{{ c.observaciones|default:'' }}"
+                                              {% if rol == "cliente" and c.cliente.user != request.user %}disabled{% endif %}
+                                    >{{ c.observaciones }}</textarea>
+                                    <div class="mt-2">
+                                        <button class="save-btn guardar-descripcion-btn"
+                                                disabled
+                                                data-cita-id="{{ c.idcita }}">
+                                            <i class="fas fa-save"></i> Guardar Descripción
+                                        </button>
+                                        <span class="char-counter" id="contador-descripcion-{{ c.idcita }}"></span>
+                                    </div>
                                     {% else %}
-                                        <span class="badge bg-secondary">{{ c.estado }}</span>
+                                    <p class="description-textarea" style="background: transparent; border: none;">{{ c.observaciones }}</p>
                                     {% endif %}
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary toggle-row">
-                                        <i class="fas fa-chevron-down"></i> Expandir
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr class="expandable-row" style="display: none;">
-                                <td colspan="6">
-                                    <div class="p-3">
-                                        <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <h5>Descripción de {{ c.cliente.nombre }} {{ c.cliente.apellido }}</h5>
-                                                {% if rol == "admin" or rol == "cliente" %}
-                                                <textarea class="form-control descripcion-cliente"
-                                                          rows="3"
-                                                          data-cita-id="{{ c.idcita }}"
-                                                          data-original="{{ c.observaciones|default:'' }}"
-                                                          {% if rol == "cliente" and c.cliente.user != request.user %}disabled{% endif %}>
-                                                    {{ c.observaciones }}
-                                                </textarea>
-                                                <div class="mt-2">
-                                                    <button class="btn btn-sm btn-primary guardar-descripcion-btn"
-                                                            disabled
-                                                            data-cita-id="{{ c.idcita }}">
-                                                        <i class="fas fa-save"></i> Guardar Descripción
-                                                    </button>
-                                                    <span class="text-muted small ms-2" id="contador-descripcion-{{ c.idcita }}"></span>
-                                                </div>
+                                </div>
+
+                                <!-- Columna Derecha: Estado e Historial -->
+                                <div class="detail-section">
+                                    <div class="detail-section">
+                                        <h3 class="detail-title">Fecha de Cita</h3>
+                                        <p class="status-text">{{ c.fecha_cita_str }} {{ c.hora_cita_str }}</p>
+                                    </div>
+
+                                    <div class="detail-section">
+                                        <h3 class="detail-title">Estado</h3>
+                                        {% if rol == "admin" or rol == "asesor" %}
+                                        <div class="state-radio-group estado-container" data-current-estado="{{ c.estado }}">
+                                            <label class="state-radio solicitud">
+                                                <input class="estado-radio" type="radio" name="estado-{{ c.idcita }}" value="pendiente" data-cita-id="{{ c.idcita }}" {% if c.estado == 'pendiente' %}checked{% endif %}>
+                                                <span class="custom-radio"></span>
+                                                <span class="state-label">Solicitud</span>
+                                            </label>
+                                            <label class="state-radio en-proceso">
+                                                <input class="estado-radio" type="radio" name="estado-{{ c.idcita }}" value="en proceso" data-cita-id="{{ c.idcita }}" {% if c.estado == 'en proceso' %}checked{% endif %}>
+                                                <span class="custom-radio"></span>
+                                                <span class="state-label">En Proceso</span>
+                                            </label>
+                                            <label class="state-radio finalizado">
+                                                <input class="estado-radio" type="radio" name="estado-{{ c.idcita }}" value="finalizado" data-cita-id="{{ c.idcita }}" {% if c.estado == 'finalizado' %}checked{% endif %}>
+                                                <span class="custom-radio"></span>
+                                                <span class="state-label">Finalizado</span>
+                                            </label>
+                                            <label class="state-radio olvidado">
+                                                <input class="estado-radio" type="radio" name="estado-{{ c.idcita }}" value="olvidado" data-cita-id="{{ c.idcita }}" {% if c.estado == 'olvidado' %}checked{% endif %}>
+                                                <span class="custom-radio"></span>
+                                                <span class="state-label">Olvidado</span>
+                                            </label>
+                                        </div>
+                                        {% else %}
+                                        <div class="status-indicator">
+                                            <div class="status-dot {{ c.estado|slugify }}"></div>
+                                            <span class="status-text">
+                                                {% if c.estado == 'finalizado' %}
+                                                    Finalizado
+                                                {% elif c.estado == 'en proceso' %}
+                                                    En Proceso
+                                                {% elif c.estado == 'pendiente' %}
+                                                    Solicitud
+                                                {% elif c.estado == 'olvidado' %}
+                                                    Olvidado
                                                 {% else %}
-                                                <p class="form-control-plaintext">{{ c.observaciones }}</p>
+                                                    {{ c.estado }}
                                                 {% endif %}
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Fecha de Cita:</label>
-                                                    <input type="text" class="form-control" value="{{ c.fecha_cita_str }} {{ c.hora_cita_str }}" disabled>
+                                            </span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
 
-
-                                                 </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Estado:</label>
+                                    <div class="detail-section">
+                                        <h3 class="detail-title">Historial de Cambios</h3>
+                                        <div class="history-list" id="historial-list-{{ c.idcita }}">
+                                            {% for h in c.historiales.all|dictsortreversed:'fecha_cambio' %}
+                                            <div class="history-item">
+                                                <div class="history-state-change">
+                                                    <strong>{{ h.estado_anterior }}</strong> → <strong>{{ h.estado_nuevo }}</strong>
+                                                </div>
+                                                <div class="text-muted">
                                                     {% if rol == "admin" or rol == "asesor" %}
-                                                    <div class="estado-container" data-current-estado="{{ c.estado }}">
-                                                        <div class="form-check form-check-inline">
-                                                            <input class="form-check-input estado-radio" type="radio" name="estado-{{ c.idcita }}" id="solicitud-{{ c.idcita }}" value="pendiente" data-cita-id="{{ c.idcita }}" data-color="warning" data-display="Solicitud" {% if c.estado == 'pendiente' %}checked{% endif %}>
-                                                            <label class="form-check-label" for="solicitud-{{ c.idcita }}">Solicitud</label>
-                                                        </div>
-                                                        <div class="form-check form-check-inline">
-                                                            <input class="form-check-input estado-radio" type="radio" name="estado-{{ c.idcita }}" id="proceso-{{ c.idcita }}" value="en proceso" data-cita-id="{{ c.idcita }}" data-color="info" data-display="En Proceso" {% if c.estado == 'en proceso' %}checked{% endif %}>
-                                                            <label class="form-check-label" for="proceso-{{ c.idcita }}">En Proceso</label>
-                                                        </div>
-                                                        <div class="form-check form-check-inline">
-                                                            <input class="form-check-input estado-radio" type="radio" name="estado-{{ c.idcita }}" id="finalizado-{{ c.idcita }}" value="finalizado" data-cita-id="{{ c.idcita }}" data-color="success" data-display="Finalizado" {% if c.estado == 'finalizado' %}checked{% endif %}>
-                                                            <label class="form-check-label" for="finalizado-{{ c.idcita }}">Finalizado</label>
-                                                        </div>
-                                                        <div class="form-check form-check-inline">
-                                                            <input class="form-check-input estado-radio" type="radio" name="estado-{{ c.idcita }}" id="olvidado-{{ c.idcita }}" value="olvidado" data-cita-id="{{ c.idcita }}" data-color="danger" data-display="Olvidado" {% if c.estado == 'olvidado' %}checked{% endif %}>
-                                                            <label class="form-check-label" for="olvidado-{{ c.idcita }}">Olvidado</label>
-                                                        </div>
-                                                    </div>
+                                                        <textarea class="description-textarea observacion-input"
+                                                                  data-id="{{ h.idhistorial }}"
+                                                                  data-original="{{ h.observaciones|default:'' }}"
+                                                                  rows="2">{{ h.observaciones }}</textarea>
+                                                        <button class="save-btn guardar-observacion-btn" disabled>Guardar</button>
                                                     {% else %}
-                                                    <p class="form-control-plaintext">{{ c.estado }}</p>
+                                                        <p>{{ h.observaciones }}</p>
                                                     {% endif %}
                                                 </div>
-                                                <div class="mb-2">
-                                                    <h6 class="mb-2">Historial de cambios</h6>
-                                                    <ul class="list-group small" id="historial-list-{{ c.idcita }}">
-                                                        {% for h in c.historiales.all|dictsortreversed:'fecha_cambio' %}
-                                                        <li class="list-group-item d-flex justify-content-between align-items-start">
-                                                            <div class="ms-2 me-auto">
-                                                                <div><strong>{{ h.estado_anterior }}</strong> → <strong>{{ h.estado_nuevo }}</strong></div>
-                                                                <div class="text-muted">
-                                                                    {% if rol == "admin" or rol == "asesor" %}
-                                                                        <textarea class="form-control form-control-sm observacion-input"
-                                                                                  data-id="{{ h.idhistorial }}"
-                                                                                  data-original="{{ h.observaciones|default:'' }}"
-                                                                                  rows="2">{{ h.observaciones }}</textarea>
-                                                                        <button class="btn btn-sm btn-primary mt-1 guardar-observacion-btn" disabled>Guardar</button>
-                                                                    {% else %}
-                                                                        <p class="form-control-plaintext">{{ h.observaciones }}</p>
-                                                                    {% endif %}
-                                                                </div>
-                                                            </div>
-                                                            <span class="badge bg-light text-muted">{{ h.fecha_cambio|date:'Y-m-d H:i' }}</span>
-                                                        </li>
-                                                        {% empty %}
-                                                        <li class="list-group-item text-muted">Sin registros.</li>
-                                                        {% endfor %}
-                                                    </ul>
-
-                                                </div>
+                                                <div class="history-date">{{ h.fecha_cambio|date:'Y-m-d H:i' }}</div>
                                             </div>
+                                            {% empty %}
+                                            <div class="no-data">Sin registros.</div>
+                                            {% endfor %}
                                         </div>
                                     </div>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="6" class="text-center">No hay citas registradas.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-
-
-
-        </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="no-data">No hay citas registradas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 
-<style>
-    .estado-container {
-        display: flex;
-        flex-wrap: wrap;
-    }
-
-    .form-check-inline {
-        margin-right: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .expandable-row {
-        background-color: #f8f9fa;
-    }
-
-    .toggle-row:focus {
-        box-shadow: none;
-    }
-
-    .fecha-entrega {
-        min-width: 150px;
-    }
-</style>
-
-<!-- jQuery -->
+<!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<!--
-ESTILOS CSS PERSONALIZADOS
-Función: Estilos específicos para la tabla expandible y controles de estado
-Incluye:
-- Diseño responsive para contenedores de estado
-- Estilos para filas expandibles
-- Ajustes visuales para badges y botones
--->
-<style>
-    .estado-container {
-        display: flex;
-        flex-wrap: wrap;
-    }
-
-    .form-check-inline {
-        margin-right: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .expandable-row {
-        background-color: #f8f9fa;
-    }
-
-    .toggle-row:focus {
-        box-shadow: none;
-    }
-
-    .fecha-entrega {
-        min-width: 150px;
-    }
-</style>
-
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
-<!--
-SCRIPT PRINCIPAL: GESTIÓN DE TABLA DE CITAS
-Función: Maneja toda la interactividad de la tabla de citas
-Incluye:
-- Expansión/contracción de filas
-- Actualización de estados via AJAX
-- Edición de observaciones en historial
-- Manejo de CSRF token para seguridad
--->
 <script>
-    $(document).ready(function() {
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
+// Función para obtener estilos del tema actual
+function getThemeStyles() {
+    const styles = getComputedStyle(document.documentElement);
+    return {
+        background: styles.getPropertyValue('--bg-primary').trim(),
+        color: styles.getPropertyValue('--text-primary').trim(),
+        borderColor: styles.getPropertyValue('--border-color').trim(),
+        textSecondary: styles.getPropertyValue('--text-secondary').trim(),
+        bgSecondary: styles.getPropertyValue('--bg-secondary').trim(),
+        bgCard: styles.getPropertyValue('--bg-card').trim(),
+        accentPurple: styles.getPropertyValue('--accent-purple').trim(),
+        accentGreen: styles.getPropertyValue('--accent-green').trim(),
+        accentYellow: styles.getPropertyValue('--accent-yellow').trim()
+    };
+}
+
+// Función para crear estilos CSS dinámicos para SweetAlert
+function createSweetAlertStyles() {
+    const theme = getThemeStyles();
+    const styleId = 'sweetalert-theme-styles';
+
+    // Eliminar estilos existentes
+    const existingStyle = document.getElementById(styleId);
+    if (existingStyle) {
+        existingStyle.remove();
+    }
+
+    // Crear nuevos estilos
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+        .custom-swal-popup {
+            background: ${theme.background} !important;
+            color: ${theme.color} !important;
+            border: 1px solid ${theme.borderColor} !important;
+            border-radius: 16px !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+            backdrop-filter: blur(10px) !important;
         }
-        const csrftoken = getCookie('csrftoken');
 
-        // 🔹 FUNCIONALIDAD: Expansión/contracción de filas de la tabla
-        $(document).on('click', '.toggle-row', function() {
-            const $button = $(this);
-            const $mainRow = $button.closest('tr');
-            const $expandableRow = $mainRow.next('.expandable-row');
+        .custom-swal-title {
+            color: ${theme.color} !important;
+            font-family: 'Poppins', sans-serif !important;
+            font-weight: 600 !important;
+            font-size: 1.5rem !important;
+        }
 
-            $expandableRow.toggle();
+        .custom-swal-content {
+            color: ${theme.textSecondary} !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 1rem !important;
+            line-height: 1.5 !important;
+        }
 
-            if ($expandableRow.is(':visible')) {
-                $button.html('<i class="fas fa-chevron-up"></i> Contraer');
+        .custom-swal-confirm {
+            background: linear-gradient(135deg, ${theme.accentPurple} 0%, ${theme.accentGreen} 100%) !important;
+            border: none !important;
+            border-radius: 12px !important;
+            font-family: 'Inter', sans-serif !important;
+            font-weight: 500 !important;
+            padding: 12px 24px !important;
+            transition: all 0.3s ease !important;
+            color: #000000 !important;
+            font-size: 1rem !important;
+        }
+
+        .custom-swal-confirm:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 25px ${theme.accentPurple}30 !important;
+            color: #000000 !important;
+        }
+
+        .custom-swal-cancel {
+            background: ${theme.bgCard} !important;
+            border: 1px solid ${theme.borderColor} !important;
+            border-radius: 12px !important;
+            font-family: 'Inter', sans-serif !important;
+            font-weight: 500 !important;
+            padding: 12px 24px !important;
+            transition: all 0.3s ease !important;
+            color: ${theme.color} !important;
+            font-size: 1rem !important;
+        }
+
+        .custom-swal-cancel:hover {
+            background: ${theme.bgSecondary} !important;
+            border-color: ${theme.accentPurple} !important;
+            color: ${theme.color} !important;
+        }
+
+        .swal2-success .swal2-success-ring {
+            border-color: ${theme.accentGreen} !important;
+        }
+
+        .swal2-success [class^='swal2-success-line'] {
+            background-color: ${theme.accentGreen} !important;
+        }
+
+        .swal2-error [class^='swal2-x-mark-line'] {
+            background-color: #FF7F7F !important;
+        }
+
+        .swal2-warning {
+            border-color: ${theme.accentYellow} !important;
+            color: ${theme.accentYellow} !important;
+        }
+
+        .swal2-info {
+            border-color: ${theme.accentPurple} !important;
+            color: ${theme.accentPurple} !important;
+        }
+
+        .swal2-timer-progress-bar {
+            background: linear-gradient(135deg, ${theme.accentPurple} 0%, ${theme.accentGreen} 100%) !important;
+        }
+
+        /* Estilos para el contenido HTML dentro de SweetAlert */
+        .swal2-html-container .bg-light {
+            background: ${theme.bgCard} !important;
+            color: ${theme.color} !important;
+            border: 1px solid ${theme.borderColor} !important;
+        }
+
+        .swal2-html-container .text-muted {
+            color: ${theme.textSecondary} !important;
+        }
+
+        .swal2-html-container .rounded {
+            border-radius: 8px !important;
+        }
+
+        .swal2-html-container .small {
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-html-container .text-start {
+            text-align: left !important;
+        }
+    `;
+
+    document.head.appendChild(style);
+}
+
+// Función para obtener el token CSRF
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+$(document).ready(function() {
+    // Crear estilos iniciales
+    createSweetAlertStyles();
+
+    // Observar cambios en el tema para actualizar estilos
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.attributeName === 'data-theme') {
+                createSweetAlertStyles();
+            }
+        });
+    });
+
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme']
+    });
+
+    // Variables para filtros
+    let currentMonthFilter = '';
+    let currentStatusFilter = '';
+
+    // 🔹 FUNCIONALIDAD: Filtrado por mes
+    $('#filter-month').on('change', function() {
+        currentMonthFilter = $(this).val();
+        applyFilters();
+    });
+
+    // 🔹 FUNCIONALIDAD: Filtrado por estado
+    $('#filter-status').on('change', function() {
+        currentStatusFilter = $(this).val();
+        applyFilters();
+    });
+
+    // 🔹 FUNCIONALIDAD: Limpiar filtros
+    $('#clear-filters').on('click', function() {
+        $('#filter-month').val('');
+        $('#filter-status').val('');
+        currentMonthFilter = '';
+        currentStatusFilter = '';
+        applyFilters();
+    });
+
+    // 🔹 FUNCIÓN: Aplicar filtros
+    function applyFilters() {
+        const $rows = $('.main-row');
+        let visibleCount = 0;
+        let filterDescription = 'Mostrando ';
+
+        $rows.each(function() {
+            const $row = $(this);
+            const month = $row.data('month');
+            const status = $row.data('status');
+            const $expandableRow = $(`#expandable-${$row.data('cita-id')}`);
+
+            let showRow = true;
+
+            // Aplicar filtro por mes
+            if (currentMonthFilter && month != currentMonthFilter) {
+                showRow = false;
+            }
+
+            // Aplicar filtro por estado
+            if (currentStatusFilter && status != currentStatusFilter) {
+                showRow = false;
+            }
+
+            // Mostrar/ocultar fila
+            if (showRow) {
+                $row.removeClass('hidden');
+                $expandableRow.removeClass('hidden');
+                visibleCount++;
             } else {
-                $button.html('<i class="fas fa-chevron-down"></i> Expandir');
+                $row.addClass('hidden');
+                $expandableRow.addClass('hidden');
             }
         });
 
-        // 🔹 FUNCIONALIDAD: Cambio de estado de cita via AJAX con SweetAlert
-        $(document).on('change', '.estado-radio', function() {
-            const $radio = $(this);
-            const citaId = $radio.data('cita-id');
-            const nuevoEstado = $radio.val();
-            const estadoDisplay = $radio.data('display');
+        // Actualizar información de resultados
+        updateResultsInfo(visibleCount, $rows.length);
+    }
 
-            // Mostrar confirmación con SweetAlert
-            Swal.fire({
-                title: '¿Cambiar estado de cita?',
-                html: `
-                    <div class="text-center">
-                        <i class="fas fa-sync-alt text-warning mb-3" style="font-size: 3rem;"></i>
-                        <p>¿Estás seguro de que quieres cambiar el estado a <strong>${estadoDisplay}</strong>?</p>
-                        <p class="text-muted small">Cita ID: ${citaId}</p>
-                    </div>
-                `,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, Cambiar',
-                cancelButtonText: 'Cancelar',
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                backdrop: true,
-                allowOutsideClick: false
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Proceder con el cambio
-                    cambiarEstadoCita($radio, citaId, nuevoEstado, estadoDisplay);
-                } else {
-                    // Revertir el cambio en el radio button
-                    const groupName = $radio.attr('name');
-                    const $container = $radio.closest('.estado-container');
-                    const currentEstado = $container.data('current-estado');
+    // 🔹 FUNCIÓN: Actualizar información de resultados
+    function updateResultsInfo(visible, total) {
+        const $info = $('#results-info');
+        let message = '';
 
-                    // Restaurar el radio button anterior
-                    $(`input[name="${groupName}"][value="${currentEstado}"]`).prop('checked', true);
-                }
-            });
+        if (currentMonthFilter && currentStatusFilter) {
+            const monthName = $('#filter-month option:selected').text();
+            const statusName = $('#filter-status option:selected').text();
+            message = `Mostrando ${visible} de ${total} citas (${monthName} - ${statusName})`;
+        } else if (currentMonthFilter) {
+            const monthName = $('#filter-month option:selected').text();
+            message = `Mostrando ${visible} de ${total} citas (${monthName})`;
+        } else if (currentStatusFilter) {
+            const statusName = $('#filter-status option:selected').text();
+            message = `Mostrando ${visible} de ${total} citas (${statusName})`;
+        } else {
+            message = `Mostrando todas las ${visible} citas`;
+        }
+
+        $info.text(message);
+    }
+
+    // 🔹 FUNCIONALIDAD: Expansión/contracción de filas
+    $(document).on('click', '.toggle-row', function() {
+        const $button = $(this);
+        const citaId = $button.data('cita-id');
+        const $expandableRow = $(`#expandable-${citaId}`);
+
+        $expandableRow.toggleClass('show');
+
+        if ($expandableRow.hasClass('show')) {
+            $button.html('<i class="fas fa-chevron-up"></i> Contraer');
+        } else {
+            $button.html('<i class="fas fa-chevron-down"></i> Expandir');
+        }
+    });
+
+    // 🔹 FUNCIONALIDAD: Cambio de estado de cita via AJAX con SweetAlert
+    $(document).on('change', '.estado-radio', function() {
+        const $radio = $(this);
+        const citaId = $radio.data('cita-id');
+        const nuevoEstado = $radio.val();
+
+        // Determinar el display del estado
+        let estadoDisplay = '';
+        switch(nuevoEstado) {
+            case 'finalizado': estadoDisplay = 'Finalizado'; break;
+            case 'en proceso': estadoDisplay = 'En Proceso'; break;
+            case 'pendiente': estadoDisplay = 'Solicitud'; break;
+            case 'olvidado': estadoDisplay = 'Olvidado'; break;
+            default: estadoDisplay = nuevoEstado;
+        }
+
+        const theme = getThemeStyles();
+
+        // Mostrar confirmación con SweetAlert
+        Swal.fire({
+            title: '¿Cambiar estado de cita?',
+            html: `
+                <div class="text-center">
+                    <i class="fas fa-sync-alt mb-3" style="font-size: 3rem; color: var(--accent-yellow);"></i>
+                    <p>¿Estás seguro de que quieres cambiar el estado a <strong>${estadoDisplay}</strong>?</p>
+                    <p class="text-muted small">Cita ID: ${citaId}</p>
+                </div>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, Cambiar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                popup: 'custom-swal-popup',
+                title: 'custom-swal-title',
+                htmlContainer: 'custom-swal-content',
+                confirmButton: 'custom-swal-confirm',
+                cancelButton: 'custom-swal-cancel'
+            },
+            backdrop: true,
+            allowOutsideClick: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                cambiarEstadoCita($radio, citaId, nuevoEstado, estadoDisplay);
+            } else {
+                // Revertir el cambio en el radio button
+                const groupName = $radio.attr('name');
+                const $container = $radio.closest('.estado-container');
+                const currentEstado = $container.data('current-estado');
+                $(`input[name="${groupName}"][value="${currentEstado}"]`).prop('checked', true);
+            }
+        });
+    });
+
+    // 🔹 FUNCIÓN: Realizar el cambio de estado via AJAX
+    function cambiarEstadoCita($radio, citaId, nuevoEstado, estadoDisplay) {
+        const theme = getThemeStyles();
+
+        // Mostrar loading
+        Swal.fire({
+            title: 'Actualizando estado...',
+            text: 'Por favor espera un momento',
+            allowOutsideClick: false,
+            customClass: {
+                popup: 'custom-swal-popup',
+                title: 'custom-swal-title',
+                htmlContainer: 'custom-swal-content'
+            },
+            didOpen: () => {
+                Swal.showLoading();
+            }
         });
 
-        // 🔹 FUNCIÓN: Realizar el cambio de estado via AJAX
-        function cambiarEstadoCita($radio, citaId, nuevoEstado, estadoDisplay) {
-            // Mostrar loading
-            Swal.fire({
-                title: 'Actualizando estado...',
-                text: 'Por favor espera un momento',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+        // Enviar al backend
+        $.ajax({
+            url: "{% url 'inicio:actualizar_estado_cita' %}",
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrftoken },
+            data: { cita_id: citaId, estado: nuevoEstado },
+            success: function(resp) {
+                Swal.close();
 
-            // Actualiza UI de inmediato
-            updateEstadoDisplay($radio[0]);
-
-            // Enviar al backend
-            $.ajax({
-                url: "{% url 'inicio:actualizar_estado_cita' %}",
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrftoken },
-                data: { cita_id: citaId, estado: nuevoEstado },
-                success: function(resp) {
-                    Swal.close();
-
-                    if (!resp.ok) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: resp.error || 'No se pudo actualizar el estado.',
-                            confirmButtonText: 'Entendido',
-                            confirmButtonColor: '#d33'
-                        });
-
-                        // Revertir UI en caso de error
-                        const groupName = $radio.attr('name');
-                        const $container = $radio.closest('.estado-container');
-                        const currentEstado = $container.data('current-estado');
-                        $(`input[name="${groupName}"][value="${currentEstado}"]`).prop('checked', true);
-                        updateEstadoDisplay($(`input[name="${groupName}"][value="${currentEstado}"]`)[0]);
-
-                    } else if (resp.badge) {
-                        // Éxito - mostrar confirmación
-                        Swal.fire({
-                            icon: 'success',
-                            title: '¡Estado Actualizado!',
-                            html: `
-                                <div class="text-center">
-                                    <i class="fas fa-check-circle text-success mb-3" style="font-size: 3rem;"></i>
-                                    <p>El estado de la cita se cambió exitosamente a:</p>
-                                    <span class="badge bg-${resp.badge.cls} fs-6">${resp.badge.label}</span>
-                                </div>
-                            `,
-                            showConfirmButton: false,
-                            timer: 2000,
-                            timerProgressBar: true,
-                            didClose: () => {
-                        // Refrescar la página
-                        location.reload();
-                    }
-                        });
-
-                        // Actualizar también en la fila principal
-                        const $mainRow = $radio.closest('.expandable-row').prev('.main-row');
-                        const $estadoCell = $mainRow.find('.estado-display');
-                        const cls = resp.badge.cls;
-                        const label = resp.badge.label;
-                        const extra = (cls.includes('warning') || cls.includes('info')) ? ' text-dark' : '';
-                        $estadoCell.html(`<span class="badge bg-${cls}${extra}">${label}</span>`);
-                    }
-                },
-                error: function(xhr) {
-                    Swal.close();
+                if (!resp.ok) {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Error del Servidor',
-                        text: 'No se pudo conectar con el servidor. Intenta nuevamente.',
-                        confirmButtonText: 'Reintentar',
-                        confirmButtonColor: '#d33'
+                        title: 'Error',
+                        text: resp.error || 'No se pudo actualizar el estado.',
+                        confirmButtonText: 'Entendido',
+                        customClass: {
+                            popup: 'custom-swal-popup',
+                            title: 'custom-swal-title',
+                            htmlContainer: 'custom-swal-content',
+                            confirmButton: 'custom-swal-confirm'
+                        }
+                    });
+                } else if (resp.badge) {
+                    // Éxito - mostrar confirmación
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Estado Actualizado!',
+                        html: `
+                            <div class="text-center">
+                                <i class="fas fa-check-circle mb-3" style="font-size: 3rem; color: var(--accent-green);"></i>
+                                <p>El estado de la cita se cambió exitosamente a:</p>
+                                <span class="badge" style="background: var(--accent-green); color: #000; padding: 8px 16px; border-radius: 6px; font-size: 1rem;">${resp.badge.label}</span>
+                            </div>
+                        `,
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true,
+                        customClass: {
+                            popup: 'custom-swal-popup',
+                            title: 'custom-swal-title',
+                            htmlContainer: 'custom-swal-content'
+                        },
+                        didClose: () => {
+                            location.reload();
+                        }
+                    });
+                }
+            },
+            error: function(xhr) {
+                Swal.close();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error del Servidor',
+                    text: 'No se pudo conectar con el servidor. Intenta nuevamente.',
+                    confirmButtonText: 'Reintentar',
+                    customClass: {
+                        popup: 'custom-swal-popup',
+                        title: 'custom-swal-title',
+                        htmlContainer: 'custom-swal-content',
+                        confirmButton: 'custom-swal-confirm'
+                    }
+                });
+            }
+        });
+    }
+
+    // 🔹 FUNCIONALIDAD: Guardar observación modificada via AJAX con SweetAlert
+    $(document).on('click', '.guardar-observacion-btn', function() {
+        const $button = $(this);
+        const $textarea = $button.prev('.observacion-input');
+        const idHistorial = $textarea.data('id');
+        const nuevaObs = $textarea.val().trim();
+        const observacionOriginal = $textarea.data('original');
+
+        // Validar que haya cambios
+        if (nuevaObs === observacionOriginal) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Sin Cambios',
+                text: 'No hay cambios para guardar.',
+                confirmButtonText: 'Entendido',
+                timer: 1500,
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    htmlContainer: 'custom-swal-content',
+                    confirmButton: 'custom-swal-confirm'
+                }
+            });
+            return;
+        }
+
+        // Mostrar confirmación con contenido adaptado al tema
+        Swal.fire({
+            title: '¿Guardar observación?',
+            html: `
+                <div class="text-start">
+                    <p><strong>Observación anterior:</strong></p>
+                    <div class="bg-light p-2 rounded mb-3 small">
+                        ${observacionOriginal || '<span class="text-muted">(Vacío)</span>'}
+                    </div>
+                    <p><strong>Nueva observación:</strong></p>
+                    <div class="bg-light p-2 rounded small">
+                        ${nuevaObs || '<span class="text-muted">(Vacío)</span>'}
+                    </div>
+                    <p class="text-muted small mt-2">¿Confirmas que quieres actualizar la observación?</p>
+                </div>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, Guardar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                popup: 'custom-swal-popup',
+                title: 'custom-swal-title',
+                htmlContainer: 'custom-swal-content',
+                confirmButton: 'custom-swal-confirm',
+                cancelButton: 'custom-swal-cancel'
+            },
+            backdrop: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                guardarObservacion($button, $textarea, idHistorial, nuevaObs);
+            }
+        });
+    });
+
+    // 🔹 FUNCIÓN: Realizar el guardado de observación via AJAX
+    function guardarObservacion($button, $textarea, idHistorial, nuevaObs) {
+        // Mostrar loading
+        Swal.fire({
+            title: 'Guardando...',
+            text: 'Actualizando observación en el historial',
+            allowOutsideClick: false,
+            customClass: {
+                popup: 'custom-swal-popup',
+                title: 'custom-swal-title',
+                htmlContainer: 'custom-swal-content'
+            },
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        $.ajax({
+            url: "{% url 'inicio:actualizar_observacion' 0 %}".replace("0", idHistorial),
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrftoken },
+            contentType: 'application/json',
+            data: JSON.stringify({ observaciones: nuevaObs }),
+            success: function(resp) {
+                Swal.close();
+
+                if (resp.success) {
+                    // Éxito
+                    $button.prop('disabled', true).text('✅ Guardado');
+                    $textarea.data('original', nuevaObs);
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Observación Guardada!',
+                        text: 'La observación se actualizó correctamente en el historial.',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true,
+                        customClass: {
+                            popup: 'custom-swal-popup',
+                            title: 'custom-swal-title',
+                            htmlContainer: 'custom-swal-content'
+                        }
                     });
 
-                    // Revertir UI en caso de error
-                    const groupName = $radio.attr('name');
-                    const $container = $radio.closest('.estado-container');
-                    const currentEstado = $container.data('current-estado');
-                    $(`input[name="${groupName}"][value="${currentEstado}"]`).prop('checked', true);
-                    updateEstadoDisplay($(`input[name="${groupName}"][value="${currentEstado}"]`)[0]);
-                }
-            });
-        }
-
-        // 🔹 FUNCIÓN: Actualizar display del estado en la fila principal
-        function updateEstadoDisplay(radioButton) {
-            const $radio = $(radioButton);
-            const color = $radio.data('color');
-            const display = $radio.data('display');
-            const $mainRow = $radio.closest('.expandable-row').prev('.main-row');
-            const $estadoCell = $mainRow.find('.estado-display');
-            const extra = (color === 'warning' || color === 'info') ? ' text-dark' : '';
-            $estadoCell.html(`<span class="badge bg-${color}${extra}">${display}</span>`);
-        }
-
-        // 🔹 FUNCIONALIDAD: Habilitar botón de guardar solo cuando hay cambios en observaciones
-        $(document).on('input', '.observacion-input', function() {
-            const $textarea = $(this);
-            const original = $textarea.data('original');
-            const $button = $textarea.next('.guardar-observacion-btn');
-            $button.prop('disabled', $textarea.val().trim() === (original || '').trim());
-        });
-
-        // 🔹 FUNCIONALIDAD: Guardar observación modificada via AJAX con SweetAlert
-        $(document).on('click', '.guardar-observacion-btn', function() {
-            const $button = $(this);
-            const $textarea = $button.prev('.observacion-input');
-            const idHistorial = $textarea.data('id');
-            const nuevaObs = $textarea.val().trim();
-            const observacionOriginal = $textarea.data('original');
-
-            // Validar que haya cambios
-            if (nuevaObs === observacionOriginal) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Sin Cambios',
-                    text: 'No hay cambios para guardar.',
-                    confirmButtonText: 'Entendido',
-                    confirmButtonColor: '#ffc107',
-                    timer: 1500
-                });
-                return;
-            }
-
-            // Mostrar confirmación
-            Swal.fire({
-                title: '¿Guardar observación?',
-                html: `
-                    <div class="text-start">
-                        <p><strong>Observación anterior:</strong></p>
-                        <p class="text-muted bg-light p-2 rounded">${observacionOriginal || '(Vacío)'}</p>
-                        <p><strong>Nueva observación:</strong></p>
-                        <p class="bg-light p-2 rounded">${nuevaObs || '(Vacío)'}</p>
-                    </div>
-                `,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, Guardar',
-                cancelButtonText: 'Cancelar',
-                confirmButtonColor: '#28a745',
-                cancelButtonColor: '#d33',
-                backdrop: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    guardarObservacion($button, $textarea, idHistorial, nuevaObs);
-                }
-            });
-        });
-
-        // 🔹 FUNCIÓN: Realizar el guardado de observación via AJAX
-        function guardarObservacion($button, $textarea, idHistorial, nuevaObs) {
-            // Mostrar loading
-            Swal.fire({
-                title: 'Guardando...',
-                text: 'Actualizando observación en el historial',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            $.ajax({
-                url: "{% url 'inicio:actualizar_observacion' 0 %}".replace("0", idHistorial),
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrftoken },
-                contentType: 'application/json',
-                data: JSON.stringify({ observaciones: nuevaObs }),
-                success: function(resp) {
-                    Swal.close();
-
-                    if (resp.success) {
-                        // Éxito
-                        $button.prop('disabled', true).text('✅ Guardado');
-                        $textarea.data('original', nuevaObs);
-
-                        Swal.fire({
-                            icon: 'success',
-                            title: '¡Observación Guardada!',
-                            text: 'La observación se actualizó correctamente en el historial.',
-                            showConfirmButton: false,
-                            timer: 2000,
-                            timerProgressBar: true
-                        });
-
-                        setTimeout(() => {
-                            $button.text('Guardar');
-                        }, 2000);
-                    } else {
-                        // Error del servidor
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error al Guardar',
-                            text: resp.error || 'No se pudo guardar la observación.',
-                            confirmButtonText: 'Entendido',
-                            confirmButtonColor: '#d33'
-                        });
-
-                        $button.prop('disabled', false);
-                    }
-                },
-                error: function(xhr) {
-                    Swal.close();
+                    setTimeout(() => {
+                        $button.text('Guardar');
+                    }, 2000);
+                } else {
+                    // Error del servidor
                     Swal.fire({
                         icon: 'error',
-                        title: 'Error de Conexión',
-                        text: 'No se pudo conectar con el servidor. Intenta nuevamente.',
-                        confirmButtonText: 'Reintentar',
-                        confirmButtonColor: '#d33'
+                        title: 'Error al Guardar',
+                        text: resp.error || 'No se pudo guardar la observación.',
+                        confirmButtonText: 'Entendido',
+                        customClass: {
+                            popup: 'custom-swal-popup',
+                            title: 'custom-swal-title',
+                            htmlContainer: 'custom-swal-content',
+                            confirmButton: 'custom-swal-confirm'
+                        }
                     });
 
                     $button.prop('disabled', false);
                 }
-            });
-        }
+            },
+            error: function(xhr) {
+                Swal.close();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Conexión',
+                    text: 'No se pudo conectar con el servidor. Intenta nuevamente.',
+                    confirmButtonText: 'Reintentar',
+                    customClass: {
+                        popup: 'custom-swal-popup',
+                        title: 'custom-swal-title',
+                        htmlContainer: 'custom-swal-content',
+                        confirmButton: 'custom-swal-confirm'
+                    }
+                });
 
-        // 🔹 INICIALIZAR: Contadores de caracteres para descripciones
-    function inicializarContadoresDescripcion() {
-        $('.descripcion-cliente').each(function() {
-            const $textarea = $(this);
-            const citaId = $textarea.data('cita-id');
-            const maxCaracteres = 500;
-            const caracteresActuales = $textarea.val().length;
-
-            // Actualizar contador inicial
-            $(`#contador-descripcion-${citaId}`).text(`${caracteresActuales}/${maxCaracteres} caracteres`);
+                $button.prop('disabled', false);
+            }
         });
     }
-
-    // 🔹 FUNCIONALIDAD: Habilitar botón guardar cuando hay cambios en descripción
-    $(document).on('input', '.descripcion-cliente', function() {
-        const $textarea = $(this);
-        const citaId = $textarea.data('cita-id');
-        const original = $textarea.data('original');
-        const $button = $(`.guardar-descripcion-btn[data-cita-id="${citaId}"]`);
-        const maxCaracteres = 500;
-        const caracteresActuales = $textarea.val().length;
-
-        // Actualizar contador
-        const $contador = $(`#contador-descripcion-${citaId}`);
-        $contador.text(`${caracteresActuales}/${maxCaracteres} caracteres`);
-
-        // Cambiar color del contador
-        if (caracteresActuales > 450) {
-            $contador.removeClass('text-muted text-warning').addClass('text-danger');
-        } else if (caracteresActuales > 400) {
-            $contador.removeClass('text-muted text-danger').addClass('text-warning');
-        } else {
-            $contador.removeClass('text-warning text-danger').addClass('text-muted');
-        }
-
-        // Habilitar/deshabilitar botón basado en cambios
-        const hayCambios = $textarea.val().trim() !== (original || '').trim();
-        $button.prop('disabled', !hayCambios);
-
-        // Validar longitud máxima
-        if (caracteresActuales > maxCaracteres) {
-            $textarea.addClass('is-invalid');
-            $button.prop('disabled', true);
-        } else {
-            $textarea.removeClass('is-invalid');
-        }
-    });
 
     // 🔹 FUNCIONALIDAD: Guardar descripción del cliente via AJAX con SweetAlert
     $(document).on('click', '.guardar-descripcion-btn', function() {
@@ -604,7 +1310,12 @@ Incluye:
                 title: 'Texto demasiado largo',
                 text: `La descripción no puede exceder ${maxCaracteres} caracteres.`,
                 confirmButtonText: 'Entendido',
-                confirmButtonColor: '#d33'
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    htmlContainer: 'custom-swal-content',
+                    confirmButton: 'custom-swal-confirm'
+                }
             });
             return;
         }
@@ -616,13 +1327,18 @@ Incluye:
                 title: 'Sin Cambios',
                 text: 'No hay cambios en la descripción para guardar.',
                 confirmButtonText: 'Entendido',
-                confirmButtonColor: '#ffc107',
-                timer: 1500
+                timer: 1500,
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    htmlContainer: 'custom-swal-content',
+                    confirmButton: 'custom-swal-confirm'
+                }
             });
             return;
         }
 
-        // Mostrar confirmación con vista previa
+        // Mostrar confirmación con vista previa adaptada al tema
         Swal.fire({
             title: '¿Guardar descripción?',
             html: `
@@ -642,8 +1358,13 @@ Incluye:
             showCancelButton: true,
             confirmButtonText: 'Sí, Guardar',
             cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#28a745',
-            cancelButtonColor: '#d33',
+            customClass: {
+                popup: 'custom-swal-popup',
+                title: 'custom-swal-title',
+                htmlContainer: 'custom-swal-content',
+                confirmButton: 'custom-swal-confirm',
+                cancelButton: 'custom-swal-cancel'
+            },
             backdrop: true,
             width: '600px'
         }).then((result) => {
@@ -660,13 +1381,18 @@ Incluye:
             title: 'Guardando descripción...',
             text: 'Actualizando observaciones de la cita',
             allowOutsideClick: false,
+            customClass: {
+                popup: 'custom-swal-popup',
+                title: 'custom-swal-title',
+                htmlContainer: 'custom-swal-content'
+            },
             didOpen: () => {
                 Swal.showLoading();
             }
         });
 
         $.ajax({
-            url: "{% url 'inicio:actualizar_descripcion_cita' %}", // Necesitarás crear esta URL
+            url: "{% url 'inicio:actualizar_descripcion_cita' %}",
             method: 'POST',
             headers: { 'X-CSRFToken': csrftoken },
             data: {
@@ -687,13 +1413,18 @@ Incluye:
                         title: '¡Descripción Guardada!',
                         html: `
                             <div class="text-center">
-                                <i class="fas fa-check-circle text-success mb-3" style="font-size: 3rem;"></i>
+                                <i class="fas fa-check-circle mb-3" style="font-size: 3rem; color: var(--accent-green);"></i>
                                 <p>La descripción se actualizó correctamente.</p>
                             </div>
                         `,
                         showConfirmButton: false,
                         timer: 2000,
-                        timerProgressBar: true
+                        timerProgressBar: true,
+                        customClass: {
+                            popup: 'custom-swal-popup',
+                            title: 'custom-swal-title',
+                            htmlContainer: 'custom-swal-content'
+                        }
                     });
 
                     setTimeout(() => {
@@ -707,7 +1438,12 @@ Incluye:
                         title: 'Error al Guardar',
                         text: resp.error || 'No se pudo guardar la descripción.',
                         confirmButtonText: 'Entendido',
-                        confirmButtonColor: '#d33'
+                        customClass: {
+                            popup: 'custom-swal-popup',
+                            title: 'custom-swal-title',
+                            htmlContainer: 'custom-swal-content',
+                            confirmButton: 'custom-swal-confirm'
+                        }
                     });
 
                     $button.prop('disabled', false);
@@ -720,7 +1456,12 @@ Incluye:
                     title: 'Error de Conexión',
                     text: 'No se pudo conectar con el servidor. Intenta nuevamente.',
                     confirmButtonText: 'Reintentar',
-                    confirmButtonColor: '#d33'
+                    customClass: {
+                        popup: 'custom-swal-popup',
+                        title: 'custom-swal-title',
+                        htmlContainer: 'custom-swal-content',
+                        confirmButton: 'custom-swal-confirm'
+                    }
                 });
 
                 $button.prop('disabled', false);
@@ -729,9 +1470,61 @@ Incluye:
     }
 
     // 🔹 INICIALIZAR contadores al cargar la página
-    inicializarContadoresDescripcion();
+    function inicializarContadoresDescripcion() {
+        $('.descripcion-cliente').each(function() {
+            const $textarea = $(this);
+            const citaId = $textarea.data('cita-id');
+            const maxCaracteres = 500;
+            const caracteresActuales = $textarea.val().length;
+            $(`#contador-descripcion-${citaId}`).text(`${caracteresActuales}/${maxCaracteres} caracteres`);
+        });
+    }
 
+    // 🔹 FUNCIONALIDAD: Habilitar botón guardar cuando hay cambios en descripción
+    $(document).on('input', '.descripcion-cliente', function() {
+        const $textarea = $(this);
+        const citaId = $textarea.data('cita-id');
+        const original = $textarea.data('original');
+        const $button = $(`.guardar-descripcion-btn[data-cita-id="${citaId}"]`);
+        const maxCaracteres = 500;
+        const caracteresActuales = $textarea.val().length;
+
+        // Actualizar contador
+        const $contador = $(`#contador-descripcion-${citaId}`);
+        $contador.text(`${caracteresActuales}/${maxCaracteres} caracteres`);
+
+        // Cambiar color del contador
+        if (caracteresActuales > 450) {
+            $contador.css('color', '#FF7F7F');
+        } else if (caracteresActuales > 400) {
+            $contador.css('color', 'var(--accent-yellow)');
+        } else {
+            $contador.css('color', 'var(--text-secondary)');
+        }
+
+        // Habilitar/deshabilitar botón basado en cambios
+        const hayCambios = $textarea.val().trim() !== (original || '').trim();
+        $button.prop('disabled', !hayCambios);
+
+        // Validar longitud máxima
+        if (caracteresActuales > maxCaracteres) {
+            $textarea.addClass('is-invalid');
+            $button.prop('disabled', true);
+        } else {
+            $textarea.removeClass('is-invalid');
+        }
     });
-</script>
 
+    // 🔹 FUNCIONALIDAD: Habilitar botón de guardar solo cuando hay cambios en observaciones
+    $(document).on('input', '.observacion-input', function() {
+        const $textarea = $(this);
+        const original = $textarea.data('original');
+        const $button = $textarea.next('.guardar-observacion-btn');
+        $button.prop('disabled', $textarea.val().trim() === (original || '').trim());
+    });
+
+    // Inicializar
+    inicializarContadoresDescripcion();
+});
+</script>
 {% endblock %}

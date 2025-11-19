@@ -4,147 +4,481 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recuperar Contraseña</title>
+    <title>Recuperar Contraseña - PhoneFX</title>
 
-    <!-- CSS Base -->
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@300;400&display=swap" rel="stylesheet">
 
-    <!-- CSS de Componentes -->
-    <link rel="stylesheet" href="{% static 'css/components.css' %}">
-
-    <!-- CSS de Layout -->
-    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
-
-    <!-- CSS específico de la página (puedes crear uno si es necesario o reutilizar login.css si los estilos son muy similares) -->
-    <link rel="stylesheet" href="{% static 'css/auth/login.css' %}"> <!-- Reutilizando login.css por ahora -->
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
-        /* Estilos específicos para esta página (si son necesarios adicionales a login.css) */
-        .auth-box {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             position: relative;
-            background-color: #17213c4f;
+            overflow: auto;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            width: 420px; /* Ancho similar al de login */
         }
 
-        .form-container {
-            background-color: #f9f9f900;
-            border-radius: 6px;
-            padding: 60px; /* Aumentado para dar más espacio interno */
-            margin-top: 40px; /* Espacio para la flecha, si la usas */
+        /* Fondo con efecto blur */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('{% static "img/fondo_registro2.jpg" %}') center/cover;
+            backdrop-filter: blur(7.5px);
+            z-index: -1;
         }
 
-        .auth-button-container {
+        .container {
+            display: flex;
+            width: 95%;
+            max-width: 1400px;
+            min-height: 85vh;
+            height: auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Panel izquierdo - Formulario */
+        .form-section {
+            flex: 0 0 45%;
+            background: rgba(24, 24, 24, 0.3);
+            backdrop-filter: blur(15px);
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            min-height: 100%;
+        }
+
+        /* Panel derecho - Hero */
+        .hero-section {
+            flex: 0 0 55%;
+            background: url('{% static "img/fondo_registro.jpg" %}') center/cover;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            min-height: 100%;
+        }
+
+        .hero-section::before {
+            content: '';
             position: absolute;
-            top: 15px;
-            left: 15px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                45deg,
+                rgba(0, 0, 0, 0.2) 0%,
+                rgba(0, 0, 0, 0.1) 50%,
+                rgba(0, 0, 0, 0.3) 100%
+            );
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            color: white;
+            padding: 40px;
+        }
+
+        .hero-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 5.5rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 15px;
+            text-shadow:
+                0 0 30px rgba(255, 255, 255, 0.8),
+                2px 2px 10px rgba(0, 0, 0, 0.5);
+            letter-spacing: 2px;
+        }
+
+        .hero-subtitle {
+            font-family: 'Poppins', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #E040FB 0%, #764ba2 50%, #667eea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px rgba(224, 64, 251, 0.6);
+            filter: drop-shadow(0px 0px 25px rgba(224, 64, 251, 0.8));
+            letter-spacing: 3px;
+        }
+
+        /* Botón de retroceso */
+        .back-button {
+            position: absolute;
+            top: 30px;
+            left: 40px;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #000;
+            box-shadow: -8px 10px 4px rgba(0, 0, 0, 0.25);
+            transition: all 0.3s ease;
             z-index: 10;
         }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #e0e0e0; /* Color claro para el label, ajusta según tu tema */
-            font-size: 14px;
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: -10px 12px 6px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 1);
         }
 
-        .form-group input[type="email"] {
+        .back-button i {
+            font-size: 20px;
+        }
+
+        /* Contenedor del formulario */
+        .form-container {
+            max-width: 400px;
+            margin: 0 auto;
             width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-            box-sizing: border-box;
-            margin-bottom: 20px; /* Espacio después del input */
-            background-color: white;
         }
 
-        .form-group input[type="email"]:focus {
-            border-color: #4a90e2;
-            outline: none;
-        }
-
-        .submit-btn {
-            margin-top: 15px; /* Ajuste del margen superior del botón */
-            width: 100%; /* Hacer el botón de ancho completo */
-            padding: 12px;
-            font-size: 16px;
-        }
-
-        .message-area p {
+        .form-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #fff;
             text-align: center;
-            padding: 10px;
-            border-radius: 4px;
-            margin-top: 20px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
-        .message-area .success-message {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+
+        .form-subtitle {
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            margin-bottom: 40px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
-        .message-area .error-message {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+
+        /* Grupos de formulario */
+        .form-group {
+            position: relative;
+            margin-bottom: 25px;
         }
-        .message-area .dev-code {
-            background-color: #e0e0e0;
+
+        .form-input {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
             color: #333;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .form-input::placeholder {
+            color: rgba(0, 0, 0, 0.6);
+            font-weight: 400;
+        }
+
+        /* Botón de envío */
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(90deg, rgba(41, 100, 200, 0.8) 0%, rgba(147, 85, 200, 0.9) 100%);
+            border: none;
+            border-radius: 30px;
+            color: white;
+            font-size: 18px;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: -3px 10px 4px rgba(0, 0, 0, 0.25);
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: -5px 12px 6px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(90deg, rgba(41, 100, 200, 0.9) 0%, rgba(147, 85, 200, 1) 100%);
+        }
+
+        /* Botón secundario */
+        .secondary-btn {
+            width: 100%;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 30px;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Mensajes */
+        .message-area {
+            margin-top: 25px;
+            padding: 15px 0;
+        }
+
+        .success-message {
+            background: rgba(45, 206, 137, 0.2);
+            border: 1px solid rgba(45, 206, 137, 0.5);
+            color: #d4edda;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .error-message {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid rgba(220, 53, 69, 0.5);
+            color: #f8d7da;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .dev-code {
+            background: rgba(108, 117, 125, 0.2);
+            border: 1px solid rgba(108, 117, 125, 0.5);
+            color: #e0e0e0;
+            padding: 10px;
+            border-radius: 8px;
             font-family: monospace;
             font-size: 12px;
+            text-align: center;
+            margin-top: 10px;
+            backdrop-filter: blur(10px);
         }
 
+        /* Enlaces */
         .reset-links {
             text-align: center;
-            margin-top: 20px;
-        }
-        .reset-links a {
-            color: #b0c4de; /* Un color claro que combine */
-            text-decoration: none;
-            font-size: 14px;
-        }
-        .reset-links a:hover {
-            text-decoration: underline;
+            margin-top: 25px;
+            padding: 15px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
+        .reset-links a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            padding: 10px 16px;
+            border-radius: 8px;
+            display: block;
+            width: 100%;
+        }
+
+        .reset-links a:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.15);
+            text-decoration: underline;
+            transform: translateY(-2px);
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .container {
+                flex-direction: column;
+                min-height: auto;
+                height: auto;
+                width: 90%;
+            }
+
+            .form-section {
+                flex: 1;
+                padding: 50px 30px;
+                min-height: auto;
+            }
+
+            .hero-section {
+                flex: 1;
+                height: 400px;
+                min-height: auto;
+            }
+
+            .hero-title {
+                font-size: 3.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 2.5rem;
+            }
+
+            .form-title {
+                font-size: 2.2rem;
+                margin-bottom: 15px;
+            }
+
+            .form-subtitle {
+                font-size: 0.9rem;
+                margin-bottom: 30px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                width: 100%;
+                border-radius: 20px;
+                min-height: auto;
+            }
+
+            .form-section {
+                padding: 40px 20px;
+            }
+
+            .form-title {
+                font-size: 2rem;
+                margin-bottom: 10px;
+            }
+
+            .hero-title {
+                font-size: 2.8rem;
+            }
+
+            .hero-subtitle {
+                font-size: 2rem;
+            }
+
+            .form-input {
+                padding: 12px 16px;
+            }
+
+            .submit-btn {
+                padding: 14px;
+                font-size: 16px;
+            }
+
+            .reset-links {
+                margin-top: 20px;
+                gap: 10px;
+            }
+
+            .reset-links a {
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+        }
+
+        /* Animaciones */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-container > * {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .form-group:nth-child(1) { animation-delay: 0.1s; }
+        .submit-btn { animation-delay: 0.2s; }
+        .message-area { animation-delay: 0.3s; }
+        .reset-links { animation-delay: 0.4s; }
+
+        /* Animación para el hero */
+        @keyframes slideInFromRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .hero-content {
+            animation: slideInFromRight 0.8s ease-out;
+        }
     </style>
 </head>
-<body class="auth-page">
-    <div class="auth-container">
-        <!-- Contenedor principal -->
-        <div class="auth-box reset-password"> <!-- Clase específica si quieres diferenciarla -->
-            <!-- Botón de retroceso (opcional, puedes dirigirlo al login o a home) -->
-            <div class="auth-button-container">
-                <div class="styled-wrapper">
-                    <button class="button auth-back-button" onclick="window.location.href='{% url 'inicio:home' %}'"> <!-- Cambia 'logueo:login' por la URL de tu login -->
-                        <div class="button-box">
-                            <span class="button-elem">
-                                <svg viewBox="0 0 24 24" class="arrow-icon">
-                                    <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path>
-                                </svg>
-                            </span>
-                            <span class="button-elem">
-                                <svg viewBox="0 0 24 24" class="arrow-icon">
-                                    <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path>
-                                </svg>
-                            </span>
-                        </div>
-                    </button>
-                </div>
-            </div>
+<body>
+    <div class="container">
+        <!-- Sección del formulario -->
+        <div class="form-section">
+            <!-- Botón de retroceso -->
+            <a href="{% url 'inicio:home' %}" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+            </a>
 
-            <!-- Box interno para el formulario -->
             <div class="form-container">
-                <h3 class="auth-title reset text-center" style="color: white; margin-bottom: 20px;">Recuperar Contraseña</h3>
-                <p class="text-center" style="color: #d3d3d3; font-size: 14px; margin-bottom: 25px;">Ingresa tu correo electrónico para enviarte un código de recuperación.</p>
+                <h1 class="form-title">Recuperar Contraseña</h1>
+                <p class="form-subtitle">Ingresa tu correo electrónico para enviarte un código de recuperación</p>
 
-                <form method="post" class="auth-form reset-password" novalidate>
+                <form method="post" class="auth-form" novalidate>
                     {% csrf_token %}
+
                     <div class="form-group">
-                        <label for="email">Correo electrónico:</label>
-                        <input type="email" name="email" id="email" required value="{{ request.POST.email|default:'' }}">
+                        <input type="email" name="email" class="form-input" placeholder="Correo electrónico"
+                               value="{{ request.POST.email|default:'' }}" required>
                     </div>
 
                     <button type="submit" class="submit-btn">Enviar Código</button>
@@ -153,34 +487,40 @@
                 <!-- Área para mostrar mensajes -->
                 <div class="message-area">
                     {% if success_message %}
-                        <p class="success-message">{{ success_message }}</p>
-                        {% if reset_code_for_dev %}
-                            <p class="dev-code">Código (dev): {{ reset_code_for_dev }}</p>
-                        {% endif %}
-
-                        <!-- Botón para ir a la página de verificación -->
-                        <div class="text-center mt-4">
-                            <a href="{% url 'reset_password:verify_code' %}" class="submit-btn" style="display: inline-block; width: auto; padding: 10px 20px;">
-                                Ingresar Código de Verificación
-                            </a>
+                        <div class="success-message">
+                            {{ success_message }}
+                            {% if reset_code_for_dev %}
+                                <div class="dev-code">Código (dev): {{ reset_code_for_dev }}</div>
+                            {% endif %}
                         </div>
+
+                        <!-- Botón para ir a la verificación -->
+                        <a href="{% url 'reset_password:verify_code' %}" class="secondary-btn">
+                            Ingresar Código de Verificación
+                        </a>
+                    {% endif %}
+
+                    {% if error_message %}
+                        <div class="error-message">{{ error_message }}</div>
                     {% endif %}
                 </div>
 
                 <div class="reset-links">
-                    <a href="{% url 'logueo:login' %}">Volver a Iniciar Sesión</a> <!-- Cambia 'logueo:login' por la URL de tu login -->
+                    <a href="{% url 'logueo:login' %}">Volver a Iniciar Sesión</a>
                 </div>
+            </div>
+        </div>
 
+        <!-- Sección hero -->
+        <div class="hero-section">
+            <div class="hero-content">
+                <div class="hero-title">PHONE</div>
+                <div class="hero-subtitle">F-X</div>
             </div>
         </div>
     </div>
 
-    <!-- SweetAlert para mensajes (si lo usas también en esta página y pasas mensajes de Django) -->
-    {% comment %}
-    Si estás manejando los mensajes directamente en la plantilla como arriba (success_message, error_message),
-    quizás no necesites SweetAlert aquí a menos que también uses Django messages framework.
-    Si los usas, asegúrate de que tu vista `PasswordResetRequestPageView` los esté añadiendo.
-    {% endcomment %}
+    <!-- SweetAlert para mensajes -->
     {% if messages %}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -188,7 +528,7 @@
         Swal.fire({
             title: '{{ message.tags|title }}',
             text: '{{ message }}',
-            icon: '{{ message.tags }}', // Asegúrate que los tags sean 'success', 'error', 'warning', 'info'
+            icon: '{{ message.tags }}',
             confirmButtonText: 'OK'
         });
         {% endfor %}

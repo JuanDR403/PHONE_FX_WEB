@@ -4,144 +4,549 @@
 {% block title %}Agregar Producto{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-12 col-md-8 col-lg-6">
-    <div class="card">
-      <div class="card-header">
-        <h5 class="mb-0">
-          <i class="fas fa-plus-circle text-primary me-2"></i>
-          Agregar nuevo producto
-        </h5>
-      </div>
-      <div class="card-body">
-        <form method="post" enctype="multipart/form-data" id="form-producto">
-          {% csrf_token %}
+<style>
+    .form-container {
+        background: var(--bg-card);
+        border-radius: 20px;
+        padding: 40px;
+        margin: 20px 0;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 20px 40px var(--shadow-color);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
 
-          <div class="mb-3">
-            <label class="form-label fw-bold">Nombre del Producto</label>
-            {{ form.nombre }}
-            <div class="d-flex justify-content-between align-items-center mt-1">
-              <div class="form-text">
-                <i class="fas fa-info-circle me-1"></i>
-                Nombre descriptivo del producto
-              </div>
-              <span id="contador-nombre" class="text-muted small">100 caracteres restantes</span>
-            </div>
-            {% if form.nombre.errors %}
-              <div class="text-danger small mt-1">
-                <i class="fas fa-exclamation-triangle me-1"></i>
-                {{ form.nombre.errors }}
-              </div>
-            {% endif %}
-          </div>
+    .form-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent-purple) 0%, var(--accent-green) 50%, var(--accent-yellow) 100%);
+    }
 
-          <div class="mb-3">
-            <label class="form-label fw-bold">Descripción</label>
-            {{ form.descripcion }}
-            <div class="d-flex justify-content-between align-items-center mt-1">
-              <div class="form-text">
-                <i class="fas fa-info-circle me-1"></i>
-                Describe las características principales del producto.
-              </div>
-              <span id="contador-descripcion" class="text-muted small">300 caracteres restantes</span>
-            </div>
-            {% if form.descripcion.errors %}
-              <div class="text-danger small mt-1">
-                <i class="fas fa-exclamation-triangle me-1"></i>
-                {{ form.descripcion.errors }}
-              </div>
-            {% endif %}
-          </div>
+    .form-header {
+        text-align: center;
+        margin-bottom: 40px;
+        position: relative;
+    }
 
-          <div class="row">
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label fw-bold">Precio (COP)</label>
-                {{ form.precio }}
-                {% if form.precio.errors %}
-                  <div class="text-danger small mt-1">
-                    <i class="fas fa-exclamation-triangle me-1"></i>
-                    {{ form.precio.errors }}
-                  </div>
-                {% endif %}
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label fw-bold">Stock Disponible</label>
-                {{ form.stock }}
-                <div class="form-text">
-                  <i class="fas fa-info-circle me-1"></i>
-                  Máximo 999 unidades
+    .form-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        font-size: 2.5rem;
+        background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-green) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+    }
+
+    .form-subtitle {
+        color: var(--text-secondary);
+        font-family: 'Poppins', sans-serif;
+        font-weight: 300;
+        font-size: 1.1rem;
+    }
+
+    .form-card {
+        background: var(--bg-card);
+        border-radius: 16px;
+        padding: 30px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 25px;
+        transition: all 0.3s ease;
+    }
+
+    .form-card:hover {
+        background: var(--bg-secondary);
+        border-color: var(--accent-purple);
+        transform: translateY(-2px);
+    }
+
+    .form-label {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--text-primary);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-label i {
+        margin-right: 10px;
+        font-size: 1.2rem;
+        background: linear-gradient(135deg, var(--accent-purple), var(--accent-green));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* ESTILOS UNIFICADOS PARA TODOS LOS SELECTS */
+    .form-select {
+        background: var(--search-bg) !important;
+        border: 2px solid var(--border-color) !important;
+        border-radius: 12px !important;
+        color: var(--text-primary) !important;
+        font-family: 'Poppins', sans-serif;
+        font-size: 1rem;
+        padding: 15px 20px !important;
+        transition: all 0.3s ease;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        cursor: pointer;
+        width: 100%;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23E040FB' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: calc(100% - 20px) center !important;
+        background-size: 16px 16px !important;
+    }
+
+    .form-select:focus {
+        background: var(--bg-card) !important;
+        border-color: var(--accent-purple) !important;
+        box-shadow: 0 0 0 3px rgba(224, 64, 251, 0.1) !important;
+        color: var(--text-primary) !important;
+        outline: none;
+    }
+
+    .form-select:hover {
+        border-color: var(--accent-purple) !important;
+        background: var(--bg-secondary) !important;
+    }
+
+    .form-select option {
+        background: var(--bg-primary) !important;
+        color: var(--text-primary) !important;
+        padding: 12px 15px !important;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.95rem;
+        border-bottom: 1px solid var(--border-color);
+        transition: all 0.2s ease;
+    }
+
+    .form-select option:hover {
+        background: linear-gradient(135deg, var(--accent-purple), var(--accent-green)) !important;
+        color: #000000 !important;
+        font-weight: 600;
+    }
+
+    .form-select option:checked {
+        background: linear-gradient(135deg, var(--accent-purple), var(--accent-green)) !important;
+        color: #000000 !important;
+        font-weight: 600;
+    }
+
+    .form-input, .form-textarea {
+        background: var(--search-bg) !important;
+        border: 2px solid var(--border-color) !important;
+        border-radius: 12px !important;
+        color: var(--text-primary) !important;
+        font-family: 'Poppins', sans-serif;
+        font-size: 1rem;
+        padding: 15px 20px !important;
+        transition: all 0.3s ease;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+        background: var(--bg-card) !important;
+        border-color: var(--accent-purple) !important;
+        box-shadow: 0 0 0 3px rgba(224, 64, 251, 0.1) !important;
+        color: var(--text-primary) !important;
+        outline: none;
+    }
+
+    .form-input::placeholder, .form-textarea::placeholder {
+        color: var(--text-muted) !important;
+    }
+
+    .form-text {
+        color: var(--text-muted) !important;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.9rem;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-text i {
+        margin-right: 6px;
+        color: var(--accent-green);
+    }
+
+    .char-counter {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-green) 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 15px 30px;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #000000;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(224, 64, 251, 0.3);
+    }
+
+    .btn-primary-custom:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(224, 64, 251, 0.4);
+        color: #000000;
+    }
+
+    .btn-secondary-custom {
+        background: var(--search-bg);
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        padding: 15px 30px;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+    }
+
+    .btn-secondary-custom:hover {
+        background: var(--bg-card);
+        border-color: var(--accent-purple);
+        color: var(--text-primary);
+        transform: translateY(-2px);
+    }
+
+    .grid-2-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+    }
+
+    .form-check-input {
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+        background: var(--search-bg);
+        border: 2px solid var(--border-color);
+    }
+
+    .form-check-input:checked {
+        background: linear-gradient(135deg, var(--accent-purple), var(--accent-green));
+        border-color: var(--accent-purple);
+    }
+
+    .form-check-label {
+        font-family: 'Poppins', sans-serif;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+    }
+
+    /* Estados de validación */
+    .is-invalid {
+        border-color: #FF7F7F !important;
+        box-shadow: 0 0 0 3px rgba(255, 127, 127, 0.1) !important;
+    }
+
+    .is-valid {
+        border-color: var(--accent-green) !important;
+        box-shadow: 0 0 0 3px rgba(145, 255, 182, 0.1) !important;
+    }
+
+    .error-message {
+        color: #FF7F7F;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.85rem;
+        margin-top: 5px;
+        display: flex;
+        align-items: center;
+    }
+
+    .error-message i {
+        margin-right: 5px;
+    }
+
+    /* Estilos específicos para modo claro */
+    [data-theme="light"] .form-container {
+        box-shadow: 0 10px 30px var(--shadow-color);
+    }
+
+    [data-theme="light"] .form-card:hover {
+        box-shadow: 0 8px 25px var(--shadow-color);
+    }
+
+    [data-theme="light"] .btn-primary-custom {
+        color: #000000;
+    }
+
+    [data-theme="light"] .btn-primary-custom:hover {
+        color: #000000;
+    }
+
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 25px;
+            margin: 10px;
+        }
+
+        .form-title {
+            font-size: 2rem;
+        }
+
+        .grid-2-col {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .btn-primary-custom,
+        .btn-secondary-custom {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+            <div class="form-container">
+                <div class="form-header">
+                    <h1 class="form-title">
+                        <i class="fas fa-plus-circle me-3"></i>
+                        Agregar Nuevo Producto
+                    </h1>
+                    <p class="form-subtitle">Completa la información del nuevo producto para agregarlo al catálogo</p>
                 </div>
-                {% if form.stock.errors %}
-                  <div class="text-danger small mt-1">
-                    <i class="fas fa-exclamation-triangle me-1"></i>
-                    {{ form.stock.errors }}
-                  </div>
-                {% endif %}
-              </div>
-            </div>
-          </div>
 
-          <div class="mb-3">
-            <label class="form-label fw-bold">Imagen del Producto</label>
-            {{ form.imagen_archivo }}
-            <div class="form-text">
-              <i class="fas fa-image me-1"></i>
-              Formatos soportados: JPG, PNG, GIF. Tamaño máximo: 5MB.
-            </div>
-            {% if form.imagen_archivo.errors %}
-              <div class="text-danger small mt-1">
-                <i class="fas fa-exclamation-triangle me-1"></i>
-                {{ form.imagen_archivo.errors }}
-              </div>
-            {% endif %}
-          </div>
+                <form method="post" enctype="multipart/form-data" id="form-producto">
+                    {% csrf_token %}
 
-          <div class="row">
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label fw-bold">Categoría</label>
-                {{ form.categoria }}
-                {% if form.categoria.errors %}
-                  <div class="text-danger small mt-1">
-                    <i class="fas fa-exclamation-triangle me-1"></i>
-                    {{ form.categoria.errors }}
-                  </div>
-                {% endif %}
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label fw-bold">Estado</label>
-                {{ form.activo }}
-                <div class="form-text">
-                  Los productos inactivos no se mostrarán en la tienda.
-                </div>
-                {% if form.activo.errors %}
-                  <div class="text-danger small mt-1">
-                    <i class="fas fa-exclamation-triangle me-1"></i>
-                    {{ form.activo.errors }}
-                  </div>
-                {% endif %}
-              </div>
-            </div>
-          </div>
+                    <!-- Información Básica -->
+                    <div class="form-card">
+                        <h3 class="mb-4" style="font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--text-primary);">
+                            <i class="fas fa-info-circle me-2" style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                            Información Básica
+                        </h3>
 
-          <div class="d-flex gap-2 pt-3 border-top">
-            <button type="submit" class="btn btn-primary" id="btn-guardar">
-              <i class="fas fa-save me-2"></i>Guardar Producto
-            </button>
-            <a href="{% url 'tienda:lista_productos' %}" class="btn btn-secondary">
-              <i class="fas fa-times me-2"></i>Cancelar
-            </a>
-          </div>
-        </form>
-      </div>
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-tag"></i>
+                                Nombre del Producto
+                            </label>
+                            {{ form.nombre }}
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i>
+                                    Nombre descriptivo del producto
+                                </div>
+                                <span id="contador-nombre" class="char-counter" style="color: var(--text-muted);">100 caracteres restantes</span>
+                            </div>
+                            {% if form.nombre.errors %}
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    {{ form.nombre.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-align-left"></i>
+                                Descripción
+                            </label>
+                            {{ form.descripcion }}
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i>
+                                    Describe las características principales del producto
+                                </div>
+                                <span id="contador-descripcion" class="char-counter" style="color: var(--text-muted);">300 caracteres restantes</span>
+                            </div>
+                            {% if form.descripcion.errors %}
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    {{ form.descripcion.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Precio y Stock -->
+                    <div class="form-card">
+                        <h3 class="mb-4" style="font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--text-primary);">
+                            <i class="fas fa-chart-bar me-2" style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                            Precio y Inventario
+                        </h3>
+
+                        <div class="grid-2-col">
+                            <div>
+                                <label class="form-label">
+                                    <i class="fas fa-dollar-sign"></i>
+                                    Precio (COP)
+                                </label>
+                                {{ form.precio }}
+                                {% if form.precio.errors %}
+                                    <div class="error-message">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        {{ form.precio.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div>
+                                <label class="form-label">
+                                    <i class="fas fa-boxes"></i>
+                                    Stock Disponible
+                                </label>
+                                {{ form.stock }}
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i>
+                                    Máximo 999 unidades
+                                </div>
+                                {% if form.stock.errors %}
+                                    <div class="error-message">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        {{ form.stock.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Imagen y Categoría -->
+                    <div class="form-card">
+                        <h3 class="mb-4" style="font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--text-primary);">
+                            <i class="fas fa-images me-2" style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                            Multimedia y Categorización
+                        </h3>
+
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-image"></i>
+                                Imagen del Producto
+                            </label>
+                            {{ form.imagen_archivo }}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i>
+                                Formatos soportados: JPG, PNG, GIF. Tamaño máximo: 5MB.
+                            </div>
+                            {% if form.imagen_archivo.errors %}
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    {{ form.imagen_archivo.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="grid-2-col">
+                            <div>
+                                <label class="form-label">
+                                    <i class="fas fa-folder"></i>
+                                    Categoría
+                                </label>
+                                {{ form.categoria }}
+                                {% if form.categoria.errors %}
+                                    <div class="error-message">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        {{ form.categoria.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div>
+                                <label class="form-label">
+                                    <i class="fas fa-toggle-on"></i>
+                                    Estado
+                                </label>
+                                <div class="form-check form-switch mt-2">
+                                    {{ form.activo }}
+                                    <label class="form-check-label" for="{{ form.activo.id_for_label }}">
+                                        Producto activo
+                                    </label>
+                                </div>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i>
+                                    Los productos inactivos no se mostrarán en la tienda
+                                </div>
+                                {% if form.activo.errors %}
+                                    <div class="error-message">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        {{ form.activo.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="d-flex gap-3 pt-4 border-top" style="border-color: var(--border-color) !important; justify-content: center; flex-wrap;">
+                        <button type="submit" class="btn btn-primary-custom" id="btn-guardar">
+                            <i class="fas fa-save me-2"></i>Guardar Producto
+                        </button>
+                        <a href="{% url 'tienda:lista_productos' %}" class="btn btn-secondary-custom">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
+
+<!-- Script para aplicar estilos automáticamente -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Aplicar estilos a todos los elementos del formulario
+    function aplicarEstilosFormulario() {
+        // Aplicar a selects
+        const allSelects = document.querySelectorAll('select');
+        allSelects.forEach(select => {
+            select.classList.add('form-select');
+
+            // Agregar opción por defecto si no existe
+            if (!select.querySelector('option[value=""]') && select.required) {
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = 'Selecciona una opción';
+                defaultOption.disabled = true;
+                defaultOption.selected = true;
+                select.insertBefore(defaultOption, select.firstChild);
+            }
+        });
+
+        // Aplicar a inputs de texto
+        const textInputs = document.querySelectorAll('input[type="text"], input[type="number"]');
+        textInputs.forEach(input => {
+            input.classList.add('form-input');
+        });
+
+        // Aplicar a textareas
+        const textareas = document.querySelectorAll('textarea');
+        textareas.forEach(textarea => {
+            textarea.classList.add('form-textarea');
+        });
+
+        // Aplicar a inputs de archivo
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        fileInputs.forEach(input => {
+            input.classList.add('form-input');
+        });
+
+        // Aplicar estilos al checkbox
+        const checkbox = document.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+            checkbox.classList.add('form-check-input');
+        }
+    }
+
+    aplicarEstilosFormulario();
+});
+</script>
 
 <!-- Script para formato de precio COP -->
 <script>
@@ -176,6 +581,16 @@
 <!-- Script para contadores de caracteres y validación de stock -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+// Función para obtener estilos del tema actual
+function getThemeStyles() {
+    const styles = getComputedStyle(document.documentElement);
+    return {
+        background: styles.getPropertyValue('--bg-primary').trim(),
+        color: styles.getPropertyValue('--text-primary').trim(),
+        borderColor: styles.getPropertyValue('--border-color').trim()
+    };
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const form = document.getElementById('form-producto');
   const inputNombre = document.querySelector('input[name="nombre"]');
@@ -206,13 +621,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Cambiar color según los caracteres restantes
     if (caracteresRestantes <= 0) {
-      contador.className = 'text-danger small fw-bold';
+      contador.style.color = '#FF7F7F';
+      contador.style.fontWeight = 'bold';
       elemento.classList.add('is-invalid');
     } else if (caracteresRestantes <= 20) {
-      contador.className = 'text-warning small';
+      contador.style.color = '#FFA500';
       elemento.classList.remove('is-invalid');
     } else {
-      contador.className = 'text-muted small';
+      contador.style.color = 'var(--text-muted)';
       elemento.classList.remove('is-invalid');
     }
   }
@@ -327,6 +743,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // Mostrar errores si los hay
       if (errores.length > 0) {
+        const theme = getThemeStyles();
         Swal.fire({
           icon: 'error',
           title: 'Errores en el Formulario',
@@ -339,10 +756,14 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
           `,
           confirmButtonText: 'Entendido',
-          confirmButtonColor: '#dc3545'
+          confirmButtonColor: '#dc3545',
+          background: theme.background,
+          color: theme.color
         });
         return;
       }
+
+      const theme = getThemeStyles();
 
       // Mostrar confirmación
       Swal.fire({
@@ -363,14 +784,20 @@ document.addEventListener('DOMContentLoaded', function() {
         confirmButtonColor: '#28a745',
         cancelButtonColor: '#6c757d',
         backdrop: true,
-        width: '500px'
+        width: '500px',
+        background: theme.background,
+        color: theme.color
       }).then((result) => {
         if (result.isConfirmed) {
+          const theme = getThemeStyles();
+
           // Mostrar loading
           Swal.fire({
             title: 'Creando Producto...',
             text: 'Por favor espera un momento',
             allowOutsideClick: false,
+            background: theme.background,
+            color: theme.color,
             didOpen: () => {
               Swal.showLoading();
             }
@@ -392,6 +819,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function mostrarMensajes() {
   {% if messages %}
     {% for message in messages %}
+      const theme = getThemeStyles();
       {% if message.tags == 'success' %}
         Swal.fire({
           icon: 'success',
@@ -400,7 +828,9 @@ function mostrarMensajes() {
           confirmButtonText: 'Aceptar',
           confirmButtonColor: '#28a745',
           timer: 3000,
-          timerProgressBar: true
+          timerProgressBar: true,
+          background: theme.background,
+          color: theme.color
         });
       {% elif message.tags == 'error' %}
         Swal.fire({
@@ -408,7 +838,9 @@ function mostrarMensajes() {
           title: 'Error',
           text: '{{ message }}',
           confirmButtonText: 'Entendido',
-          confirmButtonColor: '#dc3545'
+          confirmButtonColor: '#dc3545',
+          background: theme.background,
+          color: theme.color
         });
       {% endif %}
     {% endfor %}
